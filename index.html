@@ -120,16 +120,13 @@
 <body>
 
 <div id="fma-menu">
-  <!-- Header -->
   <div class="header">FMA</div>
 
-  <!-- Categories -->
   <div class="categories">
     <div class="active">Player</div>
     <div>Movement</div>
   </div>
 
-  <!-- Options -->
   <div class="options">
     <div class="option"><span>No-Clip</span> <span class="value">[2.5]</span></div>
     <div class="option"><span>Super Run</span> <span class="value">[10]</span></div>
@@ -137,7 +134,6 @@
     <div class="option"><span>Anti-tp</span> <span class="value">OFF</span></div>
   </div>
 
-  <!-- Footer -->
   <div class="footer">
     Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
     Status: <span class="status">Idle</span>
@@ -146,13 +142,11 @@
 
 <script>
   const categories = document.querySelectorAll('#fma-menu .categories div');
-  const optionsContainer = document.querySelector('#fma-menu .options');
   const options = document.querySelectorAll('#fma-menu .option');
 
   let selectedCategory = 0;
   let selectedOption = 0;
 
-  // Highlight the currently selected option
   function updateSelection() {
     options.forEach((opt, idx) => {
       opt.classList.toggle('selected', idx === selectedOption);
@@ -164,26 +158,30 @@
 
   updateSelection();
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown') {
-      selectedOption = (selectedOption + 1) % options.length;
+  // Listen for messages from Lua
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+
+    if (data.action === 'setCurrent') {
+      selectedOption = data.current - 1;
       updateSelection();
-    } else if (e.key === 'ArrowUp') {
-      selectedOption = (selectedOption - 1 + options.length) % options.length;
+    } else if (data.action === 'setVisible') {
+      document.getElementById('fma-menu').style.display = data.visible ? 'block' : 'none';
+    } else if (data.action === 'keyPress') {
+      const key = data.key;
+      if (key === 'up') selectedOption = (selectedOption - 1 + options.length) % options.length;
+      else if (key === 'down') selectedOption = (selectedOption + 1) % options.length;
+      else if (key === 'left') selectedCategory = (selectedCategory - 1 + categories.length) % categories.length;
+      else if (key === 'right') selectedCategory = (selectedCategory + 1) % categories.length;
+      else if (key === 'enter') {
+        const selected = options[selectedOption];
+        const valueSpan = selected.querySelector('.value');
+        if (valueSpan.textContent === 'OFF') valueSpan.textContent = 'ON';
+        else if (valueSpan.textContent === 'ON') valueSpan.textContent = 'OFF';
+      } else if (key === 'back') {
+        console.log("Back pressed");
+      }
       updateSelection();
-    } else if (e.key === 'ArrowRight') {
-      selectedCategory = (selectedCategory + 1) % categories.length;
-      updateSelection();
-    } else if (e.key === 'ArrowLeft') {
-      selectedCategory = (selectedCategory - 1 + categories.length) % categories.length;
-      updateSelection();
-    } else if (e.key === 'Enter') {
-      const selected = options[selectedOption];
-      const valueSpan = selected.querySelector('.value');
-      // Toggle ON/OFF values
-      if (valueSpan.textContent === 'OFF') valueSpan.textContent = 'ON';
-      else if (valueSpan.textContent === 'ON') valueSpan.textContent = 'OFF';
-      console.log('Selected Option:', selected.querySelector('span').textContent);
     }
   });
 </script>
