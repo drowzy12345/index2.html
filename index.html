@@ -3,176 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FMA Style Menu</title>
+<title>FMA Menu</title>
 <style>
-  /* Reset & basic */
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-  body { background: #1e1e1e; color: #fff; }
+  body {
+    background: transparent; /* Removed black background */
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    color: #fff;
+  }
 
   /* Menu container */
-  .menu {
-    width: 300px;
-    background: #2b2b2b;
-    border-radius: 10px;
+  #fma-menu {
+    width: 500px;
+    background: rgba(20,20,20,0.95);
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 0 15px rgba(0,0,0,0.7);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    transition: transform 0.2s;
   }
 
-  /* Menu header */
-  .menu-header {
-    background: #161616;
-    padding: 15px;
-    font-size: 20px;
+  #fma-menu:hover {
+    transform: scale(1.02);
+  }
+
+  /* Header */
+  #fma-menu .header {
+    background: linear-gradient(90deg, orange, #ff7f00);
+    padding: 14px 0;
     text-align: center;
-    border-bottom: 1px solid #444;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 3px #000;
   }
 
-  /* Menu items */
-  .menu-item {
-    padding: 12px 20px;
+  /* Categories */
+  #fma-menu .categories {
+    display: flex;
+    justify-content: center;
+    background: rgba(0,0,0,0.25);
+    font-weight: bold;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,165,0,0.5);
+  }
+
+  #fma-menu .categories div {
+    margin: 0 20px;
+    padding: 8px 0;
     cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s;
-  }
-
-  .menu-item:hover {
-    background: #3a3a3a;
-  }
-
-  /* Submenu */
-  .submenu {
-    display: none;
-    flex-direction: column;
-    background: #2a2a2a;
-  }
-
-  .submenu .menu-item {
-    padding-left: 40px;
-  }
-
-  .menu-item.active + .submenu {
-    display: flex;
-  }
-
-  /* Checkbox style */
-  .checkbox {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #fff;
-    border-radius: 3px;
-    display: inline-block;
+    transition: color 0.2s, border-bottom 0.2s;
     position: relative;
   }
 
-  .checkbox.checked::after {
+  #fma-menu .categories div.active,
+  #fma-menu .categories div:hover {
+    color: orange;
+  }
+
+  #fma-menu .categories div.active::after,
+  #fma-menu .categories div:hover::after {
     content: '';
     position: absolute;
-    width: 6px;
-    height: 10px;
-    border: solid #00ff90;
-    border-width: 0 2px 2px 0;
-    top: 1px;
-    left: 5px;
-    transform: rotate(45deg);
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background: orange;
   }
 
-  /* Button style */
-  .menu-button {
-    background: #444;
-    border: none;
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 5px;
+  /* Options */
+  #fma-menu .options {
+    padding: 16px 20px;
+    font-size: 15px;
+    line-height: 2;
+    background: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,165,0,0.2);
+  }
+
+  #fma-menu .option {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    transition: background 0.2s;
+    border-radius: 6px;
     cursor: pointer;
-    transition: 0.2s;
   }
 
-  .menu-button:hover {
-    background: #00ff90;
-    color: #000;
+  #fma-menu .option:hover {
+    background: rgba(255,165,0,0.1);
+  }
+
+  #fma-menu .option span.value {
+    color: orange;
+    font-weight: bold;
+  }
+
+  /* Footer */
+  #fma-menu .footer {
+    background: rgba(0,0,0,0.15);
+    padding: 10px;
+    font-size: 12px;
+    text-align: center;
+    color: #ccc;
+  }
+
+  #fma-menu .footer .status {
+    color: orange;
+    font-weight: bold;
   }
 </style>
 </head>
 <body>
 
-<div class="menu">
-  <div class="menu-header">FMA Menu</div>
+<div id="fma-menu">
+  <!-- Header -->
+  <div class="header">FMA</div>
 
-  <div class="menu-item" onclick="toggleSubmenu(this)">
-    Self Options
-  </div>
-  <div class="submenu">
-    <div class="menu-item">
-      <span>God Mode</span>
-      <span class="checkbox" onclick="toggleCheckbox(event, this)"></span>
-    </div>
-    <div class="menu-item">
-      <span>Invisible</span>
-      <span class="checkbox" onclick="toggleCheckbox(event, this)"></span>
-    </div>
+  <!-- Categories -->
+  <div class="categories">
+    <div class="active">Player</div>
+    <div>Movement</div>
   </div>
 
-  <div class="menu-item" onclick="toggleSubmenu(this)">
-    Vehicle Options
-  </div>
-  <div class="submenu">
-    <div class="menu-item">
-      <span>Spawn Car</span>
-      <button class="menu-button" onclick="buttonAction(event, 'spawnCar')">Spawn</button>
-    </div>
-    <div class="menu-item">
-      <span>Repair Car</span>
-      <button class="menu-button" onclick="buttonAction(event, 'repairCar')">Repair</button>
-    </div>
+  <!-- Options -->
+  <div class="options">
+    <div class="option"><span>No-Clip</span> <span class="value">[2.5]</span></div>
+    <div class="option"><span>Super Run</span> <span class="value">[10]</span></div>
+    <div class="option"><span>Infinite Stamina</span> <span class="value">OFF</span></div>
+    <div class="option"><span>Anti-tp</span> <span class="value">OFF</span></div>
   </div>
 
-  <div class="menu-item" onclick="toggleSubmenu(this)">
-    Freecam
-  </div>
-  <div class="submenu">
-    <div class="menu-item">
-      <span>Toggle Freecam</span>
-      <button class="menu-button" onclick="buttonAction(event, 'toggleFreecam')">Toggle</button>
-    </div>
-    <div class="menu-item">
-      <span>Speed</span>
-      <input type="range" min="1" max="10" value="5" onchange="sliderAction(event, 'freecamSpeed')">
-    </div>
+  <!-- Footer -->
+  <div class="footer">
+    Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
+    Status: <span class="status">Idle</span>
   </div>
 </div>
-
-<script>
-  // Toggle submenus
-  function toggleSubmenu(el) {
-    el.classList.toggle('active');
-  }
-
-  // Toggle checkboxes
-  function toggleCheckbox(event, el) {
-    event.stopPropagation();
-    el.classList.toggle('checked');
-    console.log(el.previousElementSibling.textContent + ' = ' + el.classList.contains('checked'));
-  }
-
-  // Button click actions
-  function buttonAction(event, action) {
-    event.stopPropagation();
-    console.log('Button pressed:', action);
-    // Trigger your FiveM event here via NUI callback
-  }
-
-  // Slider action
-  function sliderAction(event, action) {
-    console.log(action + ' = ' + event.target.value);
-    // Trigger your FiveM event here via NUI callback
-  }
-</script>
 
 </body>
 </html>
