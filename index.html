@@ -37,7 +37,8 @@ const categoriesEl = menuEl.querySelector('.categories');
 const optionsEl = menuEl.querySelector('.options');
 
 let menuData = [];
-let selectedIndex = 0;
+let selectedCategory = 0;
+let selectedOption = 0;
 
 function renderMenu() {
   // Render categories
@@ -45,17 +46,17 @@ function renderMenu() {
   menuData.forEach((cat, i) => {
     const catDiv = document.createElement('div');
     catDiv.textContent = cat.label;
-    if (i === 0) catDiv.classList.add('active');
+    if (i === selectedCategory) catDiv.classList.add('active');
     categoriesEl.appendChild(catDiv);
   });
 
-  // Render options
-  const currentMenu = menuData[selectedCategoryIndex()]?.submenu || [];
+  // Render options for current category
+  const currentMenu = menuData[selectedCategory]?.submenu || [];
   optionsEl.innerHTML = '';
   currentMenu.forEach((opt, i) => {
     const optDiv = document.createElement('div');
     optDiv.classList.add('option');
-    if (i === selectedIndex) optDiv.classList.add('selected');
+    if (i === selectedOption) optDiv.classList.add('selected');
     let valueText = '';
     if (opt.type === 'slider') valueText = '[' + opt.value + ']';
     if (opt.type === 'checkbox') valueText = opt.checked ? 'ON' : 'OFF';
@@ -64,19 +65,32 @@ function renderMenu() {
   });
 }
 
-function selectedCategoryIndex() {
-  return 0; // Simplified: always first category (Self options)
-}
-
-// NUI message from Lua
+// Listen for Lua NUI messages
 window.addEventListener('message', (event) => {
   const data = event.data;
   if (data.action === 'updateMenu') {
-    menuData = data.menu;
-    selectedIndex = data.current - 1
+    menuData = data.menu || [];
+    selectedCategory = 0; // For simplicity, first category active
+    selectedOption = (data.current or 1) - 1;
     menuEl.style.display = data.visible and 'block' or 'none';
     renderMenu();
   } else if (data.action === 'keyPress') {
+    const key = data.key;
+    const currentOptions = menuData[selectedCategory]?.submenu || [];
+    if (key === 'up') selectedOption = (selectedOption - 1 + currentOptions.length) % currentOptions.length;
+    if (key === 'down') selectedOption = (selectedOption + 1) % currentOptions.length;
+    if (key === 'left') {
+      const opt = currentOptions[selectedOption];
+      if (opt?.type === 'slider') opt.value = Math.max(opt.min, opt.value - 0.5);
+    }
+    if (key === 'right') {
+      const opt = currentOptions[selectedOption];
+      if (opt?.type === 'slider') opt.value = Math.min(opt.max, opt.value + 0.5);
+    }
+    if (key === 'enter') {
+      const opt = currentOptions[selectedOption];
+      if (opt?.type === 'checkbox') opt.checked = !opt.checked;
+    }
     renderMenu();
   }
 });
