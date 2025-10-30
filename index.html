@@ -5,135 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FMA Menu</title>
 <style>
-  body {
-    background: transparent;
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 50px;
-    color: #fff;
-  }
-
-  /* Menu container */
-  #fma-menu {
-    width: 500px;
-    background: rgba(20,20,20,0.95);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.9);
-    transition: transform 0.2s;
-  }
-
-  #fma-menu:hover {
-    transform: scale(1.02);
-  }
-
-  /* Header */
-  #fma-menu .header {
-    background: linear-gradient(90deg, orange, #ff7f00);
-    padding: 14px 0;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-shadow: 1px 1px 3px #000;
-  }
-
-  /* Categories */
-  #fma-menu .categories {
-    display: flex;
-    justify-content: center;
-    background: rgba(0,0,0,0.25);
-    font-weight: bold;
-    font-size: 16px;
-    border-bottom: 1px solid rgba(255,165,0,0.5);
-  }
-
-  #fma-menu .categories div {
-    margin: 0 20px;
-    padding: 8px 0;
-    cursor: pointer;
-    transition: color 0.2s, border-bottom 0.2s;
-    position: relative;
-  }
-
-  #fma-menu .categories div.active,
-  #fma-menu .categories div:hover {
-    color: orange;
-  }
-
-  #fma-menu .categories div.active::after,
-  #fma-menu .categories div:hover::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    width: 100%;
-    background: orange;
-  }
-
-  /* Options */
-  #fma-menu .options {
-    padding: 16px 20px;
-    font-size: 15px;
-    line-height: 2;
-    background: rgba(0,0,0,0.15);
-    border-bottom: 1px solid rgba(255,165,0,0.2);
-  }
-
-  #fma-menu .option {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    transition: background 0.2s;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  #fma-menu .option:hover,
-  #fma-menu .option.selected {
-    background: rgba(255,165,0,0.1);
-  }
-
-  #fma-menu .option span.value {
-    color: orange;
-    font-weight: bold;
-  }
-
-  /* Footer */
-  #fma-menu .footer {
-    background: rgba(0,0,0,0.15);
-    padding: 10px;
-    font-size: 12px;
-    text-align: center;
-    color: #ccc;
-  }
-
-  #fma-menu .footer .status {
-    color: orange;
-    font-weight: bold;
-  }
+  body { background: transparent; font-family: 'Segoe UI', sans-serif; display:flex; justify-content:center; align-items:flex-start; padding-top:50px; color:#fff; }
+  #fma-menu { width:500px; background: rgba(20,20,20,0.95); border-radius:12px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.9); }
+  .header { background: linear-gradient(90deg, orange, #ff7f00); padding:14px 0; text-align:center; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:1px 1px 3px #000; }
+  .categories { display:flex; justify-content:center; background: rgba(0,0,0,0.25); font-weight:bold; font-size:16px; border-bottom:1px solid rgba(255,165,0,0.5); }
+  .categories div { margin:0 20px; padding:8px 0; cursor:pointer; position:relative; }
+  .categories div.active::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:100%; background:orange; }
+  .options { padding:16px 20px; font-size:15px; line-height:2; background: rgba(0,0,0,0.15); border-bottom:1px solid rgba(255,165,0,0.2); }
+  .option { display:flex; justify-content:space-between; padding:6px 0; border-radius:6px; cursor:pointer; }
+  .option.selected { background: rgba(255,165,0,0.1); }
+  .option span.value { color:orange; font-weight:bold; }
+  .footer { background: rgba(0,0,0,0.15); padding:10px; font-size:12px; text-align:center; color:#ccc; }
+  .footer .status { color:orange; font-weight:bold; }
 </style>
 </head>
 <body>
 
 <div id="fma-menu">
   <div class="header">FMA</div>
-
-  <div class="categories">
-    <div class="active">Player</div>
-    <div>Movement</div>
-  </div>
-
-  <div class="options">
-    <div class="option"><span>No-Clip</span> <span class="value">[2.5]</span></div>
-    <div class="option"><span>Super Run</span> <span class="value">[10]</span></div>
-    <div class="option"><span>Infinite Stamina</span> <span class="value">OFF</span></div>
-    <div class="option"><span>Anti-tp</span> <span class="value">OFF</span></div>
-  </div>
-
+  <div class="categories"></div>
+  <div class="options"></div>
   <div class="footer">
     Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
     Status: <span class="status">Idle</span>
@@ -141,49 +32,54 @@
 </div>
 
 <script>
-  const categories = document.querySelectorAll('#fma-menu .categories div');
-  const options = document.querySelectorAll('#fma-menu .option');
+const menuEl = document.getElementById('fma-menu');
+const categoriesEl = menuEl.querySelector('.categories');
+const optionsEl = menuEl.querySelector('.options');
 
-  let selectedCategory = 0;
-  let selectedOption = 0;
+let menuData = [];
+let selectedIndex = 0;
 
-  function updateSelection() {
-    options.forEach((opt, idx) => {
-      opt.classList.toggle('selected', idx === selectedOption);
-    });
-    categories.forEach((cat, idx) => {
-      cat.classList.toggle('active', idx === selectedCategory);
-    });
-  }
-
-  updateSelection();
-
-  // Listen for messages from Lua
-  window.addEventListener('message', (event) => {
-    const data = event.data;
-
-    if (data.action === 'setCurrent') {
-      selectedOption = data.current - 1;
-      updateSelection();
-    } else if (data.action === 'setVisible') {
-      document.getElementById('fma-menu').style.display = data.visible ? 'block' : 'none';
-    } else if (data.action === 'keyPress') {
-      const key = data.key;
-      if (key === 'up') selectedOption = (selectedOption - 1 + options.length) % options.length;
-      else if (key === 'down') selectedOption = (selectedOption + 1) % options.length;
-      else if (key === 'left') selectedCategory = (selectedCategory - 1 + categories.length) % categories.length;
-      else if (key === 'right') selectedCategory = (selectedCategory + 1) % categories.length;
-      else if (key === 'enter') {
-        const selected = options[selectedOption];
-        const valueSpan = selected.querySelector('.value');
-        if (valueSpan.textContent === 'OFF') valueSpan.textContent = 'ON';
-        else if (valueSpan.textContent === 'ON') valueSpan.textContent = 'OFF';
-      } else if (key === 'back') {
-        console.log("Back pressed");
-      }
-      updateSelection();
-    }
+function renderMenu() {
+  // Render categories
+  categoriesEl.innerHTML = '';
+  menuData.forEach((cat, i) => {
+    const catDiv = document.createElement('div');
+    catDiv.textContent = cat.label;
+    if (i === 0) catDiv.classList.add('active');
+    categoriesEl.appendChild(catDiv);
   });
+
+  // Render options
+  const currentMenu = menuData[selectedCategoryIndex()]?.submenu || [];
+  optionsEl.innerHTML = '';
+  currentMenu.forEach((opt, i) => {
+    const optDiv = document.createElement('div');
+    optDiv.classList.add('option');
+    if (i === selectedIndex) optDiv.classList.add('selected');
+    let valueText = '';
+    if (opt.type === 'slider') valueText = '[' + opt.value + ']';
+    if (opt.type === 'checkbox') valueText = opt.checked ? 'ON' : 'OFF';
+    optDiv.innerHTML = `<span>${opt.label}</span> <span class="value">${valueText}</span>`;
+    optionsEl.appendChild(optDiv);
+  });
+}
+
+function selectedCategoryIndex() {
+  return 0; // Simplified: always first category (Self options)
+}
+
+// NUI message from Lua
+window.addEventListener('message', (event) => {
+  const data = event.data;
+  if (data.action === 'updateMenu') {
+    menuData = data.menu;
+    selectedIndex = data.current - 1
+    menuEl.style.display = data.visible and 'block' or 'none';
+    renderMenu();
+  } else if (data.action === 'keyPress') {
+    renderMenu();
+  }
+});
 </script>
 
 </body>
