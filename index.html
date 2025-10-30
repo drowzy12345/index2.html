@@ -161,31 +161,35 @@
     </div>
 
     <script>
-        // ARROW KEY SELECTION
+        // Make the menu controllable by arrow keys
         document.addEventListener('DOMContentLoaded', () => {
             const menu = document.getElementById("fivem-menu");
-            // Any element you can interact with: buttons and checkboxes
+            // Get buttons and label checkboxes in order
             const interactables = Array.from(menu.querySelectorAll('.menu-button, .menu-checkbox-label'));
-            
             let selectedIndex = 0;
 
+            // Add "selected" class to highlight (useful for both arrow and mouse)
             function updateSelection(newIndex) {
                 interactables.forEach(el => el.classList.remove('selected'));
-                // Wrap-around selection
                 if (newIndex < 0) newIndex = interactables.length - 1;
-                else if (newIndex >= interactables.length) newIndex = 0;
+                if (newIndex >= interactables.length) newIndex = 0;
                 selectedIndex = newIndex;
                 interactables[selectedIndex].classList.add('selected');
                 interactables[selectedIndex].scrollIntoView({block: "nearest", behavior: "smooth"});
             }
 
-            // Init
+            // Initial highlight
             updateSelection(0);
 
             document.addEventListener('keydown', function(e) {
+                // Only handle menu keys: up/down/enter/space
                 if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) e.preventDefault();
+
+                // Up/down navigation
                 if (e.key === "ArrowDown") updateSelection(selectedIndex + 1);
                 else if (e.key === "ArrowUp") updateSelection(selectedIndex - 1);
+
+                // Enter or space to "click"
                 else if (e.key === "Enter" || e.key === " ") {
                     const el = interactables[selectedIndex];
                     if (el.classList.contains('menu-button')) {
@@ -198,7 +202,7 @@
                 }
             });
 
-            // Mouse hover moves selection as well
+            // Mouse hover: also moves selection so keys continue at correct index
             interactables.forEach((el, idx) => {
                 el.addEventListener('mouseenter', () => {
                     updateSelection(idx);
