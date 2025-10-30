@@ -3,223 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FiveM Nexus UI</title>
+<title>FiveM Phaze Menu</title>
 <style>
-/* Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-
-/* Body */
 body {
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    margin:0; padding:0; font-family:'Segoe UI',sans-serif;
+    background:rgba(0,0,0,0.7);
+    display:flex; justify-content:center; align-items:center; height:100vh;
 }
 
-/* Menu */
 #menu {
-    display: flex;
-    width: 400px;
-    height: 500px;
-    background: #181818;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    display:flex; width:450px; height:520px;
+    border-radius:12px; overflow:hidden;
+    background:#181818; box-shadow:0 0 25px rgba(0,0,0,0.8);
+    animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0; transform:scale(0.95);}
+    100% {opacity:1; transform:scale(1);}
 }
 
 /* Sidebar */
 #sidebar {
-    width: 130px;
-    background: #1a1a1a;
-    display: flex;
-    flex-direction: column;
-    border-right: 2px solid #ff4757;
+    width:140px; background:#1b1b1b; border-right:2px solid #ff4757;
+    display:flex; flex-direction:column;
 }
 
 .sidebar-item {
-    padding: 18px 10px;
-    text-align: center;
-    color: #aaa;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s;
+    padding:16px 10px; text-align:center; color:#aaa; cursor:pointer;
+    font-weight:600; font-size:0.95em; display:flex; flex-direction:column;
+    align-items:center; transition:0.25s all;
 }
-
+.sidebar-item span { font-size:0.7em; margin-top:4px; opacity:0.7; }
 .sidebar-item.active, .sidebar-item:hover {
-    background: #ff4757;
-    color: #fff;
+    background:#ff4757; color:#fff;
 }
 
-.sidebar-item span {
-    font-size: 0.7em;
-    margin-top: 5px;
-    opacity: 0.7;
-}
-
-/* Content Area */
+/* Content Panel */
 #content {
-    flex: 1;
-    padding: 15px;
-    background: #222;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    flex:1; padding:15px; background:#222; overflow-y:auto; display:flex; flex-direction:column;
 }
-
-/* Custom scrollbar */
-#content::-webkit-scrollbar { width: 8px; }
-#content::-webkit-scrollbar-track { background: #1c1c1c; }
-#content::-webkit-scrollbar-thumb { background: #ff4757; border-radius: 4px; }
+#content::-webkit-scrollbar { width:8px; }
+#content::-webkit-scrollbar-track { background:#1c1c1c; }
+#content::-webkit-scrollbar-thumb { background:#ff4757; border-radius:4px; }
 
 /* Buttons */
 .btn {
-    width: 100%;
-    padding: 12px;
-    margin: 6px 0;
-    background: #2c2c2c;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-    text-align: left;
-    padding-left: 15px;
-    position: relative;
+    width:100%; padding:14px; margin:6px 0; background:#2c2c2c; color:#fff;
+    border:none; border-radius:6px; cursor:pointer; font-weight:600;
+    text-align:left; padding-left:15px; transition:0.25s all; position:relative;
 }
+.btn:hover, .btn.active { background:#ff4757; box-shadow:0 0 8px rgba(255,71,87,0.6); }
 
-.btn:hover, .btn.active {
-    background: #ff4757;
-    box-shadow: 0 0 8px rgba(255,71,87,0.6);
+/* Inputs & sliders */
+input[type="text"], select, input[type="range"] {
+    width:100%; margin:6px 0 12px 0; border-radius:6px; padding:10px;
+    border:1px solid #444; background:#2a2a2a; color:#fff; font-weight:500;
 }
-
-/* Input & Dropdown */
-input[type="text"], select {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0 12px 0;
-    border-radius: 6px;
-    border: 1px solid #444;
-    background-color: #2a2a2a;
-    color: #fff;
-    font-weight: 500;
-    transition: all 0.2s;
+input[type="text"]:focus, select:focus, input[type="range"]:focus {
+    border:1px solid #ff4757; box-shadow:0 0 6px rgba(255,71,87,0.4); outline:none;
 }
-
-input[type="text"]:focus, select:focus {
-    border: 1px solid #ff4757;
-    box-shadow: 0 0 6px rgba(255,71,87,0.4);
-    outline: none;
-}
-
-/* Tab Sections */
-.tab-content { display: none; flex-direction: column; }
-.tab-content.active { display: flex; }
 </style>
 </head>
 <body>
 
 <div id="menu">
-    <div id="sidebar">
-        <div class="sidebar-item active" data-tab="self">Self<span>Player Options</span></div>
-        <div class="sidebar-item" data-tab="vehicles">Vehicles<span>Spawn/Delete</span></div>
-        <div class="sidebar-item" data-tab="weapons">Weapons<span>Give Guns</span></div>
-    </div>
-
-    <div id="content">
-        <div class="tab-content active" id="self">
-            <button class="btn">Heal</button>
-            <button class="btn">Armor</button>
-            <input type="text" placeholder="Custom Value">
-            <button class="btn">Submit Value</button>
-        </div>
-        <div class="tab-content" id="vehicles">
-            <button class="btn">Spawn Car</button>
-            <button class="btn">Delete Vehicle</button>
-            <select>
-                <option value="">Select Vehicle</option>
-                <option value="Adder">Adder</option>
-                <option value="Banshee">Banshee</option>
-                <option value="Sultan">Sultan</option>
-            </select>
-        </div>
-        <div class="tab-content" id="weapons">
-            <button class="btn">Give Pistol</button>
-            <button class="btn">Give AK</button>
-        </div>
-    </div>
+    <div id="sidebar"></div>
+    <div id="content"></div>
 </div>
 
 <script>
-// Sidebar tab switching
-const sidebarItems = document.querySelectorAll('.sidebar-item');
-const tabContents = document.querySelectorAll('.tab-content');
-const btns = document.querySelectorAll('.tab-content.active .btn');
+const menuStructure = [
+    {
+        label:'Self Options', icon:'🧍', submenu:[
+            {label:'Heal', type:'button'},
+            {label:'Armor', type:'button'},
+            {label:'Custom Value', type:'input'},
+            {label:'Checkbox Test', type:'checkbox', checked:false},
+            {label:'Slider Test', type:'slider', min:0, max:100, value:50},
+            {label:'Scroll Test', type:'scroll', options:['Option1','Option2','Option3'], selected:0},
+            {label:'Live Submenu', type:'submenu', dynamic:true, getSubMenu:(cb)=>cb([{label:'Dynamic Option', type:'button'}])}
+        ]
+    },
+    {
+        label:'Server Options', icon:'🖥️', submenu:[
+            {label:'Server Button', type:'button'}
+        ]
+    },
+    {
+        label:'Dynamic Triggers', icon:'⚡', submenu:[
+            {label:'Trigger Button', type:'button'}
+        ]
+    }
+];
 
-let activeSidebarIndex = 0;
-let activeBtnIndex = 0;
+let activeSidebar = 0, activeBtn = 0;
+let menuStack = [{menu:menuStructure, sidebar:activeSidebar, btn:activeBtn}];
 
-// Update active button highlight
-function updateButtonHighlight() {
-    btns.forEach(b => b.classList.remove('active'));
-    if(btns[activeBtnIndex]) btns[activeBtnIndex].classList.add('active');
+function renderMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+    const current = menuStack[menuStack.length-1];
+
+    sidebar.innerHTML='';
+    content.innerHTML='';
+
+    current.menu.forEach((item,i)=>{
+        const el = document.createElement('div');
+        el.className='sidebar-item'+(i===current.sidebar?' active':'');
+        el.innerHTML=item.label+'<span>'+item.icon+'</span>';
+        el.onclick=()=>{ current.sidebar=i; current.btn=0; renderMenu(); };
+        sidebar.appendChild(el);
+    });
+
+    const activeTab = current.menu[current.sidebar];
+    if(!activeTab || !activeTab.submenu) return;
+
+    activeTab.submenu.forEach((btn,i)=>{
+        const b = document.createElement('button');
+        b.className='btn'+(i===current.btn?' active':'');
+        b.innerText=btn.label;
+        b.onclick=()=>handleAction(btn);
+        content.appendChild(b);
+
+        if(btn.type==='slider'){
+            const input=document.createElement('input');
+            input.type='range'; input.min=btn.min; input.max=btn.max; input.value=btn.value;
+            input.oninput=e=>btn.value=e.target.value;
+            input.onchange=()=>handleAction(btn);
+            content.appendChild(input);
+        }
+        if(btn.type==='scroll'){
+            const select=document.createElement('select');
+            btn.options.forEach((opt,idx)=>{ const o=document.createElement('option'); o.text=opt; o.value=idx; if(idx===btn.selected) o.selected=true; select.appendChild(o); });
+            select.onchange=()=>{ btn.selected=parseInt(select.value); handleAction(btn); };
+            content.appendChild(select);
+        }
+        if(btn.type==='checkbox'){
+            const input=document.createElement('input'); input.type='checkbox'; input.checked=btn.checked;
+            input.onchange=()=>{ btn.checked=input.checked; handleAction(btn); };
+            content.appendChild(input);
+        }
+        if(btn.type==='input'){
+            const input=document.createElement('input'); input.type='text'; input.placeholder='Enter value';
+            input.onchange=()=>handleAction({label:btn.label,value:input.value});
+            content.appendChild(input);
+        }
+    });
 }
 
-// Switch sidebar tab
-function switchTab(index) {
-    sidebarItems.forEach(i => i.classList.remove('active'));
-    sidebarItems[index].classList.add('active');
-
-    tabContents.forEach(c => c.classList.remove('active'));
-    const id = sidebarItems[index].dataset.tab;
-    const activeContent = document.getElementById(id);
-    activeContent.classList.add('active');
-
-    // Update buttons
-    const newBtns = activeContent.querySelectorAll('.btn');
-    activeBtnIndex = 0;
-    newBtns.forEach(b => b.classList.remove('active'));
-    if(newBtns[activeBtnIndex]) newBtns[activeBtnIndex].classList.add('active');
+function handleAction(btn){
+    if(btn.type==='submenu'){
+        if(btn.submenu) menuStack.push({menu:btn.submenu, sidebar:0, btn:0});
+        else if(btn.dynamic && typeof btn.getSubMenu==='function'){
+            btn.getSubMenu(submenu=>{ btn.submenu=submenu; menuStack.push({menu:submenu, sidebar:0, btn:0}); renderMenu(); });
+            return;
+        }
+    } else {
+        fetch(`https://${GetParentResourceName()}/action`,{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({action:btn.label,value:btn.value})
+        });
+    }
+    renderMenu();
 }
 
-// Key controls
-document.addEventListener('keydown', (e) => {
-    const activeContent = document.querySelector('.tab-content.active');
-    const btns = activeContent.querySelectorAll('.btn');
+document.addEventListener('keydown', e=>{
+    const current = menuStack[menuStack.length-1];
+    const activeTab = current.menu[current.sidebar];
+    if(!activeTab || !activeTab.submenu) return;
 
-    if(e.key === "ArrowUp") {
-        activeBtnIndex--;
-        if(activeBtnIndex < 0) activeBtnIndex = btns.length - 1;
-        updateButtonHighlight();
-    }
-    if(e.key === "ArrowDown") {
-        activeBtnIndex++;
-        if(activeBtnIndex >= btns.length) activeBtnIndex = 0;
-        updateButtonHighlight();
-    }
-    if(e.key === "ArrowLeft") {
-        activeSidebarIndex--;
-        if(activeSidebarIndex < 0) activeSidebarIndex = sidebarItems.length -1;
-        switchTab(activeSidebarIndex);
-    }
-    if(e.key === "ArrowRight") {
-        activeSidebarIndex++;
-        if(activeSidebarIndex >= sidebarItems.length) activeSidebarIndex = 0;
-        switchTab(activeSidebarIndex);
-    }
-    if(e.key === "Enter") {
-        const btn = btns[activeBtnIndex];
-        if(btn) btn.click();
-    }
+    const maxBtn = activeTab.submenu.length;
+    if(e.key==='ArrowUp'){ current.btn--; if(current.btn<0) current.btn=maxBtn-1; renderMenu(); }
+    if(e.key==='ArrowDown'){ current.btn++; if(current.btn>=maxBtn) current.btn=0; renderMenu(); }
+    if(e.key==='ArrowLeft'){ current.sidebar--; if(current.sidebar<0) current.sidebar=current.menu.length-1; current.btn=0; renderMenu(); }
+    if(e.key==='ArrowRight'){ current.sidebar++; if(current.sidebar>=current.menu.length) current.sidebar=0; current.btn=0; renderMenu(); }
+    if(e.key==='Enter') handleAction(activeTab.submenu[current.btn]);
+    if(e.key==='Backspace'){ if(menuStack.length>1){ menuStack.pop(); renderMenu(); } }
 });
 
-// Initial highlight
-updateButtonHighlight();
+renderMenu();
 </script>
 </body>
 </html>
