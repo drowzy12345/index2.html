@@ -6,7 +6,7 @@
 <title>FMA Menu</title>
 <style>
   body {
-    background: transparent; /* Removed black background */
+    background: transparent;
     font-family: 'Segoe UI', sans-serif;
     display: flex;
     justify-content: center;
@@ -92,7 +92,8 @@
     cursor: pointer;
   }
 
-  #fma-menu .option:hover {
+  #fma-menu .option:hover,
+  #fma-menu .option.selected {
     background: rgba(255,165,0,0.1);
   }
 
@@ -142,6 +143,50 @@
     Status: <span class="status">Idle</span>
   </div>
 </div>
+
+<script>
+  const categories = document.querySelectorAll('#fma-menu .categories div');
+  const optionsContainer = document.querySelector('#fma-menu .options');
+  const options = document.querySelectorAll('#fma-menu .option');
+
+  let selectedCategory = 0;
+  let selectedOption = 0;
+
+  // Highlight the currently selected option
+  function updateSelection() {
+    options.forEach((opt, idx) => {
+      opt.classList.toggle('selected', idx === selectedOption);
+    });
+    categories.forEach((cat, idx) => {
+      cat.classList.toggle('active', idx === selectedCategory);
+    });
+  }
+
+  updateSelection();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') {
+      selectedOption = (selectedOption + 1) % options.length;
+      updateSelection();
+    } else if (e.key === 'ArrowUp') {
+      selectedOption = (selectedOption - 1 + options.length) % options.length;
+      updateSelection();
+    } else if (e.key === 'ArrowRight') {
+      selectedCategory = (selectedCategory + 1) % categories.length;
+      updateSelection();
+    } else if (e.key === 'ArrowLeft') {
+      selectedCategory = (selectedCategory - 1 + categories.length) % categories.length;
+      updateSelection();
+    } else if (e.key === 'Enter') {
+      const selected = options[selectedOption];
+      const valueSpan = selected.querySelector('.value');
+      // Toggle ON/OFF values
+      if (valueSpan.textContent === 'OFF') valueSpan.textContent = 'ON';
+      else if (valueSpan.textContent === 'ON') valueSpan.textContent = 'OFF';
+      console.log('Selected Option:', selected.querySelector('span').textContent);
+    }
+  });
+</script>
 
 </body>
 </html>
