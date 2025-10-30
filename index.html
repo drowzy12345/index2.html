@@ -1,135 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Nexus Menu</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FiveM DUI Menu</title>
 <style>
     body {
         margin: 0;
         font-family: "Segoe UI", sans-serif;
-        background: radial-gradient(circle at top left, #350000, #000);
+        background: rgba(0,0,0,0.85);
         color: #fff;
-        height: 100vh;
         overflow: hidden;
     }
 
-    .menu-container {
-        width: 340px;
-        background: rgba(20, 0, 0, 0.85);
-        border: 2px solid #b30000;
-        border-radius: 8px;
-        box-shadow: 0 0 20px #b30000;
+    #menu {
+        width: 300px;
+        background: #1a1a1a;
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        animation: fadeIn 0.8s ease;
-    }
-
-    .menu-header {
-        text-align: center;
-        background: linear-gradient(90deg, #b30000, #ff1a1a);
-        padding: 12px 0;
-        font-size: 24px;
-        font-weight: bold;
-        letter-spacing: 2px;
-        color: #fff;
-        border-bottom: 1px solid #660000;
-        text-shadow: 0 0 8px black;
-    }
-
-    .menu-tabs {
+        top: 50px;
+        left: 50px;
+        border-radius: 12px;
+        padding: 12px;
         display: flex;
-        justify-content: center;
-        padding: 8px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .tab {
-        margin: 0 10px;
-        font-size: 14px;
-        cursor: pointer;
-        color: #aaa;
-        transition: color 0.3s, transform 0.3s;
-    }
-
-    .tab:hover, .tab.active {
-        color: #ff4c4c;
-        transform: scale(1.1);
-    }
-
-    .menu-body {
-        padding: 10px 20px;
-        max-height: 320px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #ff0000 #220000;
-    }
-
-    .menu-body::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .menu-body::-webkit-scrollbar-thumb {
-        background-color: #ff0000;
-        border-radius: 3px;
+        flex-direction: column;
+        gap: 6px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.6);
+        font-size: 16px;
     }
 
     .menu-item {
-        padding: 8px;
-        font-size: 15px;
+        background: #2a2a2a;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
         display: flex;
         justify-content: space-between;
-        transition: background 0.2s, transform 0.1s;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        align-items: center;
+        transition: background 0.2s;
     }
 
     .menu-item:hover {
-        background: rgba(255,0,0,0.15);
-        transform: translateX(3px);
+        background: #333;
     }
 
-    .menu-footer {
-        background: rgba(0, 0, 0, 0.7);
-        text-align: center;
-        padding: 10px;
-        font-size: 12px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        color: #ccc;
+    .submenu {
+        display: none;
+        flex-direction: column;
+        gap: 4px;
+        margin-left: 12px;
+        margin-top: 4px;
+        border-left: 2px solid #444;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translate(-50%, -55%); }
-        to { opacity: 1; transform: translate(-50%, -50%); }
+    .menu-item.active + .submenu {
+        display: flex;
+    }
+
+    .notification {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #444;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: none;
+        font-weight: bold;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    input[type="range"] {
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    select {
+        width: 100%;
+        border-radius: 6px;
+        padding: 5px;
+        background: #2a2a2a;
+        color: #fff;
+        border: 1px solid #444;
+    }
+
+    input[type="checkbox"] {
+        transform: scale(1.2);
+        margin-right: 6px;
     }
 </style>
 </head>
 <body>
-    <div class="menu-container">
-        <div class="menu-header">NEXUS</div>
-        <div class="menu-tabs">
-            <div class="tab active">Self</div>
-            <div class="tab">Online</div>
-            <div class="tab">Visual</div>
-            <div class="tab">Combat</div>
-            <div class="tab">Vehicle</div>
-        </div>
+<div id="menu"></div>
+<div id="notification" class="notification"></div>
 
-        <div class="menu-body">
-            <div class="menu-item">God Mode <span>[OFF]</span></div>
-            <div class="menu-item">Super Jump <span>[ON]</span></div>
-            <div class="menu-item">No Clip <span>[2.5]</span></div>
-            <div class="menu-item">Speed Boost <span>[x3]</span></div>
-            <div class="menu-item">Infinite Ammo <span>[OFF]</span></div>
-            <div class="menu-item">Teleport to Waypoint</div>
-            <div class="menu-item">Spawn Vehicle <span>[CAR]</span></div>
-            <div class="menu-item">Invisible <span>[OFF]</span></div>
-        </div>
+<script>
+let currentMenu = [];
 
-        <div class="menu-footer">
-            Version 1.0 | Nexus UI | <span style="color: #ff3333;">Status:</span> Idle
-        </div>
-    </div>
+function renderMenu(menuData) {
+    const menuContainer = document.getElementById('menu');
+    menuContainer.innerHTML = '';
+    currentMenu = menuData;
+
+    menuData.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'menu-item';
+        menuItem.textContent = item.label;
+
+        // Checkbox
+        if(item.type === 'checkbox'){
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.checked || false;
+            checkbox.addEventListener('change', () => {
+                fetch(`https://localhost/action?type=checkbox&label=${item.label}&value=${checkbox.checked}`);
+            });
+            menuItem.prepend(checkbox);
+        }
+
+        // Slider
+        if(item.type === 'slider'){
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = item.min || 0;
+            slider.max = item.max || 100;
+            slider.value = item.value || 0;
+            slider.addEventListener('input', () => {
+                fetch(`https://localhost/action?type=slider&label=${item.label}&value=${slider.value}`);
+            });
+            menuItem.appendChild(slider);
+        }
+
+        // Scroll / Dropdown
+        if(item.type === 'scroll'){
+            const select = document.createElement('select');
+            (item.options || []).forEach(opt => {
+                const optionEl = document.createElement('option');
+                optionEl.value = opt.value || opt.label;
+                optionEl.textContent = opt.label;
+                select.appendChild(optionEl);
+            });
+            select.selectedIndex = item.selected || 0;
+            select.addEventListener('change', () => {
+                fetch(`https://localhost/action?type=scroll&label=${item.label}&value=${select.value}`);
+            });
+            menuItem.appendChild(select);
+        }
+
+        // Button click
+        if(item.type === 'button'){
+            menuItem.addEventListener('click', () => {
+                fetch(`https://localhost/action?type=button&label=${item.label}`);
+            });
+        }
+
+        // Submenu
+        if(item.submenu){
+            const sub = document.createElement('div');
+            sub.className = 'submenu';
+            item.submenu.forEach(subitem => {
+                const subEl = document.createElement('div');
+                subEl.className = 'menu-item';
+                subEl.textContent = subitem.label;
+                subEl.addEventListener('click', () => {
+                    fetch(`https://localhost/action?type=${subitem.type}&label=${subitem.label}`);
+                });
+                sub.appendChild(subEl);
+            });
+            menuItem.addEventListener('click', () => {
+                menuItem.classList.toggle('active');
+            });
+            menuContainer.appendChild(menuItem);
+            menuContainer.appendChild(sub);
+        } else {
+            menuContainer.appendChild(menuItem);
+        }
+    });
+}
+
+window.addEventListener('message', (event) => {
+    const data = event.data;
+    if(!data.action) return;
+
+    if(data.action === 'setCurrent'){
+        renderMenu(data.menu);
+    }
+
+    if(data.action === 'notify'){
+        const notif = document.getElementById('notification');
+        notif.textContent = data.message;
+        notif.style.display = 'block';
+        setTimeout(() => { notif.style.display = 'none'; }, 2000);
+    }
+
+    if(data.action === 'setVisible'){
+        document.getElementById('menu').style.display = data.visible ? 'flex' : 'none';
+    }
+
+    if(data.action === 'position'){
+        const menu = document.getElementById('menu');
+        menu.style.left = data.position.x + 'px';
+        menu.style.top = data.position.y + 'px';
+    }
+});
+</script>
 </body>
 </html>
