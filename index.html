@@ -1,28 +1,178 @@
-<div id="fma-menu" style="width: 500px; margin: 50px auto; font-family: Arial, sans-serif; color: #fff; background: rgba(0,0,0,0.85); border-radius: 10px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.8);">
-    
-    <!-- Header -->
-    <div style="background: orange; padding: 12px 0; text-align: center; font-size: 22px; font-weight: bold;">
-        FMA
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMA Style Menu</title>
+<style>
+  /* Reset & basic */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  body { background: #1e1e1e; color: #fff; }
 
-    <!-- Categories -->
-    <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.5); padding: 6px 0; font-weight: bold;">
-        <div style="margin: 0 15px; color: orange;">Player</div>
-        <div style="margin: 0 15px;">Movement</div>
-    </div>
+  /* Menu container */
+  .menu {
+    width: 300px;
+    background: #2b2b2b;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
-    <!-- Options -->
-    <div style="padding: 12px; font-size: 14px; line-height: 1.8; background: rgba(0,0,0,0.75);">
-        <div style="display: flex; justify-content: space-between;"><span>No-Clip</span> <span>[2.5]</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>Super Run</span> <span>[10]</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>Infinite Stamina</span> <span>OFF</span></div>
-        <div style="display: flex; justify-content: space-between;"><span>Anti-tp</span> <span>OFF</span></div>
-    </div>
+  /* Menu header */
+  .menu-header {
+    background: #161616;
+    padding: 15px;
+    font-size: 20px;
+    text-align: center;
+    border-bottom: 1px solid #444;
+  }
 
-    <!-- Footer -->
-    <div style="background: rgba(0,0,0,0.5); padding: 8px; font-size: 12px; text-align: center;">
-        Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
-        <span style="color: orange;">Status:</span> Idle
-    </div>
+  /* Menu items */
+  .menu-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+  }
 
+  .menu-item:hover {
+    background: #3a3a3a;
+  }
+
+  /* Submenu */
+  .submenu {
+    display: none;
+    flex-direction: column;
+    background: #2a2a2a;
+  }
+
+  .submenu .menu-item {
+    padding-left: 40px;
+  }
+
+  .menu-item.active + .submenu {
+    display: flex;
+  }
+
+  /* Checkbox style */
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+  }
+
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 10px;
+    border: solid #00ff90;
+    border-width: 0 2px 2px 0;
+    top: 1px;
+    left: 5px;
+    transform: rotate(45deg);
+  }
+
+  /* Button style */
+  .menu-button {
+    background: #444;
+    border: none;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .menu-button:hover {
+    background: #00ff90;
+    color: #000;
+  }
+</style>
+</head>
+<body>
+
+<div class="menu">
+  <div class="menu-header">FMA Menu</div>
+
+  <div class="menu-item" onclick="toggleSubmenu(this)">
+    Self Options
+  </div>
+  <div class="submenu">
+    <div class="menu-item">
+      <span>God Mode</span>
+      <span class="checkbox" onclick="toggleCheckbox(event, this)"></span>
+    </div>
+    <div class="menu-item">
+      <span>Invisible</span>
+      <span class="checkbox" onclick="toggleCheckbox(event, this)"></span>
+    </div>
+  </div>
+
+  <div class="menu-item" onclick="toggleSubmenu(this)">
+    Vehicle Options
+  </div>
+  <div class="submenu">
+    <div class="menu-item">
+      <span>Spawn Car</span>
+      <button class="menu-button" onclick="buttonAction(event, 'spawnCar')">Spawn</button>
+    </div>
+    <div class="menu-item">
+      <span>Repair Car</span>
+      <button class="menu-button" onclick="buttonAction(event, 'repairCar')">Repair</button>
+    </div>
+  </div>
+
+  <div class="menu-item" onclick="toggleSubmenu(this)">
+    Freecam
+  </div>
+  <div class="submenu">
+    <div class="menu-item">
+      <span>Toggle Freecam</span>
+      <button class="menu-button" onclick="buttonAction(event, 'toggleFreecam')">Toggle</button>
+    </div>
+    <div class="menu-item">
+      <span>Speed</span>
+      <input type="range" min="1" max="10" value="5" onchange="sliderAction(event, 'freecamSpeed')">
+    </div>
+  </div>
 </div>
+
+<script>
+  // Toggle submenus
+  function toggleSubmenu(el) {
+    el.classList.toggle('active');
+  }
+
+  // Toggle checkboxes
+  function toggleCheckbox(event, el) {
+    event.stopPropagation();
+    el.classList.toggle('checked');
+    console.log(el.previousElementSibling.textContent + ' = ' + el.classList.contains('checked'));
+  }
+
+  // Button click actions
+  function buttonAction(event, action) {
+    event.stopPropagation();
+    console.log('Button pressed:', action);
+    // Trigger your FiveM event here via NUI callback
+  }
+
+  // Slider action
+  function sliderAction(event, action) {
+    console.log(action + ' = ' + event.target.value);
+    // Trigger your FiveM event here via NUI callback
+  }
+</script>
+
+</body>
+</html>
