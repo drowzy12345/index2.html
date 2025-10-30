@@ -1,205 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FiveM Nexus UI</title>
-<style>
-/* Reset */
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    <meta charset="UTF-8">
+    <title>FiveM Nexus Menu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400;700&display=swap');
+        body {
+            background: rgba(8, 10, 14, 0.93);
+            font-family: 'Roboto', Arial, sans-serif;
+            color: #EBF2FA;
+            margin: 0;
+            padding: 0;
+        }
+        .menu-container {
+            position: absolute;
+            top: 80px;
+            left: 80px;
+            width: 390px;
+            background: linear-gradient(135deg, #171E26 80%, #22324B 100%);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px #000c  ;
+            padding: 0 0 18px 0;
+            border: 2.5px solid #28e7eb;
+            z-index: 5000;
+            overflow: hidden;
+        }
+        .menu-title {
+            font-family: 'Orbitron', Arial, sans-serif;
+            font-size: 28px;
+            background: linear-gradient(90deg, #28e7eb 70%, #fff 140%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            margin: 0;
+            padding: 24px 32px 6px 32px;
+            letter-spacing: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-shadow: 0 3px 12px #29e7eb55;
+            border-bottom: 2px solid #28e7eb55;
+        }
+        .menu-section {
+            margin: 0;
+            padding: 16px 32px 0 32px;
+        }
+        .menu-section-title {
+            font-size: 15px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            color: #28e7eb;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            border-left: 3px solid #28e7eb;
+            padding-left: 8px;
+        }
 
-body {
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-/* Menu Container */
-#menu {
-    width: 380px;
-    background: linear-gradient(145deg, #1c1c1c, #2a2a2a);
-    border-radius: 12px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.8);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header */
-#menu-header {
-    background: linear-gradient(90deg, #ff6b81, #ff4757);
-    padding: 15px;
-    text-align: center;
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #fff;
-    border-bottom: 2px solid #333;
-    letter-spacing: 1px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-/* Tabs */
-#tabs {
-    display: flex;
-    background-color: #222;
-}
-
-.tab {
-    flex: 1;
-    padding: 12px;
-    text-align: center;
-    cursor: pointer;
-    color: #aaa;
-    transition: all 0.3s;
-    position: relative;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.tab.active {
-    background: linear-gradient(90deg, #ff6b81, #ff4757);
-    color: #fff;
-    box-shadow: inset 0 -3px 0 #fff;
-}
-
-.tab:hover {
-    color: #fff;
-}
-
-/* Content */
-#content {
-    padding: 15px;
-    max-height: 320px;
-    overflow-y: auto;
-}
-
-/* Custom Scrollbar */
-#content::-webkit-scrollbar {
-    width: 8px;
-}
-
-#content::-webkit-scrollbar-track {
-    background: #1c1c1c;
-}
-
-#content::-webkit-scrollbar-thumb {
-    background: #ff4757;
-    border-radius: 4px;
-}
-
-/* Buttons */
-.btn {
-    width: 100%;
-    padding: 12px;
-    margin: 6px 0;
-    background: linear-gradient(90deg, #2e2e2e, #1f1f1f);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-.btn:hover {
-    background: linear-gradient(90deg, #ff6b81, #ff4757);
-    box-shadow: 0 0 10px rgba(255,71,87,0.6);
-}
-
-/* Input & Dropdown */
-input[type="text"], select {
-    width: 100%;
-    padding: 10px;
-    margin: 6px 0 12px 0;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background-color: #2a2a2a;
-    color: #fff;
-    font-weight: 500;
-    transition: border 0.2s, box-shadow 0.2s;
-}
-
-input[type="text"]:focus, select:focus {
-    border: 1px solid #ff4757;
-    box-shadow: 0 0 8px rgba(255,71,87,0.4);
-    outline: none;
-}
-
-/* Tab content */
-.tab-content {
-    display: none;
-    flex-direction: column;
-}
-
-.tab-content.active {
-    display: flex;
-}
-</style>
+        .menu-button {
+            display: block;
+            width: 100%;
+            background: linear-gradient(90deg, #232E36 75%, #22324B 100%);
+            color: #EBF2FA;
+            border: none;
+            border-radius: 8px;
+            padding: 13px 0 13px 20px;
+            font-size: 17px;
+            font-family: inherit;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(.4,1.6,.4,1);
+            outline: none;
+            letter-spacing: 0.03em;
+            position: relative;
+            text-align: left;
+            box-shadow: 0 2.5px 8px #0004;
+        }
+        .menu-button.selected,
+        .menu-button:hover {
+            background: linear-gradient(90deg, #28e7eb 6%, #22324B 120%);
+            color: #1B2329;
+            font-weight: bold;
+            text-shadow: 0 0 5px #23c3c958;
+        }
+        .menu-checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-size: 17px;
+            width: 100%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #232E36 75%, #22324B 100%);
+            padding: 13px 0 13px 18px;
+            letter-spacing: 0.03em;
+            box-shadow: 0 2.5px 8px #0004;
+            position: relative;
+            transition: all 0.18s cubic-bezier(.4,1.6,.4,1);
+            font-family: inherit;
+        }
+        .menu-checkbox-label.selected,
+        .menu-checkbox-label:hover {
+            background: linear-gradient(90deg, #28e7eb 6%, #22324B 120%);
+            color: #1B2329;
+            font-weight: bold;
+            text-shadow: 0 0 5px #23c3c958;
+        }
+        .menu-checkbox-label input[type="checkbox"] {
+            accent-color: #28e7eb;
+            margin-right: 13px;
+            width: 19px;
+            height: 19px;
+            border-radius: 6px;
+            border: 2px solid #28e7ebaa;
+        }
+        /* Highlight "focus rectangle" for a11y when using keys */
+        .menu-button.selected::after,
+        .menu-checkbox-label.selected::after {
+            content: "";
+            position: absolute;
+            left: -4px;
+            top: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 12px;
+            border: 2.5px solid #28e7eb55;
+            pointer-events: none;
+            box-shadow: 0 0 0 2px #17e7ea98;
+        }
+        /* Remove spurious margin on last */
+        .menu-section:last-child {
+            margin-bottom: 0;
+        }
+        /* Scrollbar styling if ever needed */
+        ::-webkit-scrollbar { width:8px }
+        ::-webkit-scrollbar-thumb { background:#23c3c9ba; border-radius:4px; }
+    </style>
 </head>
 <body>
-
-<div id="menu">
-    <div id="menu-header">FiveM Nexus Menu</div>
-    <div id="tabs">
-        <div class="tab active" data-tab="self">Self</div>
-        <div class="tab" data-tab="vehicles">Vehicles</div>
-        <div class="tab" data-tab="weapons">Weapons</div>
-    </div>
-    <div id="content">
-        <!-- Self Tab -->
-        <div class="tab-content active" id="self">
-            <button class="btn" onclick="action('Heal')">Heal</button>
-            <button class="btn" onclick="action('Armor')">Armor</button>
-            <input type="text" id="selfInput" placeholder="Custom Value">
-            <button class="btn" onclick="action('Custom Value')">Submit Value</button>
+    <div class="menu-container" id="fivem-menu">
+        <div class="menu-title">nexus menu</div>
+        <div class="menu-section">
+            <div class="menu-section-title">general</div>
+            <button class="menu-button" onclick="triggerAction('heal')" tabindex="-1">Heal Player</button>
+            <button class="menu-button" onclick="triggerAction('armor')" tabindex="-1">Give Armor</button>
+            <label class="menu-checkbox-label" tabindex="-1">
+                <input type="checkbox" id="godmodeChk" onchange="toggleGodmode(this)">
+                Godmode
+            </label>
         </div>
-
-        <!-- Vehicles Tab -->
-        <div class="tab-content" id="vehicles">
-            <button class="btn" onclick="action('Spawn Car')">Spawn Car</button>
-            <button class="btn" onclick="action('Delete Car')">Delete Vehicle</button>
-            <select id="vehicleDropdown" onchange="action(this.value)">
-                <option value="">Select Vehicle</option>
-                <option value="Adder">Adder</option>
-                <option value="Banshee">Banshee</option>
-                <option value="Sultan">Sultan</option>
-            </select>
+        <div class="menu-section">
+            <div class="menu-section-title">vehicles</div>
+            <button class="menu-button" onclick="triggerAction('spawn_vehicle')" tabindex="-1">Spawn Vehicle</button>
+            <button class="menu-button" onclick="triggerAction('fix_vehicle')" tabindex="-1">Fix Current Vehicle</button>
         </div>
-
-        <!-- Weapons Tab -->
-        <div class="tab-content" id="weapons">
-            <button class="btn" onclick="action('Give Pistol')">Give Pistol</button>
-            <button class="btn" onclick="action('Give AK')">Give AK</button>
+        <div class="menu-section">
+            <div class="menu-section-title">fun</div>
+            <button class="menu-button" onclick="triggerAction('dance')" tabindex="-1">Dance Animation</button>
+            <button class="menu-button" onclick="triggerAction('rocket')" tabindex="-1">Shoot Rocket</button>
         </div>
     </div>
-</div>
 
-<script>
-const tabs = document.querySelectorAll('.tab');
-const contents = document.querySelectorAll('.tab-content');
+    <script>
+        // ARROW KEY SELECTION
+        document.addEventListener('DOMContentLoaded', () => {
+            const menu = document.getElementById("fivem-menu");
+            // Any element you can interact with: buttons and checkboxes
+            const interactables = Array.from(menu.querySelectorAll('.menu-button, .menu-checkbox-label'));
+            
+            let selectedIndex = 0;
 
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+            function updateSelection(newIndex) {
+                interactables.forEach(el => el.classList.remove('selected'));
+                // Wrap-around selection
+                if (newIndex < 0) newIndex = interactables.length - 1;
+                else if (newIndex >= interactables.length) newIndex = 0;
+                selectedIndex = newIndex;
+                interactables[selectedIndex].classList.add('selected');
+                interactables[selectedIndex].scrollIntoView({block: "nearest", behavior: "smooth"});
+            }
 
-        contents.forEach(c => c.classList.remove('active'));
-        document.getElementById(tab.dataset.tab).classList.add('active');
-    });
-});
+            // Init
+            updateSelection(0);
 
-function action(name) {
-    console.log('Action:', name);
-    fetch(`https://${GetParentResourceName()}/action`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: name })
-    });
-}
-</script>
+            document.addEventListener('keydown', function(e) {
+                if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) e.preventDefault();
+                if (e.key === "ArrowDown") updateSelection(selectedIndex + 1);
+                else if (e.key === "ArrowUp") updateSelection(selectedIndex - 1);
+                else if (e.key === "Enter" || e.key === " ") {
+                    const el = interactables[selectedIndex];
+                    if (el.classList.contains('menu-button')) {
+                        el.click();
+                    } else if (el.classList.contains('menu-checkbox-label')) {
+                        const cb = el.querySelector('input[type="checkbox"]');
+                        cb.checked = !cb.checked;
+                        toggleGodmode(cb);
+                    }
+                }
+            });
 
+            // Mouse hover moves selection as well
+            interactables.forEach((el, idx) => {
+                el.addEventListener('mouseenter', () => {
+                    updateSelection(idx);
+                });
+            });
+        });
+
+        // Replace alerts with FiveM communication as desired
+        function triggerAction(action) {
+            // Example: send to FiveM NUI:
+            // fetch(`https://${GetParentResourceName()}/onMenuAction`, {method: 'POST', body: JSON.stringify({ action })})
+            alert('Selected action: ' + action);
+        }
+        function toggleGodmode(checkbox) {
+            // Example: send toggle to FiveM
+            // fetch(`https://${GetParentResourceName()}/toggleGodmode`, {method: 'POST', body: JSON.stringify({ enabled: checkbox.checked })})
+            alert('Godmode: ' + (checkbox.checked ? 'ON' : 'OFF'));
+        }
+    </script>
 </body>
 </html>
