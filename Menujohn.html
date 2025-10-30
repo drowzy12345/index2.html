@@ -1,36 +1,135 @@
-<div style="width: 350px; margin: 40px auto; font-family: 'Segoe UI', sans-serif; color: #fff; background: linear-gradient(180deg, #141414, #0a0a0a); border: 1px solid #ff9900; border-radius: 10px; box-shadow: 0 0 20px rgba(255,153,0,0.3); overflow: hidden;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nexus Menu</title>
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top left, #350000, #000);
+        color: #fff;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-    <!-- Header -->
-    <div style="background: linear-gradient(90deg, #ff9900, #ff6600); padding: 12px; text-align: center; font-size: 22px; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 5px #000;">
-        ⚡ FMA Menu ⚡
+    .menu-container {
+        width: 340px;
+        background: rgba(20, 0, 0, 0.85);
+        border: 2px solid #b30000;
+        border-radius: 8px;
+        box-shadow: 0 0 20px #b30000;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: fadeIn 0.8s ease;
+    }
+
+    .menu-header {
+        text-align: center;
+        background: linear-gradient(90deg, #b30000, #ff1a1a);
+        padding: 12px 0;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        color: #fff;
+        border-bottom: 1px solid #660000;
+        text-shadow: 0 0 8px black;
+    }
+
+    .menu-tabs {
+        display: flex;
+        justify-content: center;
+        padding: 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .tab {
+        margin: 0 10px;
+        font-size: 14px;
+        cursor: pointer;
+        color: #aaa;
+        transition: color 0.3s, transform 0.3s;
+    }
+
+    .tab:hover, .tab.active {
+        color: #ff4c4c;
+        transform: scale(1.1);
+    }
+
+    .menu-body {
+        padding: 10px 20px;
+        max-height: 320px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #ff0000 #220000;
+    }
+
+    .menu-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .menu-body::-webkit-scrollbar-thumb {
+        background-color: #ff0000;
+        border-radius: 3px;
+    }
+
+    .menu-item {
+        padding: 8px;
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        transition: background 0.2s, transform 0.1s;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .menu-item:hover {
+        background: rgba(255,0,0,0.15);
+        transform: translateX(3px);
+    }
+
+    .menu-footer {
+        background: rgba(0, 0, 0, 0.7);
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        color: #ccc;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translate(-50%, -55%); }
+        to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+</style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="menu-header">NEXUS</div>
+        <div class="menu-tabs">
+            <div class="tab active">Self</div>
+            <div class="tab">Online</div>
+            <div class="tab">Visual</div>
+            <div class="tab">Combat</div>
+            <div class="tab">Vehicle</div>
+        </div>
+
+        <div class="menu-body">
+            <div class="menu-item">God Mode <span>[OFF]</span></div>
+            <div class="menu-item">Super Jump <span>[ON]</span></div>
+            <div class="menu-item">No Clip <span>[2.5]</span></div>
+            <div class="menu-item">Speed Boost <span>[x3]</span></div>
+            <div class="menu-item">Infinite Ammo <span>[OFF]</span></div>
+            <div class="menu-item">Teleport to Waypoint</div>
+            <div class="menu-item">Spawn Vehicle <span>[CAR]</span></div>
+            <div class="menu-item">Invisible <span>[OFF]</span></div>
+        </div>
+
+        <div class="menu-footer">
+            Version 1.0 | Nexus UI | <span style="color: #ff3333;">Status:</span> Idle
+        </div>
     </div>
-
-    <!-- Tabs -->
-    <div style="display: flex; justify-content: center; background: rgba(255,255,255,0.05); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <div style="margin: 0 12px; color: #ff9900; font-weight: 600; cursor: pointer; transition: 0.2s;">Player</div>
-        <div style="margin: 0 12px; color: #bbb; cursor: pointer; transition: 0.2s;">Movement</div>
-        <div style="margin: 0 12px; color: #bbb; cursor: pointer; transition: 0.2s;">Weapons</div>
-    </div>
-
-    <!-- Content -->
-    <div style="padding: 14px 18px; font-size: 15px; line-height: 2;">
-        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">No-Clip <span style="float:right; color: #ff9900;">[2.5]</span></div>
-        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Super Run <span style="float:right; color: #ff9900;">[10]</span></div>
-        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Infinite Stamina <span style="float:right; color: #ff4444;">OFF</span></div>
-        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Anti-tp <span style="float:right; color: #ff4444;">OFF</span></div>
-    </div>
-
-    <!-- Footer -->
-    <div style="background: rgba(255,255,255,0.05); padding: 10px; font-size: 12px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
-        Version: <span style="color:#ff9900;">Developer</span> | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
-        <span style="color: #ff9900;">Status:</span> <span style="color:#0f0;">Idle</span>
-    </div>
-</div>
-
-<script>
-    // Basic hover highlight (inline-friendly)
-    document.querySelectorAll('div[style*="cursor: pointer"]').forEach(el => {
-        el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,153,0,0.15)');
-        el.addEventListener('mouseleave', () => el.style.background = 'transparent');
-    });
-</script>
+</body>
+</html>
