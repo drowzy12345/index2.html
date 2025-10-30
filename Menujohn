@@ -1,49 +1,36 @@
-const oldMenu = document.getElementById('fma-menu');
-    if (oldMenu) oldMenu.remove();
+<div style="width: 350px; margin: 40px auto; font-family: 'Segoe UI', sans-serif; color: #fff; background: linear-gradient(180deg, #141414, #0a0a0a); border: 1px solid #ff9900; border-radius: 10px; box-shadow: 0 0 20px rgba(255,153,0,0.3); overflow: hidden;">
 
-    const menu = document.createElement('div');
-    menu.id = 'fma-menu';
-    menu.style.position = 'fixed';
-    menu.style.top = '10%';
-    menu.style.left = '50%';
-    menu.style.transform = 'translateX(-50%)';
-    menu.style.width = '520px';
-    menu.style.background = 'rgba(0,0,0,0.85)';
-    menu.style.borderRadius = '10px';
-    menu.style.fontFamily = 'Arial, sans-serif';
-    menu.style.color = '#fff';
-    menu.style.zIndex = '9999';
-    menu.style.display = 'none';
-    menu.style.overflow = 'hidden';
-    menu.style.boxShadow = '0 0 15px rgba(0,0,0,0.8)';
+    <!-- Header -->
+    <div style="background: linear-gradient(90deg, #ff9900, #ff6600); padding: 12px; text-align: center; font-size: 22px; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 5px #000;">
+        ⚡ FMA Menu ⚡
+    </div>
 
-    menu.innerHTML = `
-        <div style="background: orange; padding: 10px; text-align: center; font-size: 20px; font-weight: bold;">
-            FMA
-        </div>
+    <!-- Tabs -->
+    <div style="display: flex; justify-content: center; background: rgba(255,255,255,0.05); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="margin: 0 12px; color: #ff9900; font-weight: 600; cursor: pointer; transition: 0.2s;">Player</div>
+        <div style="margin: 0 12px; color: #bbb; cursor: pointer; transition: 0.2s;">Movement</div>
+        <div style="margin: 0 12px; color: #bbb; cursor: pointer; transition: 0.2s;">Weapons</div>
+    </div>
 
-        <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.5); padding: 5px 0;">
-            <div style="margin: 0 10px; color: orange;">Player</div>
-            <div style="margin: 0 10px;">Movement</div>
-        </div>
+    <!-- Content -->
+    <div style="padding: 14px 18px; font-size: 15px; line-height: 2;">
+        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">No-Clip <span style="float:right; color: #ff9900;">[2.5]</span></div>
+        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Super Run <span style="float:right; color: #ff9900;">[10]</span></div>
+        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Infinite Stamina <span style="float:right; color: #ff4444;">OFF</span></div>
+        <div style="cursor: pointer; transition: 0.2s; padding: 5px 8px; border-radius: 6px;">Anti-tp <span style="float:right; color: #ff4444;">OFF</span></div>
+    </div>
 
-        <div style="padding: 10px; font-size: 14px; line-height: 1.8;">
-            <div>No-Clip <span style="float:right;">[2.5]</span></div>
-            <div>Super Run <span style="float:right;">[10]</span></div>
-            <div>Infinite Stamina <span style="float:right;">OFF</span></div>
-            <div>Anti-tp <span style="float:right;">OFF</span></div>
-        </div>
+    <!-- Footer -->
+    <div style="background: rgba(255,255,255,0.05); padding: 10px; font-size: 12px; text-align: center; border-top: 1px solid rgba(255,255,255,0.1);">
+        Version: <span style="color:#ff9900;">Developer</span> | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
+        <span style="color: #ff9900;">Status:</span> <span style="color:#0f0;">Idle</span>
+    </div>
+</div>
 
-        <div style="background: rgba(0,0,0,0.5); padding: 8px; font-size: 12px; text-align: center;">
-            Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
-            <span style="color: orange;">Status:</span> Idle
-        </div>
-    `;
-
-    document.body.appendChild(menu);
-
-    // Toggle visibility function
-    window.toggleFmaMenu = function() {
-        menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
-    }
-]]
+<script>
+    // Basic hover highlight (inline-friendly)
+    document.querySelectorAll('div[style*="cursor: pointer"]').forEach(el => {
+        el.addEventListener('mouseenter', () => el.style.background = 'rgba(255,153,0,0.15)');
+        el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+    });
+</script>
