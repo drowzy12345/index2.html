@@ -1,113 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DUI Menu</title>
-<style>
-body { margin:0; font-family:Segoe UI,sans-serif; background:rgba(0,0,0,0.85); color:#fff; overflow:hidden; }
-#menu { width:320px; background:#1a1a1a; position:absolute; top:50px; left:50px; border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:6px; font-size:16px; display:none; box-shadow:0 0 15px rgba(0,0,0,0.6);}
-.menu-item { background:#2a2a2a; padding:10px 14px; border-radius:8px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s;}
-.menu-item:hover { background:#333; }
-.submenu { display:none; flex-direction:column; gap:4px; margin-left:12px; margin-top:4px; border-left:2px solid #444; }
-.menu-item.active + .submenu { display:flex; }
-.notification { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:#444; padding:10px 20px; border-radius:8px; display:none; font-weight:bold; box-shadow:0 0 10px rgba(0,0,0,0.5);}
-input[type=range]{ width:100%; margin-top:5px; }
-select{ width:100%; border-radius:6px; padding:5px; background:#2a2a2a; color:#fff; border:1px solid #444;}
-input[type=checkbox]{ transform:scale(1.2); margin-right:6px; }
-</style>
-</head>
-<body>
-<div id="menu"></div>
-<div id="notification" class="notification"></div>
-<script>
-let currentMenu = [];
 
-function renderMenu(menuData){
-    const menuContainer = document.getElementById('menu');
-    menuContainer.innerHTML = '';
-    currentMenu = menuData;
+        <div style="background: orange; padding: 10px; text-align: center; font-size: 20px; font-weight: bold;">
+            FMA
+        </div>
 
-    menuData.forEach(item=>{
-        const menuItem = document.createElement('div');
-        menuItem.className='menu-item';
-        menuItem.textContent = item.label;
+        <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.5); padding: 5px 0;">
+            <div style="margin: 0 10px; color: orange;">Player</div>
+            <div style="margin: 0 10px;">Movement</div>
+        </div>
 
-        // Checkbox
-        if(item.type==='checkbox'){
-            const checkbox = document.createElement('input');
-            checkbox.type='checkbox';
-            checkbox.checked=item.checked||false;
-            checkbox.addEventListener('change', ()=>{ fetch(`https://localhost/action?type=checkbox&label=${item.label}&value=${checkbox.checked}`); });
-            menuItem.prepend(checkbox);
-        }
+        <div style="padding: 10px; font-size: 14px; line-height: 1.8;">
+            <div>No-Clip <span style="float:right;">[2.5]</span></div>
+            <div>Super Run <span style="float:right;">[10]</span></div>
+            <div>Infinite Stamina <span style="float:right;">OFF</span></div>
+            <div>Anti-tp <span style="float:right;">OFF</span></div>
+        </div>
 
-        // Slider
-        if(item.type==='slider'){
-            const slider=document.createElement('input');
-            slider.type='range';
-            slider.min=item.min||0;
-            slider.max=item.max||100;
-            slider.value=item.value||0;
-            slider.addEventListener('input', ()=>{ fetch(`https://localhost/action?type=slider&label=${item.label}&value=${slider.value}`); });
-            menuItem.appendChild(slider);
-        }
-
-        // Scroll
-        if(item.type==='scroll'){
-            const select=document.createElement('select');
-            (item.options||[]).forEach(opt=>{
-                const optionEl=document.createElement('option');
-                optionEl.value=opt.value||opt.label;
-                optionEl.textContent=opt.label;
-                select.appendChild(optionEl);
-            });
-            select.selectedIndex=item.selected||0;
-            select.addEventListener('change', ()=>{ fetch(`https://localhost/action?type=scroll&label=${item.label}&value=${select.value}`); });
-            menuItem.appendChild(select);
-        }
-
-        // Button
-        if(item.type==='button'){
-            menuItem.addEventListener('click', ()=>{ fetch(`https://localhost/action?type=button&label=${item.label}`); });
-        }
-
-        // Submenu
-        if(item.submenu){
-            const sub=document.createElement('div');
-            sub.className='submenu';
-            item.submenu.forEach(subitem=>{
-                const subEl=document.createElement('div');
-                subEl.className='menu-item';
-                subEl.textContent=subitem.label;
-                subEl.addEventListener('click',()=>{ fetch(`https://localhost/action?type=${subitem.type}&label=${subitem.label}`); });
-                sub.appendChild(subEl);
-            });
-            menuItem.addEventListener('click', ()=>{ menuItem.classList.toggle('active'); });
-            menuContainer.appendChild(menuItem);
-            menuContainer.appendChild(sub);
-        } else { menuContainer.appendChild(menuItem); }
-    });
-}
-
-window.addEventListener('message', (event)=>{
-    const data = event.data;
-    if(!data.action) return;
-
-    if(data.action==='setCurrent'){ renderMenu(data.menu); }
-    if(data.action==='notify'){
-        const notif=document.getElementById('notification');
-        notif.textContent=data.message;
-        notif.style.display='block';
-        setTimeout(()=>{ notif.style.display='none'; },2000);
-    }
-    if(data.action==='setVisible'){ document.getElementById('menu').style.display=data.visible?'flex':'none'; }
-    if(data.action==='position'){
-        const menu=document.getElementById('menu');
-        menu.style.left=data.position.x+'px';
-        menu.style.top=data.position.y+'px';
-    }
-});
-</script>
-</body>
-</html>
+        <div style="background: rgba(0,0,0,0.5); padding: 8px; font-size: 12px; text-align: center;">
+            Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
+            <span style="color: orange;">Status:</span> Idle
+        </div>
+    `;
