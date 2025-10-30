@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FMA Menu</title>
 <style>
-  body { background: transparent; font-family: 'Segoe UI', sans-serif; display:flex; justify-content:center; align-items:flex-start; padding-top:50px; color:#fff; }
-  #fma-menu { width:500px; background: rgba(20,20,20,0.95); border-radius:12px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.9); }
-  .header { background: linear-gradient(90deg, orange, #ff7f00); padding:14px 0; text-align:center; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:1px 1px 3px #000; }
-  .categories { display:flex; justify-content:center; background: rgba(0,0,0,0.25); font-weight:bold; font-size:16px; border-bottom:1px solid rgba(255,165,0,0.5); }
-  .categories div { margin:0 20px; padding:8px 0; cursor:pointer; position:relative; }
-  .categories div.active::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:100%; background:orange; }
-  .options { padding:16px 20px; font-size:15px; line-height:2; background: rgba(0,0,0,0.15); border-bottom:1px solid rgba(255,165,0,0.2); }
-  .option { display:flex; justify-content:space-between; padding:6px 0; border-radius:6px; cursor:pointer; }
-  .option.selected { background: rgba(255,165,0,0.1); }
-  .option span.value { color:orange; font-weight:bold; }
-  .footer { background: rgba(0,0,0,0.15); padding:10px; font-size:12px; text-align:center; color:#ccc; }
-  .footer .status { color:orange; font-weight:bold; }
+body { background: transparent; font-family: 'Segoe UI', sans-serif; display:flex; justify-content:center; align-items:flex-start; padding-top:50px; color:#fff; }
+#fma-menu { width:500px; background: rgba(20,20,20,0.95); border-radius:12px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.9); display:none; }
+.header { background: linear-gradient(90deg, orange, #ff7f00); padding:14px 0; text-align:center; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:1px 1px 3px #000; }
+.categories { display:flex; justify-content:center; background: rgba(0,0,0,0.25); font-weight:bold; font-size:16px; border-bottom:1px solid rgba(255,165,0,0.5); }
+.categories div { margin:0 20px; padding:8px 0; cursor:pointer; position:relative; }
+.categories div.active::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:100%; background:orange; }
+.options { padding:16px 20px; font-size:15px; line-height:2; background: rgba(0,0,0,0.15); border-bottom:1px solid rgba(255,165,0,0.2); }
+.option { display:flex; justify-content:space-between; padding:6px 0; border-radius:6px; cursor:pointer; }
+.option.selected { background: rgba(255,165,0,0.1); }
+.option span.value { color:orange; font-weight:bold; }
+.footer { background: rgba(0,0,0,0.15); padding:10px; font-size:12px; text-align:center; color:#ccc; }
+.footer .status { color:orange; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -40,61 +40,103 @@ let menuData = [];
 let selectedCategory = 0;
 let selectedOption = 0;
 
-function renderMenu() {
-  // Render categories
-  categoriesEl.innerHTML = '';
-  menuData.forEach((cat, i) => {
-    const catDiv = document.createElement('div');
-    catDiv.textContent = cat.label;
-    if (i === selectedCategory) catDiv.classList.add('active');
-    categoriesEl.appendChild(catDiv);
-  });
-
-  // Render options for current category
-  const currentMenu = menuData[selectedCategory]?.submenu || [];
-  optionsEl.innerHTML = '';
-  currentMenu.forEach((opt, i) => {
-    const optDiv = document.createElement('div');
-    optDiv.classList.add('option');
-    if (i === selectedOption) optDiv.classList.add('selected');
-    let valueText = '';
-    if (opt.type === 'slider') valueText = '[' + opt.value + ']';
-    if (opt.type === 'checkbox') valueText = opt.checked ? 'ON' : 'OFF';
-    optDiv.innerHTML = `<span>${opt.label}</span> <span class="value">${valueText}</span>`;
-    optionsEl.appendChild(optDiv);
-  });
+function sendUpdateToLua(category, option, value) {
+    fetch(`https://${GetParentResourceName()}/updateOption`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({category, option, value})
+    });
 }
 
-// Listen for Lua NUI messages
+function renderMenu() {
+    categoriesEl.innerHTML = '';
+    menuData.forEach((cat, i) => {
+        const catDiv = document.createElement('div');
+        catDiv.textContent = cat.label;
+        if (i === selectedCategory) catDiv.classList.add('active');
+        categoriesEl.appendChild(catDiv);
+    });
+
+    const currentMenu = menuData[selectedCategory]?.submenu || [];
+    optionsEl.innerHTML = '';
+    currentMenu.forEach((opt, i) => {
+        const optDiv = document.createElement('div');
+        optDiv.classList.add('option');
+        if (i === selectedOption) optDiv.classList.add('selected');
+
+        let valueText = '';
+        if (opt.type === 'slider') valueText = `[${opt.value}]`;
+        if (opt.type === 'checkbox') valueText = opt.checked ? 'ON' : 'OFF';
+        optDiv.innerHTML = `<span>${opt.label}</span> <span class="value">${valueText}</span>`;
+        optionsEl.appendChild(optDiv);
+    });
+}
+
 window.addEventListener('message', (event) => {
-  const data = event.data;
-  if (data.action === 'updateMenu') {
-    menuData = data.menu || [];
-    selectedCategory = 0; // For simplicity, first category active
-    selectedOption = (data.current or 1) - 1;
-    menuEl.style.display = data.visible and 'block' or 'none';
+    const data = event.data;
+    if (!data) return;
+
+    if (data.action === 'updateMenu') {
+        menuData = data.menu || [];
+        selectedCategory = 0;
+        selectedOption = (data.current || 1) - 1;
+        menuEl.style.display = data.visible ? 'block' : 'none';
+        renderMenu();
+    } else if (data.action === 'keyPress') {
+        const key = data.key;
+        const currentMenu = menuData[selectedCategory]?.submenu || [];
+
+        if (key === 'up') selectedOption = (selectedOption - 1 + currentMenu.length) % currentMenu.length;
+        if (key === 'down') selectedOption = (selectedOption + 1) % currentMenu.length;
+
+        const opt = currentMenu[selectedOption];
+        if (!opt) return;
+
+        if (key === 'left') {
+            if (opt.type === 'slider') {
+                opt.value = Math.max(opt.min, opt.value - 0.5);
+                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
+            }
+        }
+        if (key === 'right') {
+            if (opt.type === 'slider') {
+                opt.value = Math.min(opt.max, opt.value + 0.5);
+                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
+            }
+        }
+        if (key === 'enter') {
+            if (opt.type === 'checkbox') {
+                opt.checked = !opt.checked;
+                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.checked);
+            }
+        }
+        if (key === 'leftArrow') { selectedCategory = (selectedCategory - 1 + menuData.length) % menuData.length; selectedOption = 0; }
+        if (key === 'rightArrow') { selectedCategory = (selectedCategory + 1) % menuData.length; selectedOption = 0; }
+
+        renderMenu();
+    }
+});
+
+optionsEl.addEventListener('click', (e) => {
+    const optDiv = e.target.closest('.option');
+    if (!optDiv) return;
+
+    const idx = Array.from(optionsEl.children).indexOf(optDiv);
+    const opt = menuData[selectedCategory].submenu[idx];
+    if (!opt) return;
+
+    selectedOption = idx;
+
+    if (opt.type === 'checkbox') {
+        opt.checked = !opt.checked;
+        sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.checked);
+    } else if (opt.type === 'slider') {
+        opt.value = Math.min(opt.max, opt.value + 0.5);
+        sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
+    }
+
     renderMenu();
-  } else if (data.action === 'keyPress') {
-    const key = data.key;
-    const currentOptions = menuData[selectedCategory]?.submenu || [];
-    if (key === 'up') selectedOption = (selectedOption - 1 + currentOptions.length) % currentOptions.length;
-    if (key === 'down') selectedOption = (selectedOption + 1) % currentOptions.length;
-    if (key === 'left') {
-      const opt = currentOptions[selectedOption];
-      if (opt?.type === 'slider') opt.value = Math.max(opt.min, opt.value - 0.5);
-    }
-    if (key === 'right') {
-      const opt = currentOptions[selectedOption];
-      if (opt?.type === 'slider') opt.value = Math.min(opt.max, opt.value + 0.5);
-    }
-    if (key === 'enter') {
-      const opt = currentOptions[selectedOption];
-      if (opt?.type === 'checkbox') opt.checked = !opt.checked;
-    }
-    renderMenu();
-  }
 });
 </script>
-
 </body>
 </html>
