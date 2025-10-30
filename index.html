@@ -5,90 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FiveM Nexus UI</title>
 <style>
-    /* Reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+/* Reset */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
-    body {
-        background-color: rgba(0,0,0,0.7);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
+body {
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-    /* Menu Container */
-    #menu {
-        width: 350px;
-        background-color: #1f1f1f;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        overflow: hidden;
-    }
+/* Menu Container */
+#menu {
+    width: 380px;
+    background: linear-gradient(145deg, #1c1c1c, #2a2a2a);
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.8);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
 
-    /* Header */
-    #menu-header {
-        background-color: #111;
-        padding: 15px;
-        text-align: center;
-        font-size: 1.3em;
-        color: #fff;
-        border-bottom: 2px solid #ff4757;
-    }
+/* Header */
+#menu-header {
+    background: linear-gradient(90deg, #ff6b81, #ff4757);
+    padding: 15px;
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #fff;
+    border-bottom: 2px solid #333;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
 
-    /* Tabs */
-    #tabs {
-        display: flex;
-        background-color: #2b2b2b;
-    }
+/* Tabs */
+#tabs {
+    display: flex;
+    background-color: #222;
+}
 
-    .tab {
-        flex: 1;
-        padding: 10px;
-        text-align: center;
-        cursor: pointer;
-        color: #bbb;
-        transition: all 0.3s;
-    }
+.tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    color: #aaa;
+    transition: all 0.3s;
+    position: relative;
+    font-weight: 600;
+    text-transform: uppercase;
+}
 
-    .tab.active {
-        background-color: #ff4757;
-        color: #fff;
-    }
+.tab.active {
+    background: linear-gradient(90deg, #ff6b81, #ff4757);
+    color: #fff;
+    box-shadow: inset 0 -3px 0 #fff;
+}
 
-    /* Content */
-    #content {
-        padding: 15px;
-        max-height: 300px;
-        overflow-y: auto;
-    }
+.tab:hover {
+    color: #fff;
+}
 
-    /* Buttons */
-    .btn {
-        width: 100%;
-        padding: 10px;
-        margin: 5px 0;
-        background-color: #333;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
+/* Content */
+#content {
+    padding: 15px;
+    max-height: 320px;
+    overflow-y: auto;
+}
 
-    .btn:hover {
-        background-color: #ff4757;
-    }
+/* Custom Scrollbar */
+#content::-webkit-scrollbar {
+    width: 8px;
+}
 
-    /* Input & Dropdown */
-    input[type="text"], select {
-        width: 100%;
-        padding: 8px;
-        margin: 5px 0 10px 0;
-        border-radius: 5px;
-        border: 1px solid #555;
-        background-color: #222;
-        color: #fff;
-    }
+#content::-webkit-scrollbar-track {
+    background: #1c1c1c;
+}
+
+#content::-webkit-scrollbar-thumb {
+    background: #ff4757;
+    border-radius: 4px;
+}
+
+/* Buttons */
+.btn {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    background: linear-gradient(90deg, #2e2e2e, #1f1f1f);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.btn:hover {
+    background: linear-gradient(90deg, #ff6b81, #ff4757);
+    box-shadow: 0 0 10px rgba(255,71,87,0.6);
+}
+
+/* Input & Dropdown */
+input[type="text"], select {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 12px 0;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background-color: #2a2a2a;
+    color: #fff;
+    font-weight: 500;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus, select:focus {
+    border: 1px solid #ff4757;
+    box-shadow: 0 0 8px rgba(255,71,87,0.4);
+    outline: none;
+}
+
+/* Tab content */
+.tab-content {
+    display: none;
+    flex-direction: column;
+}
+
+.tab-content.active {
+    display: flex;
+}
 </style>
 </head>
 <body>
@@ -102,7 +150,7 @@
     </div>
     <div id="content">
         <!-- Self Tab -->
-        <div class="tab-content" id="self">
+        <div class="tab-content active" id="self">
             <button class="btn" onclick="action('Heal')">Heal</button>
             <button class="btn" onclick="action('Armor')">Armor</button>
             <input type="text" id="selfInput" placeholder="Custom Value">
@@ -110,7 +158,7 @@
         </div>
 
         <!-- Vehicles Tab -->
-        <div class="tab-content" id="vehicles" style="display:none;">
+        <div class="tab-content" id="vehicles">
             <button class="btn" onclick="action('Spawn Car')">Spawn Car</button>
             <button class="btn" onclick="action('Delete Car')">Delete Vehicle</button>
             <select id="vehicleDropdown" onchange="action(this.value)">
@@ -122,7 +170,7 @@
         </div>
 
         <!-- Weapons Tab -->
-        <div class="tab-content" id="weapons" style="display:none;">
+        <div class="tab-content" id="weapons">
             <button class="btn" onclick="action('Give Pistol')">Give Pistol</button>
             <button class="btn" onclick="action('Give AK')">Give AK</button>
         </div>
@@ -130,30 +178,27 @@
 </div>
 
 <script>
-    // Tab Switching
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
+const tabs = document.querySelectorAll('.tab');
+const contents = document.querySelectorAll('.tab-content');
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
 
-            contents.forEach(c => c.style.display = 'none');
-            document.getElementById(tab.dataset.tab).style.display = 'block';
-        });
+        contents.forEach(c => c.classList.remove('active'));
+        document.getElementById(tab.dataset.tab).classList.add('active');
     });
+});
 
-    // Button Actions
-    function action(name) {
-        console.log('Action:', name);
-        // Example: send to FiveM client
-        fetch(`https://${GetParentResourceName()}/action`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: name })
-        });
-    }
+function action(name) {
+    console.log('Action:', name);
+    fetch(`https://${GetParentResourceName()}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: name })
+    });
+}
 </script>
 
 </body>
