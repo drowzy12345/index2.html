@@ -1,22 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FiveM Nexus UI</title>
+<style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
 
-        <div style="background: orange; padding: 10px; text-align: center; font-size: 20px; font-weight: bold;">
-            FMA
+    body {
+        background-color: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    /* Menu Container */
+    #menu {
+        width: 350px;
+        background-color: #1f1f1f;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        overflow: hidden;
+    }
+
+    /* Header */
+    #menu-header {
+        background-color: #111;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.3em;
+        color: #fff;
+        border-bottom: 2px solid #ff4757;
+    }
+
+    /* Tabs */
+    #tabs {
+        display: flex;
+        background-color: #2b2b2b;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        color: #bbb;
+        transition: all 0.3s;
+    }
+
+    .tab.active {
+        background-color: #ff4757;
+        color: #fff;
+    }
+
+    /* Content */
+    #content {
+        padding: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* Buttons */
+    .btn {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn:hover {
+        background-color: #ff4757;
+    }
+
+    /* Input & Dropdown */
+    input[type="text"], select {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0 10px 0;
+        border-radius: 5px;
+        border: 1px solid #555;
+        background-color: #222;
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+
+<div id="menu">
+    <div id="menu-header">FiveM Nexus Menu</div>
+    <div id="tabs">
+        <div class="tab active" data-tab="self">Self</div>
+        <div class="tab" data-tab="vehicles">Vehicles</div>
+        <div class="tab" data-tab="weapons">Weapons</div>
+    </div>
+    <div id="content">
+        <!-- Self Tab -->
+        <div class="tab-content" id="self">
+            <button class="btn" onclick="action('Heal')">Heal</button>
+            <button class="btn" onclick="action('Armor')">Armor</button>
+            <input type="text" id="selfInput" placeholder="Custom Value">
+            <button class="btn" onclick="action('Custom Value')">Submit Value</button>
         </div>
 
-        <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.5); padding: 5px 0;">
-            <div style="margin: 0 10px; color: orange;">Player</div>
-            <div style="margin: 0 10px;">Movement</div>
+        <!-- Vehicles Tab -->
+        <div class="tab-content" id="vehicles" style="display:none;">
+            <button class="btn" onclick="action('Spawn Car')">Spawn Car</button>
+            <button class="btn" onclick="action('Delete Car')">Delete Vehicle</button>
+            <select id="vehicleDropdown" onchange="action(this.value)">
+                <option value="">Select Vehicle</option>
+                <option value="Adder">Adder</option>
+                <option value="Banshee">Banshee</option>
+                <option value="Sultan">Sultan</option>
+            </select>
         </div>
 
-        <div style="padding: 10px; font-size: 14px; line-height: 1.8;">
-            <div>No-Clip <span style="float:right;">[2.5]</span></div>
-            <div>Super Run <span style="float:right;">[10]</span></div>
-            <div>Infinite Stamina <span style="float:right;">OFF</span></div>
-            <div>Anti-tp <span style="float:right;">OFF</span></div>
+        <!-- Weapons Tab -->
+        <div class="tab-content" id="weapons" style="display:none;">
+            <button class="btn" onclick="action('Give Pistol')">Give Pistol</button>
+            <button class="btn" onclick="action('Give AK')">Give AK</button>
         </div>
+    </div>
+</div>
 
-        <div style="background: rgba(0,0,0,0.5); padding: 8px; font-size: 12px; text-align: center;">
-            Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
-            <span style="color: orange;">Status:</span> Idle
-        </div>
-    `;
+<script>
+    // Tab Switching
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            contents.forEach(c => c.style.display = 'none');
+            document.getElementById(tab.dataset.tab).style.display = 'block';
+        });
+    });
+
+    // Button Actions
+    function action(name) {
+        console.log('Action:', name);
+        // Example: send to FiveM client
+        fetch(`https://${GetParentResourceName()}/action`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: name })
+        });
+    }
+</script>
+
+</body>
+</html>
