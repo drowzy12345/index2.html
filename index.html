@@ -2,99 +2,72 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phaze UI</title>
+<title>Phaze Menu</title>
 <style>
   body {
     margin: 0;
-    background: rgba(0,0,0,0.5);
     font-family: "Segoe UI", sans-serif;
+    background: rgba(0,0,0,0.6);
     color: white;
-    user-select: none;
   }
   .menu {
-    width: 320px;
-    background: rgba(15, 15, 15, 0.85);
+    width: 300px;
+    margin: 80px auto;
+    background: rgba(10,10,10,0.8);
     border-radius: 8px;
     padding: 8px;
-    margin: 50px auto;
-    box-shadow: 0 0 20px rgba(0,0,255,0.4);
+    box-shadow: 0 0 15px rgba(0,120,255,0.6);
   }
   .header {
     text-align: center;
-    font-size: 22px;
     font-weight: bold;
-    padding: 10px;
-    border-bottom: 2px solid rgba(0, 102, 255, 0.7);
-    background: linear-gradient(90deg, #0077ff44, #0044ff66);
+    padding: 8px;
+    background: linear-gradient(90deg,#0044ff66,#0077ff44);
     border-radius: 6px;
+    margin-bottom: 6px;
   }
-  .tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 8px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 6px;
-    padding: 4px;
-  }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 5px;
-    cursor: pointer;
+  .item {
+    padding: 5px 8px;
+    margin: 2px 0;
     border-radius: 4px;
     transition: background 0.2s;
   }
-  .tab.active {
-    background: rgba(0, 102, 255, 0.5);
-  }
-  .option {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 4px;
-    background: rgba(255,255,255,0.05);
-    margin: 4px 0;
-    border-radius: 4px;
-  }
-  .slider {
-    width: 100%;
-    accent-color: #0077ff;
-  }
-  .toggle {
-    width: 18px;
-    height: 18px;
+  .item.active {
+    background: rgba(0,120,255,0.4);
   }
 </style>
 </head>
 <body>
   <div class="menu">
-    <div class="header">Phaze</div>
-    <div class="tabs">
-      <div class="tab active">Visual</div>
-      <div class="tab">Vehicle</div>
-      <div class="tab">Box</div>
-      <div class="tab">Skeleton</div>
-      <div class="tab">Text</div>
-    </div>
-    <div class="options">
-      <div class="option"><span>Enable</span><input type="checkbox" class="toggle"></div>
-      <div class="option"><span>Draw on NPCs</span><input type="checkbox" class="toggle"></div>
-      <div class="option"><span>Ignore Dead</span><input type="checkbox" class="toggle"></div>
-      <div class="option"><span>Full Bright</span><input type="checkbox" class="toggle"></div>
-      <div class="option"><span>FOV Changer</span><input type="range" min="30" max="150" value="120" class="slider"></div>
-    </div>
+    <div class="header">Phaze Menu</div>
+    <div id="menu-items"></div>
   </div>
 
-  <script>
-    // receive messages from Lua via MachoSendMessage
-    window.addEventListener("message", (event) => {
-      const data = event.data;
-      if (data.action === "setHover") {
-        const tabs = document.querySelectorAll(".tab");
-        tabs.forEach(tab => tab.classList.remove("active"));
-        if (tabs[data.index]) tabs[data.index].classList.add("active");
-      }
+<script>
+window.addEventListener("message", (event) => {
+  const data = event.data;
+
+  if (data.action === "setCurrent") {
+    const container = document.getElementById("menu-items");
+    container.innerHTML = "";
+    data.menu.forEach((item, i) => {
+      const el = document.createElement("div");
+      el.className = "item" + (i === data.current - 1 ? " active" : "");
+      el.textContent = item.label || "Item";
+      container.appendChild(el);
     });
-  </script>
+  }
+
+  if (data.action === "hover") {
+    const items = document.querySelectorAll(".item");
+    items.forEach(i => i.classList.remove("active"));
+    if (items[data.index]) items[data.index].classList.add("active");
+  }
+
+  if (data.action === "setVisible") {
+    document.body.style.display = data.visible and "block" or "none";
+  }
+});
+</script>
 </body>
 </html>
