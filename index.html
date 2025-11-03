@@ -3,573 +3,460 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Game Menu (DUI)</title>
-
-  <!-- Phosphor icons (same as your Svelte head) -->
+  <title>Menu DUI</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
   <style>
-    :root { --red: #ff0000; --bg: rgba(0,0,0,0.8); --accent: rgba(100,0,0,0.6); }
-    * { box-sizing: border-box; background: none; margin: 0; padding: 0; }
-    body { font-family: "Segoe UI", Arial, sans-serif; color: white; user-select: none; }
+    :root { --red: #ff0000; --bg: rgba(0,0,0,0.85); --accent: rgba(100,0,0,0.6); }
+    * { box-sizing: border-box; margin:0; padding:0; background: none; }
+    html,body { height:100%; width:100%; font-family: "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased; color:#fff; user-select:none; }
 
-    /* wrapper */
+    /* outer wrapper - left fixed */
     .menu-wrapper {
-      position: absolute;
+      position: fixed;
       top: 50%;
+      left: 6.5vh; /* left only positioning */
       transform: translateY(-50%);
-      left: 6.5vh; /* left default */
-      transition: left .35s ease, opacity .2s ease;
       width: 41vh;
+      z-index: 9999;
       pointer-events: auto;
-      -webkit-font-smoothing: antialiased;
+      transition: opacity .18s ease, left .28s ease;
+      opacity: 1;
     }
 
-    /* banner and tabs */
-    .banner-card { margin-left: 1.75vh; width: 95%; border-radius: .4vh; overflow: hidden; line-height: 0; }
+    /* banner + tabs */
+    .banner-card { margin-left: 1.75vh; width: calc(100% - 1.75vh); border-radius: .4vh; overflow:hidden; line-height:0; }
     .banner-card img { display:block; width:100%; height:9.5vh; object-fit:cover; }
+
     .tabs {
       display:flex;
       background:#000;
-      border-radius: .2vh;
-      margin-top: -0.2vh;
-      overflow: hidden;
+      border-radius:.2vh;
+      margin-top:-0.2vh;
+      overflow:hidden;
     }
     .tab {
       flex:1;
       text-align:center;
-      padding:1.5vh 1.5vh;
+      padding:1.5vh 1.2vh;
       font-size:1.15vh;
       font-weight:500;
-      cursor: pointer;
-      transition: all .15s ease;
+      cursor:pointer;
+      transition:all .12s ease;
       white-space:nowrap;
-      color: #fff;
+      color:#fff;
     }
     .tab.active { background: linear-gradient(0deg, var(--red) 0%, transparent 100%); }
 
-    /* main menu container */
+    /* main column */
     .menu-column {
-      position: absolute;
       margin-left: 1.75vh;
       width: 33.5vh;
       background: var(--bg);
-      border-radius: 0.3vh;
+      border-radius: .3vh;
+      padding: .3vh;
       display:flex;
       flex-direction: column;
-      overflow: hidden;
-      z-index: 2;
+      overflow: visible;
+      position: relative;
     }
+    .menu-list-wrap {
+      max-height: 33.6vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .menu-list-wrap::-webkit-scrollbar { display:none; }
 
-    /* hide scrollbar (we use custom) */
-    .hide-scrollbar { overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .menu-list { display:flex; flex-direction:column; gap:0; padding: .3vh .4vh  .6vh .6vh; }
 
-    .menu-list { display:flex; flex-direction: column; gap: 0; position: relative; padding: .3vh .6vh; }
     .menu-item {
-      padding: 0.7vh 1.0vh;
-      color: white;
-      border-radius: 0.3vh;
+      padding: .7vh 1.0vh;
       display:flex;
       align-items:center;
       justify-content:space-between;
+      gap:1vh;
+      border-radius:.3vh;
       font-size:1.4vh;
-      gap: 1vh;
-      cursor: pointer;
-      transition: background .12s ease, transform .08s ease;
       font-weight: 400;
+      cursor:pointer;
+      transition: background .12s ease, transform .06s ease;
+      color: #fff;
     }
-    .menu-item:hover { transform: translateX(.1vh); }
-    .menu-item.active { border-left: 0.3vh solid var(--red); background-color: rgba(100,0,0,0.6); }
+    .menu-item:hover { transform: translateX(.08vh); }
+    .menu-item.active { background-color: rgba(100,0,0,0.6); border-left: .3vh solid var(--red); }
 
     .menu-divider {
       position:relative; display:flex; align-items:center; justify-content:center;
       height:2.2vh; margin:.6vh 0; pointer-events:none;
     }
-    .menu-divider span { color: rgba(255,255,255,.7); font-size:1.0vh; font-weight:600; }
+    .menu-divider span { color: rgba(255,255,255,.75); font-size:1.0vh; font-weight:600; }
     .menu-divider::before, .menu-divider::after {
       content:""; position:absolute; top:50%; transform:translateY(-50%);
-      width:7vh; height:.4vh; background: rgba(255,255,255,.95); border-radius:.2vh; opacity:.95;
+      width:7vh; height:.4vh; background: rgba(255,255,255,.95); border-radius:.2vh;
     }
     .menu-divider::before{ left:1.2vh } .menu-divider::after{ right:1.2vh }
 
     /* toggle */
     .toggle {
-      appearance:none; -webkit-appearance:none;
-      width: 3.3vh; height: 1.5vh; background-color: #222; border-radius: 1vh; position: relative;
-      transition: background-color .2s ease-in-out; pointer-events: auto;
+      width:3.3vh; height:1.5vh; border-radius:1vh; background:#222; position:relative; cursor:pointer;
     }
     .toggle::before {
-      content: ''; position:absolute; width:1.1vh; height:1.1vh; border-radius:50%; background:#fff; top:.2vh; left:.2vh; transition: transform .2s ease-in-out;
+      content:''; position:absolute; width:1.1vh; height:1.1vh; border-radius:50%; background:#fff; left:.2vh; top:.2vh; transition: transform .18s ease;
     }
-    .toggle.on::before { background: var(--red); transform: translateX(1.65vh); }
+    .toggle.on::before { transform: translateX(1.65vh); background:var(--red); }
 
     /* range */
-    .range { width: 7.5vh; height:1.2vh; background:transparent; margin:0; outline:none; border:0; -webkit-appearance:none; }
+    .range { width:7.5vh; height:1.2vh; background:transparent; -webkit-appearance:none; border:0; outline:none; }
     .range::-webkit-slider-runnable-track {
-      height: .55vh; border-radius: .75vh;
+      height:.55vh; border-radius:.75vh;
       background: linear-gradient(to right, rgba(255,255,255,.95) 0 var(--pct), rgb(46,46,46) var(--pct) 100%);
     }
-    .range::-webkit-slider-thumb { width:1.1vh; height:1.1vh; margin-top:-.3vh; border-radius:50%; background:#fff; cursor:pointer; -webkit-appearance:none; }
-    .range:active::-webkit-slider-thumb { transform: scale(1.03); }
+    .range::-webkit-slider-thumb { width:1.1vh; height:1.1vh; margin-top:-.3vh; border-radius:50%; background:#fff; -webkit-appearance:none; cursor:pointer; }
 
-    /* small center label used for scroll control */
-    .scroll-label { display:flex; gap:.4vh; align-items:center; justify-content:center; min-width: 8.5vh; }
+    .scroll-label { display:flex; align-items:center; gap:.4vh; min-width:8.5vh; justify-content:center; font-size:1.2vh; }
 
-    /* bottom info */
     .info-bar {
-      margin-top:0.5vh; margin-left: 1.75vh; width: 90%; background: rgba(0,0,0,0.85); border-radius: 0.4vh; padding:.8vh .9vh;
-      font-size:1.1vh; color:#fff; display:flex; justify-content:space-between; align-items:center;
+      margin-top:.6vh;
+      margin-left: 1.75vh;
+      width: 90%;
+      background: rgba(0,0,0,0.85);
+      border-radius: .4vh;
+      padding:.8vh .9vh;
+      font-size:1.05vh;
+      display:flex; justify-content:space-between; align-items:center;
+      color:#fff;
     }
 
-    /* custom scrollbar (left side) */
+    /* custom scrollbar (left of menu) */
     .scrollbar-container {
-      position: absolute; left: 0.5vh; width: 0.6vh; border-radius: .15vh; background: rgba(0,0,0,.45); pointer-events: none;
-      z-index: 100; transition: height .2s ease-in-out, opacity .2s ease-in-out; overflow: hidden;
+      position: absolute;
+      left: 0.5vh;
+      width: 0.6vh;
+      border-radius: .15vh;
+      background: rgba(0,0,0,.45);
+      pointer-events: none;
+      z-index: 10;
+      transition: height .18s ease, opacity .18s ease;
+      overflow: hidden;
     }
-    .scrollbar-container.hidden { opacity: 0; display: none; pointer-events: none; }
-    .scrollbar-thumb { position:absolute; left:0; right:0; top:0; height:1.2vh; background: var(--red); transition: top 80ms linear, height 120ms ease; border-radius:.15vh; }
+    .scrollbar-container.hidden { opacity:0; display:none; }
+    .scrollbar-thumb { position:absolute; left:0; right:0; top:0; height:1.2vh; background:var(--red); border-radius:.15vh; transition: top .08s linear, height .12s ease; }
 
-    /* small responsive */
-    @media (max-width: 800px) { .menu-wrapper { left: 3vh; width: 75vw; } .menu-column { width: 70vw; } }
+    @media (max-width: 680px) {
+      .menu-wrapper { left: 2vh; width: 78vw; transform: translateY(-50%); }
+      .menu-column { width: 70vw; }
+    }
   </style>
 </head>
 <body>
   <div id="app">
-
-    <!-- Wrapper: left position by default; script can change -->
-    <div id="wrapper" class="menu-wrapper" style="opacity:1;">
-      <!-- scrollbar thumb -->
-      <div id="custom-scroll" class="scrollbar-container hidden" style="top:0px; height:100px;">
-        <div id="scroll-thumb" class="scrollbar-thumb" style="top:0px; height:24px;"></div>
+    <div id="wrapper" class="menu-wrapper" aria-hidden="false">
+      <div id="scrollbar" class="scrollbar-container hidden" style="top:0;height:0px;">
+        <div id="thumb" class="scrollbar-thumb" style="top:0;height:24px;"></div>
       </div>
 
-      <!-- Banner + Tabs -->
-      <div class="banner-card" id="banner-card">
-        <img id="banner-img" src="https://media.discordapp.net/attachments/1397642859406164120/1420192107968069722/red_nexusmenu.png?ex=68feb078&is=68fd5ef8&hm=4e78c4b95d24ab70c2e5780132725a1b2ae944472d1bcaeb55e7109e53efe0dc&=&format=webp&quality=lossless" alt="banner" />
-        <div id="tabs" class="tabs">
-          <!-- tabs rendered by JS -->
+      <div class="banner-card">
+        <img id="bannerImg" src="https://media.discordapp.net/attachments/1397642859406164120/1420192107968069722/red_nexusmenu.png?ex=68feb078&is=68fd5ef8&hm=4e78c4b95d24ab70c2e5780132725a1b2ae944472d1bcaeb55e7109e53efe0dc&=&format=webp&quality=lossless" alt="banner" />
+        <div id="tabs" class="tabs"></div>
+      </div>
+
+      <div class="menu-column" role="region" aria-label="menu-column">
+        <div id="list-wrap" class="menu-list-wrap">
+          <div id="list" class="menu-list"></div>
         </div>
       </div>
 
-      <!-- Menu Column -->
-      <div class="menu-column" role="region" aria-label="menu">
-        <div id="menu-list-wrap" class="hide-scrollbar" style="max-height:33.6vh;">
-          <div id="menu-list" class="menu-list">
-            <!-- items rendered by JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom info -->
-      <div id="info-bar" class="info-bar">
-        <span id="build-label">Beta 1.3</span>
-        <span id="counter-label">(0/0)</span>
+      <div id="info" class="info-bar">
+        <span id="build">Beta 1.3 [Custom Build]</span>
+        <span id="counter">(0/0)</span>
       </div>
     </div>
-
   </div>
 
   <script>
-  (function () {
-    // --- State (defaults kept close to your svelte original) ---
+  (function(){
+    // STATE
     let current = 0;
     let showing = true;
-    let position = 'left';
-    let banner = document.getElementById('banner-img').src;
     let activeTabs = ["Main Menu"];
     let currentTab = 0;
-
-    // default menu (same shape)
+    let banner = document.getElementById('bannerImg').src;
     let activeMenu = [
-      { label: 'Start Game', type: 'button' },
-      { label: 'Enable Cheats', type: 'checkbox', checked: false },
-      { label: 'Difficulty', type: 'scroll',
-        options: [{ label: 'Easy' }, { label: 'Normal' }, { label: 'Hard' }, { label: 'Extreme' }],
-        selected: 1
-      },
-      { label: 'Volume', type: 'slider', min: 0, max: 100, step: 1, value: 75 },
-      { label: 'Settings', type: 'submenu' },
-      { label: 'Separator', type: 'divider' }
+      { label:'Start Game', type:'button' },
+      { label:'Enable Cheats', type:'checkbox', checked:false },
+      { label:'Difficulty', type:'scroll', options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}], selected:1 },
+      { label:'Volume', type:'slider', min:0, max:100, step:1, value:75 },
+      { label:'Settings', type:'submenu' },
+      { label:'Separator', type:'divider' }
     ];
 
-    // DOM refs
-    const wrapperEl = document.getElementById('wrapper');
-    const menuList = document.getElementById('menu-list');
-    const menuListWrap = document.getElementById('menu-list-wrap');
+    // REFS
+    const wrapper = document.getElementById('wrapper');
+    const listWrap = document.getElementById('list-wrap');
+    const listEl = document.getElementById('list');
     const tabsEl = document.getElementById('tabs');
-    const bannerImg = document.getElementById('banner-img');
-    const counterLabel = document.getElementById('counter-label');
-    const scrollContainer = document.getElementById('custom-scroll');
-    const scrollThumb = document.getElementById('scroll-thumb');
-    const buildLabel = document.getElementById('build-label');
+    const bannerEl = document.getElementById('bannerImg');
+    const counterEl = document.getElementById('counter');
+    const scrollbar = document.getElementById('scrollbar');
+    const thumb = document.getElementById('thumb');
 
-    let itemEls = []; // index -> DOM element
+    let itemEls = [];
     let trackTop = 0, trackHeight = 0, thumbTop = 0, thumbHeight = 24;
-    let scrollbarHidden = true, hasOverflow = false;
+    let hasOverflow = false;
     const MIN_THUMB = 18, NO_OVERFLOW_THUMB_MAX = 28;
 
-    // Helper derived arrays
-    function selectableMenu() { return activeMenu.filter(o => o?.type !== 'divider'); }
-    function selectableIndices() { return activeMenu.map((o,i) => o?.type !== 'divider' ? i : -1).filter(i => i !== -1); }
+    // helpers
+    function selectableMenu(){ return activeMenu.filter(o=> o?.type !== 'divider'); }
+    function selectableIndices(){ return activeMenu.map((o,i)=> o?.type !== 'divider' ? i : -1).filter(i=> i!==-1); }
 
-    function counterCurrent() {
-      const indices = selectableIndices();
-      const total = indices.length;
-      if (total === 0) return 0;
-      const pos = indices.indexOf(current);
-      if (pos !== -1) return pos + 1;
+    function counterCurrent(){
+      const idxs = selectableIndices();
+      if (idxs.length === 0) return 0;
+      const pos = idxs.indexOf(current);
+      if (pos !== -1) return pos+1;
       // nearest fallback
-      let nearest = -1, bestDiff = Infinity;
-      for (let idx = 0; idx < total; idx++) {
-        const diff = Math.abs(indices[idx] - current);
-        if (diff < bestDiff) { bestDiff = diff; nearest = idx; }
+      let nearest=-1, best=Infinity;
+      for(let i=0;i<idxs.length;i++){
+        const d = Math.abs(idxs[i]-current);
+        if(d<best){best=d; nearest=i;}
       }
-      return nearest !== -1 ? nearest + 1 : 0;
+      return nearest!==-1?nearest+1:0;
     }
 
-    // ---------- Rendering ----------
-    function renderTabs() {
+    // Render tabs
+    function renderTabs(){
       tabsEl.innerHTML = '';
-      if (!activeTabs || activeTabs.length === 0) return;
-      if (activeTabs.length === 1) {
-        const div = document.createElement('div');
-        div.className = 'tab active';
-        div.textContent = activeTabs[0];
-        tabsEl.appendChild(div);
-        return;
+      if(!activeTabs || activeTabs.length === 0) return;
+      if(activeTabs.length === 1){
+        const d = document.createElement('div'); d.className = 'tab active'; d.textContent = activeTabs[0];
+        tabsEl.appendChild(d); return;
       }
-      activeTabs.forEach((t, i) => {
+      activeTabs.forEach((t,i)=>{
         const d = document.createElement('div');
-        d.className = 'tab' + (i === currentTab ? ' active' : '');
+        d.className = 'tab' + (i===currentTab? ' active':'');
         d.textContent = t;
-        d.addEventListener('click', () => {
-          currentTab = i;
-          renderTabs();
-          // Optionally notify host of tab change
-        });
+        d.addEventListener('click', ()=>{ currentTab = i; renderTabs(); });
         tabsEl.appendChild(d);
       });
     }
 
-    function createItemElement(option, index) {
-      if (option.type === 'divider') {
-        const div = document.createElement('div');
-        div.className = 'menu-divider';
-        const span = document.createElement('span');
-        span.textContent = option.label || '';
-        div.appendChild(span);
-        return div;
+    // Create item element
+    function createItem(option, i){
+      if(option.type === 'divider'){
+        const div = document.createElement('div'); div.className='menu-divider';
+        const span = document.createElement('span'); span.textContent = option.label || '';
+        div.appendChild(span); return div;
       }
 
-      const el = document.createElement('div');
-      el.className = 'menu-item';
-      el.setAttribute('data-index', index);
+      const el = document.createElement('div'); el.className='menu-item'; el.dataset.index = i;
+      if(i === current) el.classList.add('active');
 
       const left = document.createElement('span');
-      left.style.flexGrow = '1';
-      left.style.textAlign = 'left';
-      left.style.fontSize = '1.2vh';
+      left.style.flexGrow = '1'; left.style.textAlign='left'; left.style.fontSize='1.2vh';
       left.textContent = option.label || '';
       el.appendChild(left);
 
-      // right-side control
-      if (option.type === 'submenu') {
-        const icon = document.createElement('i');
-        icon.className = 'ph ph-caret-right';
-        icon.style.fontSize = '1.2vh';
+      // right control
+      if(option.type === 'submenu'){
+        const icon = document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh';
         el.appendChild(icon);
-      } else if (option.type === 'checkbox') {
-        const toggle = document.createElement('div');
-        toggle.className = 'toggle' + (option.checked ? ' on' : '');
-        toggle.addEventListener('click', (e) => {
-          e.stopPropagation();
-          option.checked = !option.checked;
-          toggle.classList.toggle('on', !!option.checked);
-          // Optionally notify host of the toggle change:
-          sendToHost({ action: 'changed', index, option });
-        });
-        el.appendChild(toggle);
-      } else if (option.type === 'slider') {
-        const input = document.createElement('input');
-        input.type = 'range';
-        input.className = 'range';
-        input.min = option.min ?? 0;
-        input.max = option.max ?? 100;
-        input.step = option.step ?? 1;
-        input.value = option.value ?? input.min;
-        input.style.setProperty('--pct', ((input.value / (option.max || 1)) * 100) + '%');
-        input.addEventListener('input', () => {
-          option.value = Number(input.value);
-          input.style.setProperty('--pct', ((input.value / (option.max || 1)) * 100) + '%');
-        });
-        input.addEventListener('change', () => {
-          sendToHost({ action: 'changed', index, option });
-        });
-        el.appendChild(input);
-      } else if (option.type === 'scroll') {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'scroll-label';
-        const leftBtn = document.createElement('span');
-        leftBtn.textContent = '◀';
-        leftBtn.style.cursor = 'pointer';
-        leftBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          option.selected = Math.max(0, (option.selected || 0) - 1);
-          renderMenu(); scheduleMeasure();
-          sendToHost({ action: 'changed', index, option });
-        });
-        const center = document.createElement('span');
-        center.textContent = (option.options && option.options[option.selected]?.label) || '';
-        center.style.minWidth = '6vh';
-        const rightBtn = document.createElement('span');
-        rightBtn.textContent = '▶';
-        rightBtn.style.cursor = 'pointer';
-        rightBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          option.selected = Math.min((option.options?.length || 1) - 1, (option.selected || 0) + 1);
-          renderMenu(); scheduleMeasure();
-          sendToHost({ action: 'changed', index, option });
-        });
-        wrapper.appendChild(leftBtn);
-        wrapper.appendChild(center);
-        wrapper.appendChild(rightBtn);
-        el.appendChild(wrapper);
-      } else { // default button / label
-        const stub = document.createElement('div');
-        stub.style.width = '1.4vh';
-        el.appendChild(stub);
+      } else if(option.type === 'checkbox'){
+        const t = document.createElement('div'); t.className = 'toggle' + (option.checked? ' on':'');
+        t.addEventListener('click', (e)=>{ e.stopPropagation(); option.checked = !option.checked; t.classList.toggle('on', !!option.checked); sendToHost({action:'changed', index:i, option}); });
+        el.appendChild(t);
+      } else if(option.type === 'slider'){
+        const r = document.createElement('input'); r.type='range'; r.className='range';
+        r.min = option.min ?? 0; r.max = option.max ?? 100; r.step = option.step ?? 1; r.value = option.value ?? r.min;
+        r.style.setProperty('--pct', ((r.value / (option.max||1)) * 100) + '%');
+        r.addEventListener('input', ()=> { option.value = Number(r.value); r.style.setProperty('--pct', ((r.value / (option.max||1)) * 100) + '%'); });
+        r.addEventListener('change', ()=> { sendToHost({action:'changed', index:i, option}); });
+        el.appendChild(r);
+      } else if(option.type === 'scroll'){
+        const wrap = document.createElement('div'); wrap.className='scroll-label';
+        const l = document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer';
+        const c = document.createElement('span'); c.textContent = (option.options && option.options[option.selected]?.label) || ''; c.style.minWidth='6vh';
+        const r = document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer';
+        l.addEventListener('click',(e)=>{ e.stopPropagation(); option.selected = Math.max(0,(option.selected||0)-1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option}); });
+        r.addEventListener('click',(e)=>{ e.stopPropagation(); option.selected = Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option}); });
+        wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r);
+        el.appendChild(wrap);
+      } else {
+        // button - spacer
+        const spacer = document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer);
       }
 
-      // click -> select/activate
-      el.addEventListener('click', () => {
-        current = index;
+      el.addEventListener('click', ()=>{
+        current = i;
         renderMenu();
-        centerOnSelected(index);
+        centerOnSelected(i);
         scheduleMeasure();
-        // If it's a button, inform host
-        if (option.type === 'button' || option.type === 'submenu') {
-          sendToHost({ action: 'activate', index, option });
+        if(option.type === 'button' || option.type === 'submenu'){
+          sendToHost({ action:'activate', index:i, option });
+        } else if(option.type === 'checkbox'){
+          // toggling handled on toggle click
         }
       });
 
       return el;
     }
 
-    function renderMenu() {
-      menuList.innerHTML = '';
-      itemEls = [];
-      activeMenu.forEach((option, i) => {
-        const el = createItemElement(option, i);
-        // mark active
-        if (i === current) {
-          el.classList.add('active');
-        }
-        menuList.appendChild(el);
-        itemEls[i] = el;
+    // Render menu
+    function renderMenu(){
+      listEl.innerHTML = ''; itemEls = [];
+      activeMenu.forEach((opt, idx)=>{
+        const el = createItem(opt, idx);
+        listEl.appendChild(el);
+        itemEls[idx] = el;
       });
-
-      // update counter
-      counterLabel.textContent = `(${counterCurrent()}/${selectableMenu().length})`;
+      counterEl.textContent = `(${counterCurrent()}/${selectableMenu().length})`;
       renderTabs();
-      bannerImg.src = banner;
-      // measure scrollbar after next paint
+      bannerEl.src = banner;
+      // measure after paint
       requestAnimationFrame(measureScrollbar);
     }
 
-    // ---------- Scrollbar logic ----------
-    function syncThumb() {
-      if (!menuListWrap) return;
-      const trackScrollable = Math.max(0, trackHeight - thumbHeight);
-      if (hasOverflow) {
-        const maxScroll = Math.max(0, menuList.scrollHeight - menuListWrap.clientHeight);
-        if (menuListWrap.scrollTop <= 1) { thumbTop = 0; updateThumb(); return; }
-        const ratio = maxScroll > 0 ? Math.min(1, Math.max(0, menuListWrap.scrollTop / maxScroll)) : 0;
-        thumbTop = Math.round(trackScrollable * ratio);
-      } else {
-        const count = Math.max(1, activeMenu.length);
-        const lastIdx = Math.max(1, count - 1);
-        const idx = Math.min(Math.max(current, 0), count - 1);
-        const ratio = count > 1 ? (idx / lastIdx) : 0;
-        thumbTop = Math.round(trackScrollable * ratio);
-      }
-      updateThumb();
-    }
-
-    function updateThumb() {
-      scrollThumb.style.top = thumbTop + 'px';
-      scrollThumb.style.height = thumbHeight + 'px';
-    }
-
-    function measureScrollbar() {
-      if (!wrapperEl || !menuListWrap) return;
-      const wrapperRect = wrapperEl.getBoundingClientRect();
-      const listRect = menuListWrap.getBoundingClientRect();
+    // SCROLLBAR logic
+    function measureScrollbar(){
+      if(!wrapper || !listWrap) return;
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const listRect = listWrap.getBoundingClientRect();
       trackTop = Math.round(listRect.top - wrapperRect.top);
       trackHeight = Math.round(listRect.height);
-      const clientH = menuListWrap.clientHeight;
-      const scrollH = menuList.scrollHeight;
+      const clientH = listWrap.clientHeight;
+      const scrollH = listEl.scrollHeight;
       hasOverflow = scrollH > clientH + 1;
-      scrollbarHidden = !showing || activeMenu.length === 0;
-      thumbHeight = hasOverflow
-        ? Math.max(MIN_THUMB, Math.round((clientH / scrollH) * trackHeight))
-        : Math.max(MIN_THUMB, Math.min(NO_OVERFLOW_THUMB_MAX, trackHeight));
-      // position the container and thumb
-      if (scrollbarHidden) {
-        scrollContainer.classList.add('hidden');
+      thumbHeight = hasOverflow ? Math.max(MIN_THUMB, Math.round((clientH / scrollH) * trackHeight)) : Math.max(MIN_THUMB, Math.min(NO_OVERFLOW_THUMB_MAX, trackHeight));
+      if(!showing || activeMenu.length === 0){
+        scrollbar.classList.add('hidden');
       } else {
-        scrollContainer.classList.remove('hidden');
-        scrollContainer.style.top = trackTop + 'px';
-        scrollContainer.style.height = trackHeight + 'px';
+        scrollbar.classList.remove('hidden');
+        scrollbar.style.top = trackTop + 'px';
+        scrollbar.style.height = trackHeight + 'px';
       }
       syncThumb();
     }
 
-    function centerOnSelected(index) {
-      if (!menuListWrap) return;
-      const maxScroll = Math.max(0, menuList.scrollHeight - menuListWrap.clientHeight);
-      if (!hasOverflow || maxScroll === 0) {
-        menuListWrap.scrollTop = 0; syncThumb(); return;
+    function syncThumb(){
+      const trackScrollable = Math.max(0, trackHeight - thumbHeight);
+      if(hasOverflow){
+        const maxScroll = Math.max(0, listEl.scrollHeight - listWrap.clientHeight);
+        const ratio = maxScroll > 0 ? Math.min(1, Math.max(0, listWrap.scrollTop / maxScroll)) : 0;
+        thumbTop = Math.round(trackScrollable * ratio);
+      } else {
+        const count = Math.max(1, activeMenu.length);
+        const lastIdx = Math.max(1, count - 1);
+        const idx = Math.min(Math.max(current,0), count -1);
+        const ratio = count > 1 ? (idx / lastIdx) : 0;
+        thumbTop = Math.round(trackScrollable * ratio);
+      }
+      thumb.style.top = thumbTop + 'px';
+      thumb.style.height = thumbHeight + 'px';
+    }
+
+    function centerOnSelected(index){
+      if(!listWrap) return;
+      const maxScroll = Math.max(0, listEl.scrollHeight - listWrap.clientHeight);
+      if(!hasOverflow || maxScroll === 0){
+        listWrap.scrollTop = 0; syncThumb(); return;
       }
       const lastIdx = Math.max(0, activeMenu.length - 1);
-      if (index <= 0) { menuListWrap.scrollTop = 0; requestAnimationFrame(syncThumb); return; }
-      if (index >= lastIdx) { menuListWrap.scrollTop = maxScroll; requestAnimationFrame(syncThumb); return; }
+      if(index <= 0){ listWrap.scrollTop = 0; requestAnimationFrame(syncThumb); return; }
+      if(index >= lastIdx){ listWrap.scrollTop = maxScroll; requestAnimationFrame(syncThumb); return; }
       const item = itemEls[index];
-      if (!item) return;
+      if(!item) return;
       const itemTop = item.offsetTop;
-      const itemCenter = itemTop + item.offsetHeight / 2;
-      let target = itemCenter - menuListWrap.clientHeight / 2;
-      if (target < 0) target = 0;
-      if (target > maxScroll) target = maxScroll;
-      menuListWrap.scrollTop = target;
+      const itemCenter = itemTop + item.offsetHeight/2;
+      let target = itemCenter - listWrap.clientHeight/2;
+      if(target < 0) target = 0;
+      if(target > maxScroll) target = maxScroll;
+      listWrap.scrollTop = target;
       requestAnimationFrame(syncThumb);
     }
 
-    // When the list scrolls, sync thumb
-    menuListWrap.addEventListener('scroll', function () { syncThumb(); });
+    // events
+    listWrap.addEventListener('scroll', ()=> syncThumb());
+    window.addEventListener('resize', ()=> scheduleMeasure());
+    const scheduleMeasure = () => requestAnimationFrame(()=> requestAnimationFrame(measureScrollbar));
 
-    // measure on resize
-    window.addEventListener('resize', () => scheduleMeasure());
-
-    // double rAF schedule measure
-    const scheduleMeasure = () => requestAnimationFrame(() => requestAnimationFrame(measureScrollbar));
-
-    // ---------- Messaging to host (optional) ----------
-    // In FiveM NUI, posting messages out to the resource uses a different pattern.
-    // We'll use window.dispatchEvent('menuEvent') fallback — host may listen for messages via window.addEventListener('message').
-    // For safety, we still call postMessage; host usually intercepts this.
-    function sendToHost(payload) {
-      try {
-        // Standard: parent window (DUI hosted inside game) expects postMessage with JSON
-        window.postMessage(payload, '*');
-      } catch (e) {
-        // no-op
-      }
+    // messaging to host (post back)
+    function sendToHost(payload){
+      try { window.postMessage(payload, '*'); } catch(e){}
     }
 
-    // ---------- Exposed message listener (host -> dui) ----------
-    window.addEventListener('message', (ev) => {
+    // host -> dui messages
+    window.addEventListener('message', (ev)=>{
       const data = ev.data;
-      if (!data || typeof data !== 'object') return;
+      if(!data || typeof data !== 'object') return;
       const action = data.action;
-      if (!action) return;
-
-      if (action === 'setCurrent') {
-        // incoming current is 1-based in your original code — support both
+      if(!action) return;
+      if(action === 'setCurrent'){
         const incoming = data.current;
-        current = (typeof incoming === 'number') ? Math.max(0, (incoming - 1)) : 0;
-        if (Array.isArray(data.menu)) activeMenu = data.menu;
+        current = (typeof incoming === 'number') ? Math.max(0, incoming - 1) : 0;
+        if(Array.isArray(data.menu)) activeMenu = data.menu;
         showing = data.visible !== undefined ? !!data.visible : true;
-        renderMenu();
-        centerOnSelected(current);
-        scheduleMeasure();
-      } else if (action === 'setTabs') {
+        renderMenu(); centerOnSelected(current); scheduleMeasure();
+      } else if(action === 'setTabs'){
         activeTabs = Array.isArray(data.tabs) ? data.tabs : [];
-        currentTab = 0;
-        renderTabs();
-      } else if (action === 'setTabIndex') {
-        currentTab = (typeof data.index === 'number') ? data.index : 0;
-        renderTabs();
-      } else if (action === 'setVisible') {
-        showing = !!data.visible;
-        wrapperEl.style.opacity = showing ? '1' : '0';
-        if (showing) centerOnSelected(current);
+        currentTab = 0; renderTabs();
+      } else if(action === 'setTabIndex'){
+        currentTab = (typeof data.index === 'number') ? data.index : 0; renderTabs();
+      } else if(action === 'setVisible'){
+        showing = !!data.visible; wrapper.style.opacity = showing ? '1' : '0'; if(showing) centerOnSelected(current); scheduleMeasure();
+      } else if(action === 'position'){
+        // left-only requested - ignore other positions but allow left/right if provided
+        const pos = data.position || 'left';
+        if(pos === 'left') wrapper.style.left = '6.5vh';
+        else if(pos === 'right') wrapper.style.left = 'calc(100% - 41vh)'; // still supported if you send it
         scheduleMeasure();
-      } else if (action === 'position') {
-        position = data.position || 'left';
-        if (position === 'left') wrapperEl.style.left = '6.5vh';
-        else if (position === 'right') wrapperEl.style.left = 'calc(100% - 41vh)';
-        else wrapperEl.style.left = data.left ?? '6.5vh';
-        scheduleMeasure();
-      } else if (action === 'banner') {
-        if (typeof data.banner === 'string') {
-          banner = data.banner;
-          bannerImg.src = banner;
-        }
-      } else if (action === 'setMenu') {
-        if (Array.isArray(data.menu)) activeMenu = data.menu;
-        renderMenu();
-        scheduleMeasure();
+      } else if(action === 'banner'){
+        if(typeof data.banner === 'string'){ banner = data.banner; bannerEl.src = banner; }
+      } else if(action === 'setMenu'){
+        if(Array.isArray(data.menu)) activeMenu = data.menu; renderMenu(); scheduleMeasure();
       }
     });
 
-    // ---------- keyboard navigation (arrow keys, enter, esc) ----------
-    window.addEventListener('keydown', function (e) {
-      if (!showing) return;
+    // keyboard navigation
+    window.addEventListener('keydown', (e)=>{
+      if(!showing) return;
       const max = activeMenu.length - 1;
-      if (e.key === 'ArrowDown') {
-        // move to next selectable index
+      if(e.key === 'ArrowDown'){
         let idx = current;
-        do { idx = Math.min(idx + 1, max); if (idx === current) break; } while (activeMenu[idx]?.type === 'divider');
-        current = idx;
-        renderMenu(); centerOnSelected(current); scheduleMeasure();
-        e.preventDefault();
-      } else if (e.key === 'ArrowUp') {
+        do { idx = Math.min(idx+1, max); if(idx === current) break; } while(activeMenu[idx]?.type === 'divider');
+        current = idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
+      } else if(e.key === 'ArrowUp'){
         let idx = current;
-        do { idx = Math.max(idx - 1, 0); if (idx === current) break; } while (activeMenu[idx]?.type === 'divider');
-        current = idx;
-        renderMenu(); centerOnSelected(current); scheduleMeasure();
-        e.preventDefault();
-      } else if (e.key === 'Enter') {
+        do { idx = Math.max(idx-1, 0); if(idx === current) break; } while(activeMenu[idx]?.type === 'divider');
+        current = idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
+      } else if(e.key === 'Enter'){
         const opt = activeMenu[current];
-        if (opt) {
-          if (opt.type === 'button' || opt.type === 'submenu') {
-            sendToHost({ action: 'activate', index: current, option: opt });
-          } else if (opt.type === 'checkbox') {
-            opt.checked = !opt.checked;
-            renderMenu();
-            sendToHost({ action: 'changed', index: current, option: opt });
-          } else if (opt.type === 'scroll') {
-            // rotate forward
-            opt.selected = Math.min((opt.options?.length || 1) - 1, (opt.selected || 0) + 1);
-            renderMenu();
-            sendToHost({ action: 'changed', index: current, option: opt });
-          }
+        if(opt){
+          if(opt.type === 'button' || opt.type === 'submenu'){ sendToHost({action:'activate', index:current, option:opt}); }
+          else if(opt.type === 'checkbox'){ opt.checked = !opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt}); }
+          else if(opt.type === 'scroll'){ opt.selected = Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToHost({action:'changed', index:current, option:opt}); }
         }
         e.preventDefault();
-      } else if (e.key === 'Escape') {
-        sendToHost({ action: 'escape' });
+      } else if(e.key === 'Escape'){
+        sendToHost({action:'escape'});
       }
     });
 
     // initial render
     renderMenu();
 
-    // small utility: ensure scroll thumb updates when content changes
-    const ro = new ResizeObserver(() => scheduleMeasure());
-    ro.observe(menuList);
-    ro.observe(menuListWrap);
-    ro.observe(wrapperEl);
+    // resize observer to keep measures accurate
+    const ro = new ResizeObserver(()=> scheduleMeasure());
+    ro.observe(listEl);
+    ro.observe(listWrap);
+    ro.observe(wrapper);
 
-    // expose a small API on window for testing (optional)
+    // expose API for testing
     window.__DUI_API__ = {
-      setMenu(m) { activeMenu = m; renderMenu(); scheduleMeasure(); },
-      setCurrent(i) { current = i; renderMenu(); centerOnSelected(i); scheduleMeasure(); }
+      setMenu(m){ if(Array.isArray(m)){ activeMenu = m; renderMenu(); scheduleMeasure(); } },
+      setCurrent(i){ current = i; renderMenu(); centerOnSelected(i); scheduleMeasure(); }
     };
 
-    // initial measure after paint
+    // measure initially
     scheduleMeasure();
-
   })();
   </script>
 </body>
