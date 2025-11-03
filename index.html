@@ -1,86 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Menu DUI</title>
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <style>
-:root { --red:#ff0000; --bg:rgba(0,0,0,0.85); --accent:rgba(100,0,0,0.6); }
-* { box-sizing:border-box; margin:0; padding:0; background:none; }
-html,body { height:100%; width:100%; font-family:"Segoe UI",Arial,sans-serif; -webkit-font-smoothing:antialiased; color:#fff; user-select:none; }
-
-.menu-wrapper {
-  position: fixed; top:50%; left:6.5vh; transform:translateY(-50%);
-  width:41vh; z-index:9999; pointer-events:auto;
-  transition: opacity .18s ease, left .28s ease; opacity:1;
-}
-
-.banner-card { margin-left:1.75vh; width:calc(100%-1.75vh); border-radius:.4vh; overflow:hidden; line-height:0; }
-.banner-card img { display:block; width:100%; height:9.5vh; object-fit:cover; }
-
-.tabs { display:flex; background:#000; border-radius:.2vh; margin-top:-0.2vh; overflow:hidden; }
-.tab { flex:1; text-align:center; padding:1.5vh 1.2vh; font-size:1.15vh; font-weight:500; cursor:pointer; transition:all .12s ease; white-space:nowrap; color:#fff; }
-.tab.active { background: linear-gradient(0deg, var(--red) 0%, transparent 100%); }
-
-.menu-column { margin-left:1.75vh; margin-top:0.8vh; width:calc(100%-1.75vh); background:var(--bg); border-radius:.3vh; padding:.3vh; display:flex; flex-direction:column; overflow:visible; position:relative; }
-.menu-list-wrap { max-height:33.6vh; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
-.menu-list-wrap::-webkit-scrollbar { display:none; }
-.menu-list { display:flex; flex-direction:column; gap:0; padding:.3vh .4vh .6vh .6vh; }
-.menu-item { padding:.7vh 1.0vh; display:flex; align-items:center; justify-content:space-between; gap:1vh; border-radius:.3vh; font-size:1.4vh; font-weight:400; cursor:pointer; transition: background .12s ease, transform .06s ease; color:#fff; }
-.menu-item:hover { transform:translateX(.08vh); }
-.menu-item.active { background-color:rgba(100,0,0,0.6); border-left:.3vh solid var(--red); }
-
-.menu-divider { position:relative; display:flex; align-items:center; justify-content:center; height:2.2vh; margin:.6vh 0; pointer-events:none; }
-.menu-divider span { color:rgba(255,255,255,.75); font-size:1.0vh; font-weight:600; }
-.menu-divider::before, .menu-divider::after { content:""; position:absolute; top:50%; transform:translateY(-50%); width:7vh; height:.4vh; background:rgba(255,255,255,.95); border-radius:.2vh; }
-.menu-divider::before{ left:1.2vh } .menu-divider::after{ right:1.2vh }
-
-.toggle { width:3.3vh; height:1.5vh; border-radius:1vh; background:#222; position:relative; cursor:pointer; }
-.toggle::before { content:''; position:absolute; width:1.1vh; height:1.1vh; border-radius:50%; background:#fff; left:.2vh; top:.2vh; transition: transform .18s ease; }
-.toggle.on::before { transform:translateX(1.65vh); background:var(--red); }
-
-.range { width:7.5vh; height:1.2vh; background:transparent; -webkit-appearance:none; border:0; outline:none; }
-.range::-webkit-slider-runnable-track { height:.55vh; border-radius:.75vh; background: linear-gradient(to right, rgba(255,255,255,.95) 0 var(--pct), rgb(46,46,46) var(--pct) 100%); }
-.range::-webkit-slider-thumb { width:1.1vh; height:1.1vh; margin-top:-.3vh; border-radius:50%; background:#fff; -webkit-appearance:none; cursor:pointer; }
-
-.scroll-label { display:flex; align-items:center; gap:.4vh; min-width:8.5vh; justify-content:center; font-size:1.2vh; }
-
-.info-bar { margin-top:.6vh; margin-left:1.75vh; width:calc(100%-1.75vh); background:rgba(0,0,0,0.85); border-radius:.4vh; padding:.8vh .9vh; font-size:1.05vh; display:flex; justify-content:space-between; align-items:center; color:#fff; }
-
-.scrollbar-container { position:absolute; left:0.5vh; width:0.6vh; border-radius:.15vh; background:rgba(0,0,0,.45); pointer-events:none; z-index:10; transition:height .18s ease, opacity .18s ease; overflow:hidden; }
-.scrollbar-container.hidden { opacity:0; display:none; }
-.scrollbar-thumb { position:absolute; left:0; right:0; top:0; height:1.2vh; background:var(--red); border-radius:.15vh; transition: top .08s linear, height .12s ease; }
-
-@media (max-width: 680px) {
-  .menu-wrapper { left:2vh; width:78vw; transform:translateY(-50%); }
-  .menu-column { width:70vw; }
-  .info-bar { width:70vw; }
-}
+:root { --red:#ff0000; --bg:rgba(0,0,0,0.85); --accent:rgba(100,0,0,0.6);}
+*{box-sizing:border-box;margin:0;padding:0;background:none;}
+html,body{height:100%;width:100%;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none;}
+.menu-wrapper{position:fixed;top:50%;left:6.5vh;transform:translateY(-50%);width:41vh;z-index:9999;pointer-events:auto;transition:opacity .18s ease,left .28s ease;opacity:1;}
+.banner-card{margin-left:1.75vh;width:calc(100%-1.75vh);border-radius:.4vh;overflow:hidden;line-height:0;}
+.banner-card img{display:block;width:100%;height:9.5vh;object-fit:cover;}
+.tabs{display:flex;background:#000;border-radius:.2vh;margin-top:-0.2vh;overflow:hidden;}
+.tab{flex:1;text-align:center;padding:1.5vh 1.2vh;font-size:1.15vh;font-weight:500;cursor:pointer;transition:all .12s ease;white-space:nowrap;color:#fff;}
+.tab.active{background:linear-gradient(0deg,var(--red) 0%,transparent 100%);}
+.menu-column{margin-left:1.75vh;margin-top:0.8vh;width:calc(100%-1.75vh);background:var(--bg);border-radius:.3vh;padding:.3vh;display:flex;flex-direction:column;overflow:visible;position:relative;}
+.menu-list-wrap{max-height:33.6vh;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.menu-list-wrap::-webkit-scrollbar{display:none;}
+.menu-list{display:flex;flex-direction:column;gap:0;padding:.3vh .4vh .6vh .6vh;}
+.menu-item{padding:.7vh 1.0vh;display:flex;align-items:center;justify-content:space-between;gap:1vh;border-radius:.3vh;font-size:1.4vh;font-weight:400;cursor:pointer;transition: background .12s ease, transform .06s ease;color:#fff;}
+.menu-item:hover{transform:translateX(.08vh);}
+.menu-item.active{background-color:rgba(100,0,0,0.6);border-left:.3vh solid var(--red);}
+.menu-divider{position:relative;display:flex;align-items:center;justify-content:center;height:2.2vh;margin:.6vh 0;pointer-events:none;}
+.menu-divider span{color:rgba(255,255,255,.75);font-size:1.0vh;font-weight:600;}
+.menu-divider::before,.menu-divider::after{content:"";position:absolute;top:50%;transform:translateY(-50%);width:7vh;height:.4vh;background:rgba(255,255,255,.95);border-radius:.2vh;}
+.menu-divider::before{left:1.2vh;} .menu-divider::after{right:1.2vh;}
+.toggle{width:3.3vh;height:1.5vh;border-radius:1vh;background:#222;position:relative;cursor:pointer;}
+.toggle::before{content:'';position:absolute;width:1.1vh;height:1.1vh;border-radius:50%;background:#fff;left:.2vh;top:.2vh;transition: transform .18s ease;}
+.toggle.on::before{transform:translateX(1.65vh);background:var(--red);}
+.range{width:7.5vh;height:1.2vh;background:transparent;-webkit-appearance:none;border:0;outline:none;}
+.range::-webkit-slider-runnable-track{height:.55vh;border-radius:.75vh;background:linear-gradient(to right, rgba(255,255,255,.95) 0 var(--pct), rgb(46,46,46) var(--pct) 100%);}
+.range::-webkit-slider-thumb{width:1.1vh;height:1.1vh;margin-top:-.3vh;border-radius:50%;background:#fff;-webkit-appearance:none;cursor:pointer;}
+.scroll-label{display:flex;align-items:center;gap:.4vh;min-width:8.5vh;justify-content:center;font-size:1.2vh;}
+.info-bar{margin-top:.6vh;margin-left:1.75vh;width:calc(100%-1.75vh);background:rgba(0,0,0,0.85);border-radius:.4vh;padding:.8vh .9vh;font-size:1.05vh;display:flex;justify-content:space-between;align-items:center;color:#fff;}
+.scrollbar-container{position:absolute;left:0.5vh;width:0.6vh;border-radius:.15vh;background:rgba(0,0,0,.45);pointer-events:none;z-index:10;transition:height .18s ease,opacity .18s ease;overflow:hidden;}
+.scrollbar-container.hidden{opacity:0;display:none;}
+.scrollbar-thumb{position:absolute;left:0;right:0;top:0;height:1.2vh;background:var(--red);border-radius:.15vh;transition:top .08s linear, height .12s ease;}
+@media (max-width:680px){.menu-wrapper{left:2vh;width:78vw;}.menu-column{width:70vw;}.info-bar{width:70vw;}}
 </style>
 </head>
 <body>
 <div id="app">
-<div id="wrapper" class="menu-wrapper" aria-hidden="false">
-  <div id="scrollbar" class="scrollbar-container hidden" style="top:0;height:0px;">
-    <div id="thumb" class="scrollbar-thumb" style="top:0;height:24px;"></div>
-  </div>
-
-  <div class="banner-card">
-    <img id="bannerImg" src="https://i.postimg.cc/cHwRL0V3/5a93bce4-705f-47cf-aa00-d818e2a97ee4.png" alt="banner" />
-    <div id="tabs" class="tabs"></div>
-  </div>
-
-  <div class="menu-column" role="region" aria-label="menu-column">
-    <div id="list-wrap" class="menu-list-wrap">
-      <div id="list" class="menu-list"></div>
-    </div>
-  </div>
-
-  <div id="info" class="info-bar">
-    <span id="build">Beta 1.3 [Custom Build]</span>
-    <span id="counter">(0/0)</span>
-  </div>
+<div id="wrapper" class="menu-wrapper">
+  <div id="scrollbar" class="scrollbar-container hidden"><div id="thumb" class="scrollbar-thumb"></div></div>
+  <div class="banner-card"><img id="bannerImg" src="https://i.postimg.cc/cHwRL0V3/5a93bce4-705f-47cf-aa00-d818e2a97ee4.png"><div id="tabs" class="tabs"></div></div>
+  <div class="menu-column"><div id="list-wrap" class="menu-list-wrap"><div id="list" class="menu-list"></div></div></div>
+  <div id="info" class="info-bar"><span id="build">Beta 1.3 [Custom Build]</span><span id="counter">(0/0)</span></div>
 </div>
 </div>
 
@@ -89,35 +55,26 @@ html,body { height:100%; width:100%; font-family:"Segoe UI",Arial,sans-serif; -w
 let current=0, showing=true, activeTabs=["Main Menu"], currentTab=0;
 let banner=document.getElementById('bannerImg').src;
 
-// Main menu + nested submenus
-let mainMenu=[
-  { label:'Start Game', type:'button' },
-  { label:'Enable Cheats', type:'checkbox', checked:false },
-  { label:'Difficulty', type:'scroll', options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}], selected:1 },
-  { label:'Volume', type:'slider', min:0, max:100, step:1, value:75 },
-  { label:'Settings', type:'submenu', submenu:[
-      { label:'Graphics', type:'submenu', submenu:[
-          { label:'Resolution', type:'scroll', options:[{label:'720p'},{label:'1080p'},{label:'1440p'}], selected:1 },
-          { label:'Fullscreen', type:'checkbox', checked:true },
-          { label:'VSync', type:'checkbox', checked:false }
+// Original menu items
+let activeMenu=[
+  {label:'Start Game',type:'button'},
+  {label:'Enable Cheats',type:'checkbox',checked:false},
+  {label:'Difficulty',type:'scroll',options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}],selected:1},
+  {label:'Volume',type:'slider',min:0,max:100,step:1,value:75},
+  {label:'Settings',type:'submenu',submenu:[
+      {label:'Graphics',type:'submenu',submenu:[
+          {label:'Resolution',type:'scroll',options:[{label:'720p'},{label:'1080p'},{label:'1440p'}],selected:1},
+          {label:'Fullscreen',type:'checkbox',checked:true},
+          {label:'VSync',type:'checkbox',checked:false}
       ]},
-      { label:'Sound', type:'submenu', submenu:[
-          { label:'Music Volume', type:'slider', min:0, max:100, step:1, value:50 },
-          { label:'SFX Volume', type:'slider', min:0, max:100, step:1, value:70 }
-      ]},
-      { label:'Controls', type:'submenu', submenu:[
-          { label:'Invert Y-Axis', type:'checkbox', checked:false },
-          { label:'Mouse Sensitivity', type:'slider', min:1, max:20, step:1, value:10 }
+      {label:'Sound',type:'submenu',submenu:[
+          {label:'Music Volume',type:'slider',min:0,max:100,value:50},
+          {label:'SFX Volume',type:'slider',min:0,max:100,value:70}
       ]}
   ]},
-  { label:'Enable Multiplayer', type:'checkbox', checked:true },
-  { label:'Language', type:'scroll', options:[{label:'English'},{label:'Spanish'},{label:'French'}], selected:0 },
-  { label:'Credits', type:'button' },
-  { label:'Exit Game', type:'button' }
+  {label:'Exit Game',type:'button'}
 ];
-
-let menuStack = [mainMenu]; // for nested menus
-let activeMenu = menuStack[menuStack.length-1];
+let menuStack=[activeMenu];
 
 const wrapper=document.getElementById('wrapper');
 const listWrap=document.getElementById('list-wrap');
@@ -129,115 +86,60 @@ const scrollbar=document.getElementById('scrollbar');
 const thumb=document.getElementById('thumb');
 
 let itemEls=[], trackTop=0, trackHeight=0, thumbTop=0, thumbHeight=24;
-let hasOverflow=false;
 const MIN_THUMB=18, NO_OVERFLOW_THUMB_MAX=28;
+let hasOverflow=false;
 
-function selectableMenu(){ return activeMenu.filter(o=>o?.type!=='divider'); }
-function selectableIndices(){ return activeMenu.map((o,i)=>o?.type!=='divider'?i:-1).filter(i=>i!==-1); }
-function counterCurrent(){ const idxs=selectableIndices(); if(idxs.length===0) return 0; const pos=idxs.indexOf(current); if(pos!==-1) return pos+1; let nearest=-1, best=Infinity; for(let i=0;i<idxs.length;i++){const d=Math.abs(idxs[i]-current); if(d<best){best=d; nearest=i;} } return nearest!==-1?nearest+1:0; }
+function selectableMenu(){ return activeMenu.filter(o=>o.type!=='divider'); }
+function selectableIndices(){ return activeMenu.map((o,i)=>o.type!=='divider'?i:-1).filter(i=>i!==-1); }
+function counterCurrent(){ const idxs=selectableIndices(); if(!idxs.length) return 0; const pos=idxs.indexOf(current); if(pos!==-1) return pos+1; let nearest=-1,best=Infinity; for(let i=0;i<idxs.length;i++){const d=Math.abs(idxs[i]-current);if(d<best){best=d;nearest=i;}} return nearest!==-1?nearest+1:0; }
 
-function renderTabs(){ tabsEl.innerHTML=''; if(!activeTabs||activeTabs.length===0) return; if(activeTabs.length===1){ const d=document.createElement('div'); d.className='tab active'; d.textContent=activeTabs[0]; tabsEl.appendChild(d); return; } activeTabs.forEach((t,i)=>{ const d=document.createElement('div'); d.className='tab'+(i===currentTab?' active':''); d.textContent=t; d.addEventListener('click',()=>{currentTab=i; renderTabs();}); tabsEl.appendChild(d); }); }
+function renderTabs(){ tabsEl.innerHTML=''; activeTabs.forEach((t,i)=>{let d=document.createElement('div'); d.className='tab'+(i===currentTab?' active':''); d.textContent=t; d.addEventListener('click',()=>{currentTab=i; renderTabs();}); tabsEl.appendChild(d); }); }
 
 function createItem(option,i){
-  if(option.type==='divider'){ const div=document.createElement('div'); div.className='menu-divider'; const span=document.createElement('span'); span.textContent=option.label||''; div.appendChild(span); return div; }
-  const el=document.createElement('div'); el.className='menu-item'; el.dataset.index=i;
+  if(option.type==='divider'){ let d=document.createElement('div'); d.className='menu-divider'; let s=document.createElement('span'); s.textContent=option.label||''; d.appendChild(s); return d;}
+  let el=document.createElement('div'); el.className='menu-item'; el.dataset.index=i;
   if(i===current) el.classList.add('active');
-  const left=document.createElement('span'); left.style.flexGrow='1'; left.style.textAlign='left'; left.style.fontSize='1.2vh'; left.textContent=option.label||''; el.appendChild(left);
+  let left=document.createElement('span'); left.style.flexGrow='1'; left.style.textAlign='left'; left.style.fontSize='1.2vh'; left.textContent=option.label||''; el.appendChild(left);
 
-  if(option.type==='submenu'){ const icon=document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh'; el.appendChild(icon);}
-  else if(option.type==='checkbox'){ const t=document.createElement('div'); t.className='toggle'+(option.checked?' on':''); t.addEventListener('click',(e)=>{e.stopPropagation(); option.checked=!option.checked; t.classList.toggle('on',!!option.checked); sendToHost({action:'changed', index:i, option});}); el.appendChild(t);}
-  else if(option.type==='slider'){ const r=document.createElement('input'); r.type='range'; r.className='range'; r.min=option.min??0; r.max=option.max??100; r.step=option.step??1; r.value=option.value??r.min; r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%'); r.addEventListener('input',()=>{option.value=Number(r.value); r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%');}); r.addEventListener('change',()=>{sendToHost({action:'changed', index:i, option});}); el.appendChild(r);}
-  else if(option.type==='scroll'){ const wrap=document.createElement('div'); wrap.className='scroll-label'; const l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; const c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; const r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; l.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.max(0,(option.selected||0)-1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); r.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);}
-  else { const spacer=document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer); }
-
-  el.addEventListener('click',()=>{
-    current=i; 
-    if(option.type==='submenu' && option.submenu){ menuStack.push(option.submenu); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); centerOnSelected(current); }
-    else if(option.type==='button'){ sendToHost({action:'activate', index:i, option}); }
-    renderMenu(); centerOnSelected(i); scheduleMeasure();
-  });
-
+  if(option.type==='submenu'){ let icon=document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh'; el.appendChild(icon);}
+  else if(option.type==='checkbox'){ let t=document.createElement('div'); t.className='toggle'+(option.checked?' on':''); t.addEventListener('click',(e)=>{e.stopPropagation(); option.checked=!option.checked; t.classList.toggle('on',option.checked);}); el.appendChild(t);}
+  else if(option.type==='slider'){ let r=document.createElement('input'); r.type='range'; r.className='range'; r.min=option.min||0; r.max=option.max||100; r.step=option.step||1; r.value=option.value||0; r.style.setProperty('--pct',(r.value/(option.max||1)*100)+'%'); r.addEventListener('input',()=>{option.value=Number(r.value); r.style.setProperty('--pct',(r.value/(option.max||1)*100)+'%');}); el.appendChild(r);}
+  else if(option.type==='scroll'){ let wrap=document.createElement('div'); wrap.className='scroll-label'; let l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; let c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; let r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; l.addEventListener('click',()=>{option.selected=Math.max(0,(option.selected||0)-1); renderMenu();}); r.addEventListener('click',()=>{option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu();}); wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);}
+  el.addEventListener('click',()=>{ current=i; if(option.type==='submenu'&&option.submenu){ menuStack.push(option.submenu); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); }});
   return el;
 }
 
 function renderMenu(){
   listEl.innerHTML=''; itemEls=[];
-  // Add back button if inside a submenu
-  if(menuStack.length>1){
-    const backItem = { label:'← Back', type:'button' };
-    const backEl = document.createElement('div');
-    backEl.className='menu-item';
-    backEl.innerHTML='<span style="flex-grow:1; text-align:left; font-size:1.2vh;">← Back</span>';
-    backEl.addEventListener('click',()=>{
-      menuStack.pop();
-      activeMenu = menuStack[menuStack.length-1];
-      current=0;
-      renderMenu();
-      centerOnSelected(current);
-    });
-    listEl.appendChild(backEl);
-  }
-  activeMenu.forEach((opt,idx)=>{ const el=createItem(opt,idx); listEl.appendChild(el); itemEls[idx]=el; });
+  if(menuStack.length>1){ let backEl=document.createElement('div'); backEl.className='menu-item'; backEl.innerHTML='<span style="flex-grow:1;text-align:left;font-size:1.2vh;">← Back</span>'; backEl.addEventListener('click',()=>{ menuStack.pop(); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); }); listEl.appendChild(backEl);}
+  activeMenu.forEach((opt,idx)=>{ let el=createItem(opt,idx); listEl.appendChild(el); itemEls[idx]=el;});
   counterEl.textContent=`(${counterCurrent()}/${selectableMenu().length})`;
-  renderTabs(); bannerEl.src=banner;
-  requestAnimationFrame(measureScrollbar);
+  renderTabs(); bannerEl.src=banner; measureScrollbar(); centerOnSelected(current);
 }
 
-function measureScrollbar(){ 
-  if(!wrapper||!listWrap) return;
-  const wrapperRect=wrapper.getBoundingClientRect();
-  const listRect=listWrap.getBoundingClientRect();
-  trackTop=Math.round(listRect.top-wrapperRect.top);
-  trackHeight=Math.round(listRect.height);
-  const clientH=listWrap.clientHeight;
-  const scrollH=listEl.scrollHeight;
-  hasOverflow=scrollH>clientH+1;
-  thumbHeight=hasOverflow?Math.max(MIN_THUMB, Math.round((clientH/scrollH)*trackHeight)):Math.max(MIN_THUMB, Math.min(NO_OVERFLOW_THUMB_MAX, trackHeight));
-  if(!showing||activeMenu.length===0) scrollbar.classList.add('hidden'); else { scrollbar.classList.remove('hidden'); scrollbar.style.top=trackTop+'px'; scrollbar.style.height=trackHeight+'px';}
-  syncThumb();
+function measureScrollbar(){
+  const clientH=listWrap.clientHeight; const scrollH=listEl.scrollHeight;
+  hasOverflow=scrollH>clientH+1; thumbHeight=hasOverflow?Math.max(MIN_THUMB, Math.round(clientH/scrollH*clientH)):Math.min(NO_OVERFLOW_THUMB_MAX, clientH);
+  scrollbar.style.height=clientH+'px'; scrollbar.classList.toggle('hidden',!hasOverflow); syncThumb();
 }
 
-function syncThumb(){
-  const trackScrollable=Math.max(0, trackHeight-thumbHeight);
-  if(hasOverflow){ const maxScroll=Math.max(0,listEl.scrollHeight-listWrap.clientHeight); const ratio=maxScroll>0?Math.min(1,Math.max(0,listWrap.scrollTop/maxScroll)):0; thumbTop=Math.round(trackScrollable*ratio); } 
-  else { const count=Math.max(1,activeMenu.length); const lastIdx=Math.max(1,count-1); const idx=Math.min(Math.max(current,0),count-1); const ratio=count>1?(idx/lastIdx):0; thumbTop=Math.round(trackScrollable*ratio);}
-  thumb.style.top=thumbTop+'px'; thumb.style.height=thumbHeight+'px';
-}
+function syncThumb(){ if(!hasOverflow){thumb.style.top='0px'; return;} let ratio=listWrap.scrollTop/(listEl.scrollHeight-listWrap.clientHeight); thumb.style.top=Math.round(ratio*(listWrap.clientHeight-thumbHeight))+'px'; thumb.style.height=thumbHeight+'px'; }
 
-function centerOnSelected(index){
-  if(!listWrap) return;
-  const maxScroll=Math.max(0,listEl.scrollHeight-listWrap.clientHeight);
-  if(!hasOverflow||maxScroll===0){ listWrap.scrollTop=0; syncThumb(); return; }
-  const lastIdx=Math.max(0,activeMenu.length-1);
-  if(index<=0){listWrap.scrollTop=0; requestAnimationFrame(syncThumb); return;}
-  if(index>=lastIdx){listWrap.scrollTop=maxScroll; requestAnimationFrame(syncThumb); return;}
-  const item=itemEls[index]; if(!item) return;
-  const itemTop=item.offsetTop;
-  const itemCenter=itemTop+item.offsetHeight/2;
-  let target=itemCenter-listWrap.clientHeight/2;
-  if(target<0) target=0; if(target>maxScroll) target=maxScroll;
-  listWrap.scrollTop=target; requestAnimationFrame(syncThumb);
-}
+function centerOnSelected(index){ if(!listWrap) return; const maxScroll=Math.max(0,listEl.scrollHeight-listWrap.clientHeight); const item=itemEls[index]; if(!item) return; let target=item.offsetTop+item.offsetHeight/2-listWrap.clientHeight/2; if(target<0) target=0; if(target>maxScroll) target=maxScroll; listWrap.scrollTop=target; syncThumb(); }
 
 listWrap.addEventListener('scroll',()=>syncThumb());
-window.addEventListener('resize',()=>scheduleMeasure());
-const scheduleMeasure=()=>requestAnimationFrame(()=>requestAnimationFrame(measureScrollbar));
+window.addEventListener('resize',()=>measureScrollbar());
 
-function sendToHost(payload){try{window.postMessage(payload,'*');}catch(e){}}
-
-window.addEventListener('keydown',(e)=>{ if(!showing) return; const max=activeMenu.length-1;
-  if(e.key==='ArrowDown'){ let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
-  else if(e.key==='ArrowUp'){ let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
-  else if(e.key==='Enter'){ const opt=activeMenu[current]; if(opt){ if(opt.type==='button'||opt.type==='submenu'){ opt.type==='submenu'&&opt.submenu ? (menuStack.push(opt.submenu), activeMenu=menuStack[menuStack.length-1], current=0, renderMenu(), centerOnSelected(current)) : sendToHost({action:'activate', index:current, option:opt}); } else if(opt.type==='checkbox'){ opt.checked=!opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt});} else if(opt.type==='scroll'){ opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToHost({action:'changed', index:current, option:opt});}} e.preventDefault();}
-  else if(e.key==='Escape'){ if(menuStack.length>1){ menuStack.pop(); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); centerOnSelected(current); } else sendToHost({action:'escape'});}
+window.addEventListener('keydown',(e)=>{
+  if(!showing) return;
+  const max=activeMenu.length-1;
+  if(e.key==='ArrowDown'){ let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); e.preventDefault();}
+  else if(e.key==='ArrowUp'){ let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); e.preventDefault();}
+  else if(e.key==='Enter'){ const opt=activeMenu[current]; if(opt){ if(opt.type==='button'||opt.type==='submenu'){ if(opt.submenu){ menuStack.push(opt.submenu); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); } } else if(opt.type==='checkbox'){ opt.checked=!opt.checked; renderMenu(); } else if(opt.type==='scroll'){ opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); }} e.preventDefault();}
+  else if(e.key==='Escape'){ if(menuStack.length>1){ menuStack.pop(); activeMenu=menuStack[menuStack.length-1]; current=0; renderMenu(); } else { showing=false; wrapper.style.opacity=0; } e.preventDefault();}
 });
 
 renderMenu();
-const ro=new ResizeObserver(()=>scheduleMeasure()); ro.observe(listEl); ro.observe(listWrap); ro.observe(wrapper);
-
-window.__DUI_API__={ setMenu(m){if(Array.isArray(m)){ activeMenu=m; renderMenu(); scheduleMeasure();}}, setCurrent(i){ current=i; renderMenu(); centerOnSelected(i); scheduleMeasure();} };
-
-scheduleMeasure();
 })();
 </script>
 </body>
