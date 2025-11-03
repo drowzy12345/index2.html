@@ -10,7 +10,6 @@
     * { box-sizing: border-box; margin:0; padding:0; background: none; }
     html,body { height:100%; width:100%; font-family: "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased; color:#fff; user-select:none; }
 
-    /* outer wrapper - left fixed */
     .menu-wrapper {
       position: fixed;
       top: 50%;
@@ -23,7 +22,6 @@
       opacity: 1;
     }
 
-    /* banner + tabs */
     .banner-card { margin-left: 1.75vh; width: calc(100% - 1.75vh); border-radius: .4vh; overflow:hidden; line-height:0; }
     .banner-card img { display:block; width:100%; height:9.5vh; object-fit:cover; }
 
@@ -47,10 +45,11 @@
     }
     .tab.active { background: linear-gradient(0deg, var(--red) 0%, transparent 100%); }
 
-    /* main column aligned with banner */
+    /* center menu column aligned with banner */
     .menu-column {
-      margin-left: 1.75vh;       
-      width: calc(100% - 1.75vh); 
+      margin-left: 1.75vh;
+      margin-top: 0.8vh;  /* gap between banner and menu */
+      width: calc(100% - 1.75vh); /* aligned with banner */
       background: var(--bg);
       border-radius: .3vh;
       padding: .3vh;
@@ -97,7 +96,6 @@
     }
     .menu-divider::before{ left:1.2vh } .menu-divider::after{ right:1.2vh }
 
-    /* toggle */
     .toggle {
       width:3.3vh; height:1.5vh; border-radius:1vh; background:#222; position:relative; cursor:pointer;
     }
@@ -106,7 +104,6 @@
     }
     .toggle.on::before { transform: translateX(1.65vh); background:var(--red); }
 
-    /* range */
     .range { width:7.5vh; height:1.2vh; background:transparent; -webkit-appearance:none; border:0; outline:none; }
     .range::-webkit-slider-runnable-track {
       height:.55vh; border-radius:.75vh;
@@ -119,7 +116,7 @@
     .info-bar {
       margin-top:.6vh;
       margin-left: 1.75vh;
-      width: calc(100% - 1.75vh);
+      width: 90%;
       background: rgba(0,0,0,0.85);
       border-radius: .4vh;
       padding:.8vh .9vh;
@@ -128,7 +125,6 @@
       color:#fff;
     }
 
-    /* custom scrollbar (left of menu) */
     .scrollbar-container {
       position: absolute;
       left: 0.5vh;
@@ -176,7 +172,6 @@
 
   <script>
   (function(){
-    // STATE
     let current = 0;
     let showing = true;
     let activeTabs = ["Main Menu"];
@@ -191,7 +186,6 @@
       { label:'Separator', type:'divider' }
     ];
 
-    // REFS
     const wrapper = document.getElementById('wrapper');
     const listWrap = document.getElementById('list-wrap');
     const listEl = document.getElementById('list');
@@ -367,9 +361,7 @@
     window.addEventListener('resize', ()=> scheduleMeasure());
     const scheduleMeasure = () => requestAnimationFrame(()=> requestAnimationFrame(measureScrollbar));
 
-    function sendToHost(payload){
-      try { window.postMessage(payload, '*'); } catch(e){}
-    }
+    function sendToHost(payload){ try { window.postMessage(payload, '*'); } catch(e){} }
 
     window.addEventListener('message', (ev)=>{
       const data = ev.data;
@@ -392,7 +384,7 @@
       } else if(action === 'position'){
         const pos = data.position || 'left';
         if(pos === 'left') wrapper.style.left = '6.5vh';
-        else if(pos === 'right') wrapper.style.left = 'calc(100% - 41vh)'; 
+        else if(pos === 'right') wrapper.style.left = 'calc(100% - 41vh)';
         scheduleMeasure();
       } else if(action === 'banner'){
         if(typeof data.banner === 'string'){ banner = data.banner; bannerEl.src = banner; }
