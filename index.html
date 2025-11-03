@@ -12,7 +12,6 @@
     color: white;
     user-select: none;
   }
-
   .menu {
     width: 320px;
     background: rgba(15, 15, 15, 0.85);
@@ -21,7 +20,6 @@
     margin: 50px auto;
     box-shadow: 0 0 20px rgba(0,0,255,0.4);
   }
-
   .header {
     text-align: center;
     font-size: 22px;
@@ -31,7 +29,6 @@
     background: linear-gradient(90deg, #0077ff44, #0044ff66);
     border-radius: 6px;
   }
-
   .tabs {
     display: flex;
     justify-content: space-around;
@@ -40,7 +37,6 @@
     border-radius: 6px;
     padding: 4px;
   }
-
   .tab {
     flex: 1;
     text-align: center;
@@ -49,11 +45,9 @@
     border-radius: 4px;
     transition: background 0.2s;
   }
-
   .tab.active {
     background: rgba(0, 102, 255, 0.5);
   }
-
   .option {
     display: flex;
     justify-content: space-between;
@@ -62,12 +56,10 @@
     margin: 4px 0;
     border-radius: 4px;
   }
-
   .slider {
     width: 100%;
     accent-color: #0077ff;
   }
-
   .toggle {
     width: 18px;
     height: 18px;
@@ -84,7 +76,6 @@
       <div class="tab">Skeleton</div>
       <div class="tab">Text</div>
     </div>
-
     <div class="options">
       <div class="option"><span>Enable</span><input type="checkbox" class="toggle"></div>
       <div class="option"><span>Draw on NPCs</span><input type="checkbox" class="toggle"></div>
@@ -95,7 +86,7 @@
   </div>
 
   <script>
-    // Listen for Lua messages
+    // receive messages from Lua via MachoSendMessage
     window.addEventListener("message", (event) => {
       const data = event.data;
       if (data.action === "setHover") {
