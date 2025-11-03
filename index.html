@@ -1,129 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Menu UI</title>
-<style>
-    /* Reset & basic styling */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background-color: #1e1e1e; color: #fff; }
-
-    /* Container */
-    .menu-container {
-        width: 300px;
-        height: 100vh;
-        background-color: #111;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+  <meta charset="UTF-8">
+  <title>Phaze UI</title>
+  <style>
+    body {
+      background: #181A20;
+      color: #EDEDED;
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
-    /* Menu Items */
-    .menu-item {
-        padding: 12px 20px;
-        background: #222;
-        border-radius: 8px;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: background 0.2s;
+    .phaze-container {
+      background: #232634;
+      border-radius: 22px;
+      box-shadow: 0 4px 32px rgba(31,29,61,0.19);
+      margin-top: 64px;
+      width: 380px;
+      padding: 32px 32px 28px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      animation: fade-in 0.8s cubic-bezier(.77,0,.18,1.02);
     }
 
-    .menu-item:hover, .menu-item.active {
-        background: #333;
+    @keyframes fade-in {
+      from { transform: translateY(24px) scale(0.98); opacity: 0.7; }
+      to { transform: none; opacity: 1; }
     }
 
-    /* Submenu */
-    .submenu {
-        margin-top: 5px;
-        margin-left: 20px;
-        display: none;
-        flex-direction: column;
-        gap: 10px;
+    .phaze-logo {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #95adff;
+      margin-bottom: 10px;
+      text-align: center;
+      user-select: none;
+      text-shadow: 0 2px 12px rgba(54,129,255,0.13);
     }
 
-    .submenu.active {
-        display: flex;
+    .phaze-desc {
+      text-align: center;
+      color: #bfc6df;
+      font-size: 1.04rem;
+      margin-bottom: 20px;
     }
 
-    /* Buttons */
-    .button {
-        padding: 8px 12px;
-        background: #444;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.2s;
+    .phaze-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1rem;
+      color: #b0bad7;
     }
 
-    .button:hover {
-        background: #555;
+    .phaze-form input, .phaze-form select {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #262b3d;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      background: #22243b;
+      color: #e4e9fa;
+      font-size: 1rem;
+      transition: border 0.18s;
+      outline: none;
     }
 
-    /* Checkbox */
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
+    .phaze-form input:focus, .phaze-form select:focus {
+      border-color: #6588ff;
+      background: #23244a;
     }
 
-    /* Slider */
-    .slider {
-        width: 100%;
+    .phaze-btn {
+      background: linear-gradient(90deg, #7e84ff 0%, #6de3ff 100%);
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      padding: 13px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 18px rgba(65,96,255,0.12);
+      font-size: 1.09rem;
+      margin-top: 13px;
+      transition: background 0.23s, box-shadow 0.23s;
     }
-</style>
+
+    .phaze-btn:hover {
+      background: linear-gradient(90deg, #6de3ff 0%, #7e84ff 100%);
+      box-shadow: 0 4px 22px rgba(83,181,255,0.18);
+    }
+
+    .phaze-status {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 1rem;
+      color: #92deb9;
+      min-height: 22px;
+      transition: color 0.2s;
+    }
+  </style>
 </head>
 <body>
+  <div class="phaze-container">
+    <div class="phaze-logo">PHAZE</div>
+    <div class="phaze-desc">Next generation workflow automation for your team.<br>Connect. Trigger. Accelerate.</div>
+    <form class="phaze-form" id="phazeForm" autocomplete="off">
+      <label for="workflowName">Workflow Name</label>
+      <input type="text" id="workflowName" placeholder="Give your workflow a name" required />
 
-<div class="menu-container">
-    <!-- Main Menu Item -->
-    <div class="menu-item" onclick="toggleSubmenu('self')">Self Options</div>
-    <div class="submenu" id="self">
-        <label class="checkbox-label">
-            <input type="checkbox" id="noclip"> No-Clip
-        </label>
-        <label>
-            Speed: <input type="range" id="speed" class="slider" min="1" max="10" value="5">
-        </label>
-        <button class="button" onclick="alert('Health Restored!')">Restore Health</button>
-    </div>
+      <label for="trigger">Trigger</label>
+      <select id="trigger" required>
+        <option value="" disabled selected>Choose a trigger...</option>
+        <option>Email Received</option>
+        <option>Webhook</option>
+        <option>Timer</option>
+        <option>New File in Folder</option>
+      </select>
 
-    <div class="menu-item" onclick="toggleSubmenu('vehicle')">Vehicle Options</div>
-    <div class="submenu" id="vehicle">
-        <button class="button" onclick="alert('Spawned Car!')">Spawn Car</button>
-        <button class="button" onclick="alert('Repair Vehicle!')">Repair Vehicle</button>
-    </div>
+      <label for="action">Action</label>
+      <select id="action" required>
+        <option value="" disabled selected>Choose an action...</option>
+        <option>Send Slack Message</option>
+        <option>Create Todo</option>
+        <option>Start Workflow</option>
+        <option>Send Email</option>
+      </select>
 
-    <div class="menu-item" onclick="toggleSubmenu('misc')">Misc</div>
-    <div class="submenu" id="misc">
-        <button class="button" onclick="alert('Toggled Freecam!')">Freecam</button>
-        <button class="button" onclick="alert('Toggled Godmode!')">Godmode</button>
-    </div>
-</div>
+      <button class="phaze-btn" type="submit">Create Workflow</button>
+    </form>
+    <div class="phaze-status" id="phazeStatus"></div>
+  </div>
 
-<script>
-    function toggleSubmenu(id) {
-        const submenu = document.getElementById(id);
-        submenu.classList.toggle('active');
-    }
+  <script>
+    document.getElementById('phazeForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('workflowName').value.trim();
+      const trigger = document.getElementById('trigger').value;
+      const action = document.getElementById('action').value;
+      const status = document.getElementById('phazeStatus');
 
-    // Optional: Keyboard navigation (arrow keys)
-    let menuItems = document.querySelectorAll('.menu-item');
-    let currentIndex = 0;
-    menuItems[currentIndex].classList.add('active');
+      if(!name || !trigger || !action) {
+        status.textContent = "Please fill all fields!";
+        status.style.color = "#ff7994";
+        return;
+      }
 
-    document.addEventListener('keydown', (e) => {
-        menuItems[currentIndex].classList.remove('active');
-        if (e.key === 'ArrowDown') currentIndex = (currentIndex + 1) % menuItems.length;
-        if (e.key === 'ArrowUp') currentIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
-        menuItems[currentIndex].classList.add('active');
-        if (e.key === 'Enter') menuItems[currentIndex].click();
+      // Demo "creation"
+      status.textContent = `Created workflow "${name}" — when ${trigger}, then ${action}!`;
+      status.style.color = "#92deb9";
+      setTimeout(() => { status.textContent = "" }, 2200);
+      document.getElementById('phazeForm').reset();
     });
-</script>
-
+  </script>
 </body>
 </html>
