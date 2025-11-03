@@ -3,75 +3,127 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Phaze-Style Menu</title>
+<title>Game Menu UI</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: rgba(0, 0, 0, 0.65);
-    color: white;
-    user-select: none;
-    overflow: hidden;
-  }
+    /* Reset & basic styling */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background-color: #1e1e1e; color: #fff; }
 
-  .menu {
-    width: 400px;
-    margin: 10% auto;
-    background: rgba(10, 10, 10, 0.8);
-    border-radius: 10px;
-    box-shadow: 0 0 20px #00bfff;
-    overflow: hidden;
-  }
+    /* Container */
+    .menu-container {
+        width: 300px;
+        height: 100vh;
+        background-color: #111;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
 
-  .header {
-    background: rgba(0, 191, 255, 0.3);
-    padding: 10px;
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
+    /* Menu Items */
+    .menu-item {
+        padding: 12px 20px;
+        background: #222;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s;
+    }
 
-  .item {
-    padding: 10px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+    .menu-item:hover, .menu-item.active {
+        background: #333;
+    }
 
-  .item:hover, .item.active {
-    background: rgba(0, 191, 255, 0.3);
-  }
+    /* Submenu */
+    .submenu {
+        margin-top: 5px;
+        margin-left: 20px;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .submenu.active {
+        display: flex;
+    }
+
+    /* Buttons */
+    .button {
+        padding: 8px 12px;
+        background: #444;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .button:hover {
+        background: #555;
+    }
+
+    /* Checkbox */
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    /* Slider */
+    .slider {
+        width: 100%;
+    }
 </style>
 </head>
 <body>
-  <div class="menu">
-    <div class="header">Phaze Menu</div>
-    <div id="menu-items">
-      <div class="item active">Self Options</div>
-      <div class="item">Weapons</div>
-      <div class="item">Vehicles</div>
-      <div class="item">Freecam</div>
-      <div class="item">Settings</div>
+
+<div class="menu-container">
+    <!-- Main Menu Item -->
+    <div class="menu-item" onclick="toggleSubmenu('self')">Self Options</div>
+    <div class="submenu" id="self">
+        <label class="checkbox-label">
+            <input type="checkbox" id="noclip"> No-Clip
+        </label>
+        <label>
+            Speed: <input type="range" id="speed" class="slider" min="1" max="10" value="5">
+        </label>
+        <button class="button" onclick="alert('Health Restored!')">Restore Health</button>
     </div>
-  </div>
 
-  <script>
-    let currentIndex = 0;
-    const items = document.querySelectorAll('.item');
+    <div class="menu-item" onclick="toggleSubmenu('vehicle')">Vehicle Options</div>
+    <div class="submenu" id="vehicle">
+        <button class="button" onclick="alert('Spawned Car!')">Spawn Car</button>
+        <button class="button" onclick="alert('Repair Vehicle!')">Repair Vehicle</button>
+    </div>
 
-    function setActive(index) {
-      items.forEach((el, i) => el.classList.toggle('active', i === index));
+    <div class="menu-item" onclick="toggleSubmenu('misc')">Misc</div>
+    <div class="submenu" id="misc">
+        <button class="button" onclick="alert('Toggled Freecam!')">Freecam</button>
+        <button class="button" onclick="alert('Toggled Godmode!')">Godmode</button>
+    </div>
+</div>
+
+<script>
+    function toggleSubmenu(id) {
+        const submenu = document.getElementById(id);
+        submenu.classList.toggle('active');
     }
 
-    // Receive MachoSendDuiMessage from Lua
-    window.addEventListener("message", (event) => {
-      const data = event.data;
-      if (data.action === "updateHover") {
-        currentIndex = data.index;
-        setActive(currentIndex);
-      }
+    // Optional: Keyboard navigation (arrow keys)
+    let menuItems = document.querySelectorAll('.menu-item');
+    let currentIndex = 0;
+    menuItems[currentIndex].classList.add('active');
+
+    document.addEventListener('keydown', (e) => {
+        menuItems[currentIndex].classList.remove('active');
+        if (e.key === 'ArrowDown') currentIndex = (currentIndex + 1) % menuItems.length;
+        if (e.key === 'ArrowUp') currentIndex = (currentIndex - 1 + menuItems.length) % menuItems.length;
+        menuItems[currentIndex].classList.add('active');
+        if (e.key === 'Enter') menuItems[currentIndex].click();
     });
-  </script>
+</script>
+
 </body>
 </html>
