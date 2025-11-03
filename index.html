@@ -1,94 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Macho DUI UI</title>
-    <style>
-        /* Fullscreen background */
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #1e1e1e;
-            font-family: 'Arial', sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <title>Macho Menu</title>
+  <style>
+    body {
+      background: rgba(10, 10, 10, 0.85);
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
 
-        /* Example UI container */
-        #app {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            height: 400px;
-            background-color: #2c2c2c;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-        }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
 
-        button {
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #3a3a3a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    li {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.2s ease;
+    }
 
-        button:hover {
-            background-color: #555;
-        }
+    li:last-child {
+      border-bottom: none;
+    }
 
-        input {
-            padding: 8px;
-            border-radius: 6px;
-            border: none;
-            width: 200px;
-            margin-top: 10px;
-            text-align: center;
-        }
-    </style>
+    li.hover {
+      background: rgba(255,255,255,0.15);
+      color: #00ffcc;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div id="app">
-        <h1>Macho DUI UI</h1>
-        <button id="clickBtn">Click Me!</button>
-        <input id="messageInput" placeholder="Type message to Lua"/>
-    </div>
+  <ul id="menu">
+    <li>Self Options</li>
+    <li>Weapons</li>
+    <li>Vehicles</li>
+    <li>Freecam</li>
+  </ul>
 
-    <script>
-        // Listen for messages from Lua
-        window.addEventListener("message", function(event) {
-            if(event.data && event.data.text) {
-                alert("Message from Lua: " + event.data.text);
-            }
-        });
+  <script>
+    const items = document.querySelectorAll('#menu li');
+    let currentIndex = 0;
 
-        // Send message to Lua when button is clicked
-        document.getElementById("clickBtn").addEventListener("click", function() {
-            if(window.MachoSendMessage) {
-                MachoSendMessage(JSON.stringify({ action: "button_click", value: "Button pressed!" }));
-            }
-        });
+    function setHover(index) {
+      items.forEach((item, i) => {
+        item.classList.toggle('hover', i === index);
+      });
+      currentIndex = index;
+    }
 
-        // Send input text to Lua when Enter is pressed
-        const input = document.getElementById("messageInput");
-        input.addEventListener("keydown", function(e) {
-            if(e.key === "Enter" && window.MachoSendMessage) {
-                MachoSendMessage(JSON.stringify({ action: "input_text", value: input.value }));
-                input.value = "";
-            }
-        });
-    </script>
+    // Default hover on first item
+    setHover(0);
+
+    // Listen for Lua messages
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (data.action === 'hover') {
+        setHover(data.index);
+      }
+    });
+  </script>
 </body>
 </html>
