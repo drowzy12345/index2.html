@@ -14,7 +14,7 @@
     .menu-wrapper {
       position: fixed;
       top: 50%;
-      left: 6.5vh; /* left only positioning */
+      left: 6.5vh; 
       transform: translateY(-50%);
       width: 41vh;
       z-index: 9999;
@@ -47,10 +47,10 @@
     }
     .tab.active { background: linear-gradient(0deg, var(--red) 0%, transparent 100%); }
 
-    /* main column */
+    /* main column aligned with banner */
     .menu-column {
-      margin-left: 1.75vh;
-      width: 33.5vh;
+      margin-left: 1.75vh;       
+      width: calc(100% - 1.75vh); 
       background: var(--bg);
       border-radius: .3vh;
       padding: .3vh;
@@ -59,6 +59,7 @@
       overflow: visible;
       position: relative;
     }
+
     .menu-list-wrap {
       max-height: 33.6vh;
       overflow-y: auto;
@@ -118,7 +119,7 @@
     .info-bar {
       margin-top:.6vh;
       margin-left: 1.75vh;
-      width: 90%;
+      width: calc(100% - 1.75vh);
       background: rgba(0,0,0,0.85);
       border-radius: .4vh;
       padding:.8vh .9vh;
@@ -205,7 +206,6 @@
     let hasOverflow = false;
     const MIN_THUMB = 18, NO_OVERFLOW_THUMB_MAX = 28;
 
-    // helpers
     function selectableMenu(){ return activeMenu.filter(o=> o?.type !== 'divider'); }
     function selectableIndices(){ return activeMenu.map((o,i)=> o?.type !== 'divider' ? i : -1).filter(i=> i!==-1); }
 
@@ -214,7 +214,6 @@
       if (idxs.length === 0) return 0;
       const pos = idxs.indexOf(current);
       if (pos !== -1) return pos+1;
-      // nearest fallback
       let nearest=-1, best=Infinity;
       for(let i=0;i<idxs.length;i++){
         const d = Math.abs(idxs[i]-current);
@@ -223,7 +222,6 @@
       return nearest!==-1?nearest+1:0;
     }
 
-    // Render tabs
     function renderTabs(){
       tabsEl.innerHTML = '';
       if(!activeTabs || activeTabs.length === 0) return;
@@ -240,7 +238,6 @@
       });
     }
 
-    // Create item element
     function createItem(option, i){
       if(option.type === 'divider'){
         const div = document.createElement('div'); div.className='menu-divider';
@@ -256,7 +253,6 @@
       left.textContent = option.label || '';
       el.appendChild(left);
 
-      // right control
       if(option.type === 'submenu'){
         const icon = document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh';
         el.appendChild(icon);
@@ -281,7 +277,6 @@
         wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r);
         el.appendChild(wrap);
       } else {
-        // button - spacer
         const spacer = document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer);
       }
 
@@ -292,15 +287,12 @@
         scheduleMeasure();
         if(option.type === 'button' || option.type === 'submenu'){
           sendToHost({ action:'activate', index:i, option });
-        } else if(option.type === 'checkbox'){
-          // toggling handled on toggle click
         }
       });
 
       return el;
     }
 
-    // Render menu
     function renderMenu(){
       listEl.innerHTML = ''; itemEls = [];
       activeMenu.forEach((opt, idx)=>{
@@ -311,11 +303,9 @@
       counterEl.textContent = `(${counterCurrent()}/${selectableMenu().length})`;
       renderTabs();
       bannerEl.src = banner;
-      // measure after paint
       requestAnimationFrame(measureScrollbar);
     }
 
-    // SCROLLBAR logic
     function measureScrollbar(){
       if(!wrapper || !listWrap) return;
       const wrapperRect = wrapper.getBoundingClientRect();
@@ -373,17 +363,14 @@
       requestAnimationFrame(syncThumb);
     }
 
-    // events
     listWrap.addEventListener('scroll', ()=> syncThumb());
     window.addEventListener('resize', ()=> scheduleMeasure());
     const scheduleMeasure = () => requestAnimationFrame(()=> requestAnimationFrame(measureScrollbar));
 
-    // messaging to host (post back)
     function sendToHost(payload){
       try { window.postMessage(payload, '*'); } catch(e){}
     }
 
-    // host -> dui messages
     window.addEventListener('message', (ev)=>{
       const data = ev.data;
       if(!data || typeof data !== 'object') return;
@@ -403,10 +390,9 @@
       } else if(action === 'setVisible'){
         showing = !!data.visible; wrapper.style.opacity = showing ? '1' : '0'; if(showing) centerOnSelected(current); scheduleMeasure();
       } else if(action === 'position'){
-        // left-only requested - ignore other positions but allow left/right if provided
         const pos = data.position || 'left';
         if(pos === 'left') wrapper.style.left = '6.5vh';
-        else if(pos === 'right') wrapper.style.left = 'calc(100% - 41vh)'; // still supported if you send it
+        else if(pos === 'right') wrapper.style.left = 'calc(100% - 41vh)'; 
         scheduleMeasure();
       } else if(action === 'banner'){
         if(typeof data.banner === 'string'){ banner = data.banner; bannerEl.src = banner; }
@@ -415,7 +401,6 @@
       }
     });
 
-    // keyboard navigation
     window.addEventListener('keydown', (e)=>{
       if(!showing) return;
       const max = activeMenu.length - 1;
@@ -440,22 +425,18 @@
       }
     });
 
-    // initial render
     renderMenu();
 
-    // resize observer to keep measures accurate
     const ro = new ResizeObserver(()=> scheduleMeasure());
     ro.observe(listEl);
     ro.observe(listWrap);
     ro.observe(wrapper);
 
-    // expose API for testing
     window.__DUI_API__ = {
       setMenu(m){ if(Array.isArray(m)){ activeMenu = m; renderMenu(); scheduleMeasure(); } },
       setCurrent(i){ current = i; renderMenu(); centerOnSelected(i); scheduleMeasure(); }
     };
 
-    // measure initially
     scheduleMeasure();
   })();
   </script>
