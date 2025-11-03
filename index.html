@@ -1,142 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FMA Menu</title>
-<style>
-body { background: transparent; font-family: 'Segoe UI', sans-serif; display:flex; justify-content:center; align-items:flex-start; padding-top:50px; color:#fff; }
-#fma-menu { width:500px; background: rgba(20,20,20,0.95); border-radius:12px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.9); display:none; }
-.header { background: linear-gradient(90deg, orange, #ff7f00); padding:14px 0; text-align:center; font-size:24px; font-weight:bold; letter-spacing:1px; text-shadow:1px 1px 3px #000; }
-.categories { display:flex; justify-content:center; background: rgba(0,0,0,0.25); font-weight:bold; font-size:16px; border-bottom:1px solid rgba(255,165,0,0.5); }
-.categories div { margin:0 20px; padding:8px 0; cursor:pointer; position:relative; }
-.categories div.active::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:100%; background:orange; }
-.options { padding:16px 20px; font-size:15px; line-height:2; background: rgba(0,0,0,0.15); border-bottom:1px solid rgba(255,165,0,0.2); }
-.option { display:flex; justify-content:space-between; padding:6px 0; border-radius:6px; cursor:pointer; }
-.option.selected { background: rgba(255,165,0,0.1); }
-.option span.value { color:orange; font-weight:bold; }
-.footer { background: rgba(0,0,0,0.15); padding:10px; font-size:12px; text-align:center; color:#ccc; }
-.footer .status { color:orange; font-weight:bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macho DUI UI</title>
+    <style>
+        /* Fullscreen background */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1e1e1e;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Example UI container */
+        #app {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            background-color: #2c2c2c;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        input {
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            width: 200px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+    <div id="app">
+        <h1>Macho DUI UI</h1>
+        <button id="clickBtn">Click Me!</button>
+        <input id="messageInput" placeholder="Type message to Lua"/>
+    </div>
 
-<div id="fma-menu">
-  <div class="header">FMA</div>
-  <div class="categories"></div>
-  <div class="options"></div>
-  <div class="footer">
-    Version: Developer | Aug 5, 2025 | 10:28 AM | 1/4 FMA<br>
-    Status: <span class="status">Idle</span>
-  </div>
-</div>
-
-<script>
-const menuEl = document.getElementById('fma-menu');
-const categoriesEl = menuEl.querySelector('.categories');
-const optionsEl = menuEl.querySelector('.options');
-
-let menuData = [];
-let selectedCategory = 0;
-let selectedOption = 0;
-
-function sendUpdateToLua(category, option, value) {
-    fetch(`https://${GetParentResourceName()}/updateOption`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({category, option, value})
-    });
-}
-
-function renderMenu() {
-    categoriesEl.innerHTML = '';
-    menuData.forEach((cat, i) => {
-        const catDiv = document.createElement('div');
-        catDiv.textContent = cat.label;
-        if (i === selectedCategory) catDiv.classList.add('active');
-        categoriesEl.appendChild(catDiv);
-    });
-
-    const currentMenu = menuData[selectedCategory]?.submenu || [];
-    optionsEl.innerHTML = '';
-    currentMenu.forEach((opt, i) => {
-        const optDiv = document.createElement('div');
-        optDiv.classList.add('option');
-        if (i === selectedOption) optDiv.classList.add('selected');
-
-        let valueText = '';
-        if (opt.type === 'slider') valueText = `[${opt.value}]`;
-        if (opt.type === 'checkbox') valueText = opt.checked ? 'ON' : 'OFF';
-        optDiv.innerHTML = `<span>${opt.label}</span> <span class="value">${valueText}</span>`;
-        optionsEl.appendChild(optDiv);
-    });
-}
-
-window.addEventListener('message', (event) => {
-    const data = event.data;
-    if (!data) return;
-
-    if (data.action === 'updateMenu') {
-        menuData = data.menu || [];
-        selectedCategory = 0;
-        selectedOption = (data.current || 1) - 1;
-        menuEl.style.display = data.visible ? 'block' : 'none';
-        renderMenu();
-    } else if (data.action === 'keyPress') {
-        const key = data.key;
-        const currentMenu = menuData[selectedCategory]?.submenu || [];
-
-        if (key === 'up') selectedOption = (selectedOption - 1 + currentMenu.length) % currentMenu.length;
-        if (key === 'down') selectedOption = (selectedOption + 1) % currentMenu.length;
-
-        const opt = currentMenu[selectedOption];
-        if (!opt) return;
-
-        if (key === 'left') {
-            if (opt.type === 'slider') {
-                opt.value = Math.max(opt.min, opt.value - 0.5);
-                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
+    <script>
+        // Listen for messages from Lua
+        window.addEventListener("message", function(event) {
+            if(event.data && event.data.text) {
+                alert("Message from Lua: " + event.data.text);
             }
-        }
-        if (key === 'right') {
-            if (opt.type === 'slider') {
-                opt.value = Math.min(opt.max, opt.value + 0.5);
-                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
+        });
+
+        // Send message to Lua when button is clicked
+        document.getElementById("clickBtn").addEventListener("click", function() {
+            if(window.MachoSendMessage) {
+                MachoSendMessage(JSON.stringify({ action: "button_click", value: "Button pressed!" }));
             }
-        }
-        if (key === 'enter') {
-            if (opt.type === 'checkbox') {
-                opt.checked = !opt.checked;
-                sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.checked);
+        });
+
+        // Send input text to Lua when Enter is pressed
+        const input = document.getElementById("messageInput");
+        input.addEventListener("keydown", function(e) {
+            if(e.key === "Enter" && window.MachoSendMessage) {
+                MachoSendMessage(JSON.stringify({ action: "input_text", value: input.value }));
+                input.value = "";
             }
-        }
-        if (key === 'leftArrow') { selectedCategory = (selectedCategory - 1 + menuData.length) % menuData.length; selectedOption = 0; }
-        if (key === 'rightArrow') { selectedCategory = (selectedCategory + 1) % menuData.length; selectedOption = 0; }
-
-        renderMenu();
-    }
-});
-
-optionsEl.addEventListener('click', (e) => {
-    const optDiv = e.target.closest('.option');
-    if (!optDiv) return;
-
-    const idx = Array.from(optionsEl.children).indexOf(optDiv);
-    const opt = menuData[selectedCategory].submenu[idx];
-    if (!opt) return;
-
-    selectedOption = idx;
-
-    if (opt.type === 'checkbox') {
-        opt.checked = !opt.checked;
-        sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.checked);
-    } else if (opt.type === 'slider') {
-        opt.value = Math.min(opt.max, opt.value + 0.5);
-        sendUpdateToLua(selectedCategory+1, selectedOption+1, opt.value);
-    }
-
-    renderMenu();
-});
-</script>
+        });
+    </script>
 </body>
 </html>
