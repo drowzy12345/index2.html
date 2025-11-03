@@ -1,304 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Phaze-style Macho Menu</title>
-
-<!-- Minimal reset -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phaze UI</title>
 <style>
-  :root{
-    --bg:#0b0c0f;
-    --panel:#0f1114;
-    --muted:#9aa3a8;
-    --accent:#ff4dd2;
-    --accent-2:#33ffd6;
-    --glass: rgba(255,255,255,0.03);
-    --glass-2: rgba(255,255,255,0.02);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6eef3;background:linear-gradient(180deg,#050507 0%, #081018 100%);-webkit-font-smoothing:antialiased}
-  /* layout */
-  .app {
-    display:grid;
-    grid-template-columns:260px 1fr 420px;
-    gap:18px;
-    height:100vh;
-    padding:22px;
-    align-items:start;
+  body {
+    margin: 0;
+    background: rgba(0,0,0,0.5);
+    font-family: "Segoe UI", sans-serif;
+    color: white;
+    user-select: none;
   }
 
-  /* SIDEBAR */
-  .sidebar{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.03);
-    border-radius:12px;
-    padding:14px;
-    box-shadow: 0 6px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  }
-  .logo {
-    display:flex; gap:10px; align-items:center; padding:6px 8px; margin-bottom:8px;
-  }
-  .logo .mark{
-    width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#8f3cff);
-    box-shadow:0 4px 18px rgba(143,60,255,0.12),0 1px 0 rgba(255,255,255,0.03);
-    display:flex;align-items:center;justify-content:center;font-weight:700;
-  }
-  .logo .name{font-weight:700;font-size:14px;color:#fff;letter-spacing:0.4px}
-  .sidebar .nav{margin-top:8px;display:flex;flex-direction:column;gap:8px}
-  .nav .nav-item{
-    display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:8px;
-    color:var(--muted);cursor:pointer;font-size:13px;transition:all .12s ease;
-  }
-  .nav .nav-item:hover{background:var(--glass);color:#fff;transform:translateY(-2px)}
-  .nav .nav-item.active{background:linear-gradient(90deg, rgba(255,77,210,0.08), rgba(51,255,214,0.03)); color:#fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02) }
-
-  .small-muted{font-size:12px;color:var(--muted);padding:6px 4px}
-
-  /* MAIN CENTER MENU */
-  .panel{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);
-    min-height:300px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    overflow:hidden;
+  .menu {
+    width: 320px;
+    background: rgba(15, 15, 15, 0.85);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 50px auto;
+    box-shadow: 0 0 20px rgba(0,0,255,0.4);
   }
 
-  .menu-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px}
-  .menu-head h2{margin:0;font-size:16px;color:#fff}
-  .menu-grid{display:flex;flex-direction:column;gap:8px;padding:6px 4px 14px;max-height:70vh;overflow:auto}
-  .menu-card{
-    display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-    border:1px solid rgba(255,255,255,0.02); cursor:pointer; transition:transform .12s ease, background .12s ease;
-  }
-  .menu-card:hover{transform:translateY(-3px);background:linear-gradient(90deg, rgba(255,77,210,0.04), rgba(51,255,214,0.02))}
-  .menu-card .title{font-size:14px;color:#fff}
-  .menu-card .label{font-size:12px;color:var(--muted)}
-
-  .menu-card.hover{
-    background:linear-gradient(90deg, rgba(255,77,210,0.07), rgba(51,255,214,0.03));
-    box-shadow: 0 10px 30px rgba(0,0,0,0.65);
-    transform:scale(1.01);
+  .header {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 2px solid rgba(0, 102, 255, 0.7);
+    background: linear-gradient(90deg, #0077ff44, #0044ff66);
+    border-radius: 6px;
   }
 
-  /* RIGHT PANEL (Code / preview) */
-  .right{
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-    border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);
-    min-height:300px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-    display:flex;flex-direction:column;
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    padding: 4px;
   }
-  .right .header{display:flex;align-items:center;justify-content:space-between}
-  .pill{background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:6px 10px;border-radius:999px;color:#081018;font-weight:700;font-size:12px}
-  .console{margin-top:10px;background:linear-gradient(180deg,#06070a,#0b0f14);border-radius:8px;padding:12px;color:#9fb0b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;flex:1;overflow:auto;border:1px solid rgba(255,255,255,0.02)}
-  .notify{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(90deg, rgba(255,77,210,0.06), rgba(51,255,214,0.03));color:#fff;font-weight:600}
 
-  /* small helpers */
-  .muted{color:var(--muted);font-size:13px}
-  .hidden{display:none}
-  /* scrollbar */
-  .menu-grid::-webkit-scrollbar, .console::-webkit-scrollbar {height:6px;width:8px}
-  .menu-grid::-webkit-scrollbar-thumb, .console::-webkit-scrollbar-thumb {background:rgba(255,255,255,0.04);border-radius:10px}
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .tab.active {
+    background: rgba(0, 102, 255, 0.5);
+  }
+
+  .option {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 4px;
+    background: rgba(255,255,255,0.05);
+    margin: 4px 0;
+    border-radius: 4px;
+  }
+
+  .slider {
+    width: 100%;
+    accent-color: #0077ff;
+  }
+
+  .toggle {
+    width: 18px;
+    height: 18px;
+  }
 </style>
 </head>
 <body>
-  <div class="app" id="app">
-    <!-- left sidebar -->
-    <aside class="sidebar" aria-hidden="false">
-      <div class="logo">
-        <div class="mark">M</div>
-        <div>
-          <div class="name">MACHO</div>
-          <div class="small-muted">Dev Menu</div>
-        </div>
-      </div>
+  <div class="menu">
+    <div class="header">Phaze</div>
+    <div class="tabs">
+      <div class="tab active">Visual</div>
+      <div class="tab">Vehicle</div>
+      <div class="tab">Box</div>
+      <div class="tab">Skeleton</div>
+      <div class="tab">Text</div>
+    </div>
 
-      <div class="nav" id="sidebar-nav">
-        <!-- dynamic items -->
-      </div>
-
-      <div style="margin-top:12px" class="small-muted">Alt. Menu Key • F9</div>
-    </aside>
-
-    <!-- center menu -->
-    <main class="panel" id="main-panel">
-      <div class="menu-head">
-        <h2 id="menu-title">Main Menu</h2>
-        <div class="muted">Use arrows • Enter • Backspace</div>
-      </div>
-
-      <div class="menu-grid" id="menu-grid">
-        <!-- menu items injected here -->
-      </div>
-    </main>
-
-    <!-- right console / preview -->
-    <aside class="right">
-      <div class="header">
-        <div style="display:flex;gap:10px;align-items:center">
-          <div class="pill" id="status-pill">Connected</div>
-          <div class="muted" id="menu-info">0 items</div>
-        </div>
-        <div class="muted">v1.0</div>
-      </div>
-
-      <div class="console" id="console">Console initialized...</div>
-      <div class="notify hidden" id="notify">Notification</div>
-    </aside>
+    <div class="options">
+      <div class="option"><span>Enable</span><input type="checkbox" class="toggle"></div>
+      <div class="option"><span>Draw on NPCs</span><input type="checkbox" class="toggle"></div>
+      <div class="option"><span>Ignore Dead</span><input type="checkbox" class="toggle"></div>
+      <div class="option"><span>Full Bright</span><input type="checkbox" class="toggle"></div>
+      <div class="option"><span>FOV Changer</span><input type="range" min="30" max="150" value="120" class="slider"></div>
+    </div>
   </div>
 
-<script>
-/*
-  Message API supported:
-   - { action: "setCurrent", menu: [...], current: 1 }
-   - { action: "hover", index: 0 }
-   - { action: "setVisible", visible: true|false }
-   - { action: "notify", type: "info", message: "..." }
-   - { action: "position", position: { x: '10px', y: '20px' } }
-*/
-
-const menuGrid = document.getElementById('menu-grid');
-const menuTitle = document.getElementById('menu-title');
-const sidebarNav = document.getElementById('sidebar-nav');
-const consoleEl = document.getElementById('console');
-const notifyEl = document.getElementById('notify');
-const statusPill = document.getElementById('status-pill');
-const menuInfo = document.getElementById('menu-info');
-
-let currentMenu = [];
-let currentIndex = 0;
-let visible = true;
-
-function logConsole(...args){
-  const line = document.createElement('div');
-  line.textContent = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
-  consoleEl.appendChild(line);
-  consoleEl.scrollTop = consoleEl.scrollHeight;
-}
-
-// build sidebar quick nav (simple)
-function buildSidebar(menu){
-  sidebarNav.innerHTML = '';
-  menu.forEach((m,i) => {
-    const el = document.createElement('div');
-    el.className = 'nav-item' + (i===currentIndex ? ' active' : '');
-    el.innerHTML = `<div>${m.label || 'Unnamed'}</div><div class="muted">${m.type||''}</div>`;
-    el.onclick = () => {
-      // simulate Macho hover/select
-      window.dispatchEvent(new MessageEvent('message', {data:{action:'hover', index:i}}));
-      window.dispatchEvent(new MessageEvent('message', {data:{action:'setCurrent', menu: menu, current: i+1}}));
-    };
-    sidebarNav.appendChild(el);
-  });
-}
-
-// create menu cards
-function buildMenu(menuData){
-  currentMenu = menuData || [];
-  menuGrid.innerHTML = '';
-  menuTitle.textContent = menuData.title || 'Main Menu';
-  menuInfo.textContent = menuData.length + ' items';
-
-  menuData.forEach((item, i) => {
-    const card = document.createElement('div');
-    card.className = 'menu-card';
-    card.dataset.index = i;
-    const rightLabel = (() => {
-      if(item.type === 'scroll') return item.options && item.options[item.selected || 0] || '';
-      if(item.type === 'slider') return item.value ?? item.min ?? '';
-      if(item.type === 'checkbox') return item.checked ? '✅' : '❌';
-      if(item.type === 'submenu') return '▶';
-      return '';
-    })();
-    card.innerHTML = `<div>
-        <div class="title">${item.label || 'Unnamed'}</div>
-        <div class="label">${item.description || ''}</div>
-      </div>
-      <div class="label right">${rightLabel}</div>`;
-
-    card.addEventListener('click', () => {
-      // echo click to console — Macho should send confirm from Lua anyway
-      logConsole('click ->', item.label, item.type);
-      blinkCard(card);
+  <script>
+    // Listen for Lua messages
+    window.addEventListener("message", (event) => {
+      const data = event.data;
+      if (data.action === "setHover") {
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach(tab => tab.classList.remove("active"));
+        if (tabs[data.index]) tabs[data.index].classList.add("active");
+      }
     });
-
-    menuGrid.appendChild(card);
-  });
-  updateHover(currentIndex);
-  buildSidebar(menuData);
-}
-
-function blinkCard(card){
-  card.classList.add('hover');
-  setTimeout(()=>card.classList.remove('hover'), 260);
-}
-
-function updateHover(index){
-  const cards = menuGrid.querySelectorAll('.menu-card');
-  cards.forEach((c,i) => c.classList.toggle('hover', i===index));
-  // also update sidebar highlight
-  const navs = sidebarNav.querySelectorAll('.nav-item');
-  navs.forEach((n,i) => n.classList.toggle('active', i===index));
-  currentIndex = index;
-}
-
-// handle incoming messages
-window.addEventListener('message', (e) => {
-  const data = e.data;
-  if(!data || typeof data !== 'object') return;
-
-  if(data.action === 'setCurrent'){
-    // if menu is safe copy just an array, allow either raw menu or wrapper
-    const menu = Array.isArray(data.menu) ? data.menu : (data.menu?.items || []);
-    // accept primitive strings too: convert to objects
-    const normalized = menu.map(m => {
-      if(typeof m === 'string') return { label: m, type: 'button' };
-      return m || {};
-    });
-    buildMenu(normalized);
-    const cur = (typeof data.current === 'number') ? Math.max(0, data.current - 1) : 0;
-    updateHover(cur);
-    logConsole('setCurrent: items=', normalized.length, 'current=', cur);
-    statusPill.textContent = 'Menu loaded';
-    statusPill.style.background = 'linear-gradient(90deg,var(--accent),var(--accent-2))';
-  }
-  else if(data.action === 'hover'){
-    const idx = Number(data.index) || 0;
-    updateHover(Math.max(0, Math.min((currentMenu.length-1), idx)));
-  }
-  else if(data.action === 'setVisible'){
-    visible = !!data.visible;
-    document.getElementById('app').style.opacity = visible ? '1' : '0.02';
-    document.getElementById('app').style.pointerEvents = visible ? 'auto' : 'none';
-    logConsole('visibility ->', visible);
-  }
-  else if(data.action === 'notify'){
-    notifyEl.textContent = data.message || 'Notification';
-    notifyEl.classList.remove('hidden');
-    setTimeout(()=>notifyEl.classList.add('hidden'), 2400);
-    logConsole('[notify]', data.type || 'info', data.message);
-  }
-  else if(data.action === 'position'){
-    const p = data.position || {};
-    const app = document.getElementById('app');
-    if(p.x) app.style.marginLeft = p.x;
-    if(p.y) app.style.marginTop = p.y;
-    logConsole('position set', p);
-  }
-});
-
-// friendly default so you can see it without Macho
-document.addEventListener('DOMContentLoaded', () => {
-  const example = [
-    { label:'Self options', type:'submenu', description:'Player toggles', submenu:[] },
-    { label:'Weapons', type:'submenu', description:'Spawn & manage weapons' },
-    { label:'Vehicles', type:'submenu', description:'Vehicle spawns & options' },
-    { label:'Freecam', type:'button', description:'Toggle freecam' }
-  ];
-  buildMenu(example);
-  statusPill.textContent = 'Ready';
-  statusPill.style.background = 'linear-gradient(90deg,var(--accent),var(--accent-2))';
-  logConsole('UI ready — waiting for Macho messages');
-});
-</script>
+  </script>
 </body>
 </html>
