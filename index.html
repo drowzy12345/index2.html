@@ -2,72 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Phaze Menu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phaze-Style Menu</title>
 <style>
   body {
     margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background: rgba(0,0,0,0.6);
+    font-family: Arial, sans-serif;
+    background: rgba(0, 0, 0, 0.65);
     color: white;
+    user-select: none;
+    overflow: hidden;
   }
+
   .menu {
-    width: 300px;
-    margin: 80px auto;
-    background: rgba(10,10,10,0.8);
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 0 15px rgba(0,120,255,0.6);
+    width: 400px;
+    margin: 10% auto;
+    background: rgba(10, 10, 10, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 0 20px #00bfff;
+    overflow: hidden;
   }
+
   .header {
+    background: rgba(0, 191, 255, 0.3);
+    padding: 10px;
     text-align: center;
+    font-size: 1.2em;
     font-weight: bold;
-    padding: 8px;
-    background: linear-gradient(90deg,#0044ff66,#0077ff44);
-    border-radius: 6px;
-    margin-bottom: 6px;
+    letter-spacing: 1px;
   }
+
   .item {
-    padding: 5px 8px;
-    margin: 2px 0;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
     transition: background 0.2s;
   }
-  .item.active {
-    background: rgba(0,120,255,0.4);
+
+  .item:hover, .item.active {
+    background: rgba(0, 191, 255, 0.3);
   }
 </style>
 </head>
 <body>
   <div class="menu">
     <div class="header">Phaze Menu</div>
-    <div id="menu-items"></div>
+    <div id="menu-items">
+      <div class="item active">Self Options</div>
+      <div class="item">Weapons</div>
+      <div class="item">Vehicles</div>
+      <div class="item">Freecam</div>
+      <div class="item">Settings</div>
+    </div>
   </div>
 
-<script>
-window.addEventListener("message", (event) => {
-  const data = event.data;
+  <script>
+    let currentIndex = 0;
+    const items = document.querySelectorAll('.item');
 
-  if (data.action === "setCurrent") {
-    const container = document.getElementById("menu-items");
-    container.innerHTML = "";
-    data.menu.forEach((item, i) => {
-      const el = document.createElement("div");
-      el.className = "item" + (i === data.current - 1 ? " active" : "");
-      el.textContent = item.label || "Item";
-      container.appendChild(el);
+    function setActive(index) {
+      items.forEach((el, i) => el.classList.toggle('active', i === index));
+    }
+
+    // Receive MachoSendDuiMessage from Lua
+    window.addEventListener("message", (event) => {
+      const data = event.data;
+      if (data.action === "updateHover") {
+        currentIndex = data.index;
+        setActive(currentIndex);
+      }
     });
-  }
-
-  if (data.action === "hover") {
-    const items = document.querySelectorAll(".item");
-    items.forEach(i => i.classList.remove("active"));
-    if (items[data.index]) items[data.index].classList.add("active");
-  }
-
-  if (data.action === "setVisible") {
-    document.body.style.display = data.visible and "block" or "none";
-  }
-});
-</script>
+  </script>
 </body>
 </html>
