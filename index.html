@@ -3,10 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Menu DUI</title>
+  <title>Menu DUI - Cyan Theme</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
-    :root { --red: #ff0000; --bg: rgba(0,0,0,0.85); --accent: rgba(100,0,0,0.6); }
+    :root { 
+      --red: #00ffff; /* cyan main color */
+      --bg: rgba(0,0,0,0.85); 
+      --accent: rgba(0,255,255,0.6); /* cyan accent for active items */
+    }
+
     * { box-sizing: border-box; margin:0; padding:0; background: none; }
     html,body { height:100%; width:100%; font-family: "Segoe UI", Arial, sans-serif; -webkit-font-smoothing:antialiased; color:#fff; user-select:none; }
 
@@ -82,7 +87,6 @@
       color: #fff;
     }
     .menu-item:hover { transform: translateX(.08vh); }
-    .menu-item.active { background-color: rgba(100,0,0,0.6); border-left: .3vh solid var(--red); }
 
     .menu-divider {
       position:relative; display:flex; align-items:center; justify-content:center;
@@ -101,7 +105,7 @@
     .toggle::before {
       content:''; position:absolute; width:1.1vh; height:1.1vh; border-radius:50%; background:#fff; left:.2vh; top:.2vh; transition: transform .18s ease;
     }
-    .toggle.on::before { transform: translateX(1.65vh); background:var(--red); }
+    .toggle.on::before { transform: translateX(1.65vh); background: var(--red); }
 
     .range { width:7.5vh; height:1.2vh; background:transparent; -webkit-appearance:none; border:0; outline:none; }
     .range::-webkit-slider-runnable-track {
@@ -136,7 +140,7 @@
       overflow: hidden;
     }
     .scrollbar-container.hidden { opacity:0; display:none; }
-    .scrollbar-thumb { position:absolute; left:0; right:0; top:0; height:1.2vh; background:var(--red); border-radius:.15vh; transition: top .08s linear, height .12s ease; }
+    .scrollbar-thumb { position:absolute; left:0; right:0; top:0; height:1.2vh; background: var(--red); border-radius:.15vh; transition: top .08s linear, height .12s ease; }
 
     @media (max-width: 680px) {
       .menu-wrapper { left: 2vh; width: 78vw; transform: translateY(-50%); }
@@ -198,7 +202,7 @@ function counterCurrent(){
   const pos=idxs.indexOf(current);
   if(pos!==-1) return pos+1;
   let nearest=-1, best=Infinity;
-  for(let i=0;i<idxs.length;i++){const d=Math.abs(idxs[i]-current); if(d<best){best=d; nearest=i;}}
+  for(let i=0;i<idxs.length;i++){const d=Math.abs(idxs[i]-current); if(d<best){nearest=i; best=d;}}
   return nearest!==-1?nearest+1:0;
 }
 
@@ -212,7 +216,11 @@ function renderTabs(){
 function createItem(option,i){
   if(option.type==='divider'){ const div=document.createElement('div'); div.className='menu-divider'; const span=document.createElement('span'); span.textContent=option.label||''; div.appendChild(span); return div; }
   const el=document.createElement('div'); el.className='menu-item'; el.dataset.index=i;
-  if(i===current) el.classList.add('active');
+  if(i===current) {
+    el.classList.add('active');
+    el.style.backgroundColor = 'var(--accent)';
+    el.style.borderLeft = '.3vh solid var(--red)';
+  }
   const left=document.createElement('span'); left.style.flexGrow='1'; left.style.textAlign='left'; left.style.fontSize='1.2vh'; left.textContent=option.label||''; el.appendChild(left);
 
   if(option.type==='submenu'){ const icon=document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh'; el.appendChild(icon);}
