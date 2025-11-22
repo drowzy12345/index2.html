@@ -279,7 +279,20 @@ listWrap.addEventListener('scroll',()=>syncThumb());
 window.addEventListener('resize',()=>scheduleMeasure());
 const scheduleMeasure=()=>requestAnimationFrame(()=>requestAnimationFrame(measureScrollbar));
 
-function sendToHost(payload){try{window.postMessage(payload,'*');}catch(e){}}
+/* === REPLACE sendToHost HERE - REQUIRED FOR LUA COMMUNICATION ===
+   This function used to call window.postMessage - that doesn't reach FiveM.
+   We POST to the resource endpoint so Lua's RegisterNUICallback receives it.
+*/
+function sendToHost(payload) {
+  try {
+    fetch(`https://${GetParentResourceName()}/menu_action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {}
+}
+/* =============================================================== */
 
 window.addEventListener('message',(ev)=>{ const data=ev.data; if(!data||typeof data!=='object') return; const action=data.action; if(!action) return;
   if(action==='setCurrent'){ const incoming=data.current; current=(typeof incoming==='number')?Math.max(0,incoming-1):0; if(Array.isArray(data.menu)) activeMenu=data.menu; showing=data.visible!==undefined?!!data.visible:true; renderMenu(); centerOnSelected(current); scheduleMeasure();}
@@ -295,8 +308,8 @@ window.addEventListener('keydown',(e)=>{ if(!showing) return; const max=activeMe
   if(e.key==='ArrowDown'){ let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
   else if(e.key==='ArrowUp'){ let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
   else if(e.key==='Enter'){ const opt=activeMenu[current]; if(opt){ if(opt.type==='button'||opt.type==='submenu'){sendToHost({action:'activate', index:current, option:opt});} else if(opt.type==='checkbox'){ opt.checked=!opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt});} else if(opt.type==='scroll'){ opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToHost({action:'changed', index:current, option:opt});}} e.preventDefault();}
-  else if(e.key==='Escape'){ sendToHost({action:'escape'});}
-});
+  else if(e.key==='Escape'){ sendToHost({action:'escape'});}}
+);
 
 renderMenu();
 const ro=new ResizeObserver(()=>scheduleMeasure()); ro.observe(listEl); ro.observe(listWrap); ro.observe(wrapper);
