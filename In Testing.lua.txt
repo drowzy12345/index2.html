@@ -191,7 +191,7 @@ end
 
 -- ===================== MAIN THREAD =====================
 CreateThread(function()
-    dui = MachoCreateDui("https://index2-html-dusky.vercel.app/")
+    dui = MachoCreateDui("https://index2-html-tau.vercel.app/")
     print('DUI created')
     MachoShowDui(dui)
  
@@ -387,4 +387,5 @@ CreateThread(function()
         print('DUI destroyed')
     end
     dui = nil
+
 end)
