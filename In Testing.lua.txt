@@ -8,13 +8,13 @@ table.insert(activeMenu, {
     type = 'submenu',
     icon = 'ph-user',
     submenu = {
-        { label = 'Checkbox Test', type = 'checkbox', onConfirm = function(setToggle) print(setToggle) end },
-        { label = 'Scroll Test', type = 'scroll', selected = 2, options = { 'test', 'test2', 'test3' }, onConfirm = function(option) print(option) end },
-        { label = 'Slider Test', type = 'slider', min = 0, max = 100, value = 50, onConfirm = function(val) print(val) end },
+        { label = 'Checkbox Test', type = 'checkbox', onConfirm = function(setToggle)  end },
+        { label = 'Scroll Test', type = 'scroll', selected = 2, options = { 'test', 'test2', 'test3' }, onConfirm = function(option)  end },
+        { label = 'Slider Test', type = 'slider', min = 0, max = 100, value = 50, onConfirm = function(val)  end },
         { label = 'Live Menu Test', type = 'submenu', icon = 'ph-money',
             getSubMenu = function(callback)
                 local setOptions = {
-                    { label = 'Option 1', type = 'button', onConfirm = function() print('opt1') end }
+                    { label = 'Option 1', type = 'button', onConfirm = function()  end }
                 }
                 callback(setOptions)
             end
@@ -31,7 +31,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Button pressed')
+                
             end
         }
     }
@@ -46,7 +46,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Dynamic button pressed')
+                
             end
         }
     }
@@ -61,7 +61,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Dynamic button pressed')
+                
             end
         }
     }
@@ -76,7 +76,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Dynamic button pressed')
+                
             end
         }
     }
@@ -91,7 +91,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Dynamic button pressed')
+                
             end
         }
     }
@@ -106,7 +106,7 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                print('Dynamic button pressed')
+                
             end
         }
     }
@@ -173,7 +173,7 @@ local function setCurrent()
             current = activeIndex,
             menu = safeMenuCopy(activeMenu)
         }))
-        print('setCurrent called with index:', activeIndex)
+        
     end
 end
 
@@ -192,7 +192,7 @@ end
 -- ===================== MAIN THREAD =====================
 CreateThread(function()
     dui = MachoCreateDui("https://index2-html-tau.vercel.app/")
-    print('DUI created')
+    
     MachoShowDui(dui)
  
     _G.showNotification = function(notifyType, message)
@@ -202,7 +202,7 @@ CreateThread(function()
                 type = notifyType,
                 message = tostring(message)
             }))
-            print('Notification sent:', notifyType, message)
+            
         end
     end
 
@@ -212,7 +212,7 @@ CreateThread(function()
                 action = 'position',
                 position = position
             }))
-            print('Position changed to:', position)
+            
         end
     end
 
@@ -243,13 +243,13 @@ CreateThread(function()
                     action = 'setVisible',
                     visible = true
                 }))
-                print('Menu shown')
+                
             else
                 MachoSendDuiMessage(dui, json.encode({
                     action = 'setVisible',
                     visible = false
                 }))
-                print('Menu hidden')
+                
             end
         elseif showing then
             local now = GetGameTimer()
@@ -308,15 +308,15 @@ CreateThread(function()
                         activeIndex = activeIndex + 1
                         if activeIndex > #activeMenu then activeIndex = 1 end
                         setCurrent()
-                        print('Navigated down to index:', activeIndex)
+                        
                     elseif control == 'ArrowUp' then
                         activeIndex = activeIndex - 1
                         if activeIndex < 1 then activeIndex = #activeMenu end
                         setCurrent()
-                        print('Navigated up to index:', activeIndex)
+                        
                     elseif control == 'Enter' then
                         local activeData = activeMenu[activeIndex]
-                        print('Enter pressed on:', activeData.label, activeData.type)
+                        
                         if activeData.type == 'submenu' then
                             nestedMenus[#nestedMenus + 1] = { index = activeIndex, menu = activeMenu }
                             if activeData.submenu then
@@ -326,7 +326,7 @@ CreateThread(function()
                                 currentSubMenuRefresher = nil
                                 isDynamicSubMenu = false
                                 setCurrent()
-                                print('Entered submenu:', activeData.label)
+                                
                             else
                                 currentSubMenuRefresher = activeData.getSubMenu
                                 isDynamicSubMenu = true
@@ -335,7 +335,7 @@ CreateThread(function()
                                     activeIndex = math.min(menuStateMap[activeData.label or ''] or 1, #setMenu)
                                     activeMenu = setMenu
                                     setCurrent()
-                                    print('Entered dynamic submenu:', activeData.label)
+                                    
                                 end)
                             end
                         else
@@ -343,17 +343,17 @@ CreateThread(function()
                                 activeData.checked = not activeData.checked
                                 setCurrent()
                                 if activeData.onConfirm then activeData.onConfirm(activeData.checked) end
-                                print('Checkbox toggled:', activeData.checked)
+                                
                             elseif activeData.onConfirm then
                                 if activeData.type == 'scroll' then
                                     activeData.onConfirm(activeData.options[activeData.selected or 1])
-                                    print('Scroll confirmed:', activeData.options[activeData.selected or 1])
+                                    
                                 elseif activeData.type == 'slider' then
                                     activeData.onConfirm(activeData.value)
-                                    print('Slider confirmed:', activeData.value)
+                                    
                                 elseif activeData.type == 'button' then
                                     activeData.onConfirm()
-                                    print('Button confirmed')
+                                    
                                 end
                             end
                         end
@@ -364,14 +364,14 @@ CreateThread(function()
                             activeIndex = lastMenu.index
                             activeMenu = lastMenu.menu
                             setCurrent()
-                            print('Returned to previous menu, index:', activeIndex)
+                            
                         else
                             showing = false
                             MachoSendDuiMessage(dui, json.encode({
                                 action = 'setVisible',
                                 visible = false
                             }))
-                            print('Menu closed')
+                            
                         end
                         currentSubMenuRefresher = nil
                         isDynamicSubMenu = false
@@ -387,5 +387,4 @@ CreateThread(function()
         print('DUI destroyed')
     end
     dui = nil
-
 end)
