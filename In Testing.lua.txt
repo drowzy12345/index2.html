@@ -39,6 +39,34 @@ table.insert(activeMenu, {
                 callback(setOptions)
             end
         },
+        {
+
+
+            label = 'Toggle Freecam',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+                cam_active = toggled
+                toggle_camera()
+            end
+
+
+
+        },
+        {
+
+            label = 'Invisible',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+            local ped = PlayerPedId()
+        if toggled then
+            SetEntityVisible(ped, false, false)
+         else
+            SetEntityVisible(ped, true, false)
+                end
+            end
+        },
         { 
             label = 'Toggle Noclip',
             type = 'checkbox',
@@ -170,10 +198,11 @@ table.insert(activeMenu, {
     submenu = {
         
         { 
-            label = 'Button Test',
-            type = 'button',
+            label = 'Test',
+            type = 'checkbox',
+            checked = false,
             onConfirm = function()
-                print("Button Test Pressed")
+                
             end
         }
     }
@@ -192,7 +221,15 @@ table.insert(activeMenu, {
             label = 'Button Test',
             type = 'button',
             onConfirm = function()
-                
+                -- Placeholder
+            end
+        },
+        { 
+            label = 'Test',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function()
+            
             end
         }
     }
@@ -525,6 +562,76 @@ Citizen.CreateThread(function()
             SetEntityInvincible(playerPed, false)
             SetEntityCollision(playerPed, true, true)
             FreezeEntityPosition(playerPed, false)
+        end
+    end
+end)
+
+
+-- ===================== FREECAM FUNCTIONS =====================
+cam_active = false
+local cam = nil
+
+function RotationToDirection(rot)
+    local radiansZ = math.rad(rot.z)
+    local radiansX = math.rad(rot.x)
+    local cosX = math.cos(radiansX)
+    local direction = vector3(-math.sin(radiansZ) * cosX, math.cos(radiansZ) * cosX, math.sin(radiansX))
+    return direction
+end
+
+function toggle_camera()
+    if cam_active then
+        local gameplay_cam_coords = GetGameplayCamCoord()
+        local gameplay_cam_rot = GetGameplayCamRot()
+        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", gameplay_cam_coords.x, gameplay_cam_coords.y, gameplay_cam_coords.z, gameplay_cam_rot.x, gameplay_cam_rot.y, gameplay_cam_rot.z, 70.0)
+        SetCamActive(cam, true)
+        RenderScriptCams(true, true, 200, false, false)
+    else
+        if cam then
+            SetCamActive(cam, false)
+            RenderScriptCams(false, true, 0, false, false)
+            DestroyCam(cam)
+            cam = nil
+        end
+        SetFocusEntity(PlayerPedId())
+    end
+end
+
+-- ===================== FREECAM THREAD =====================
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if cam_active and cam then
+            local coords = GetCamCoord(cam)
+            local rot = GetCamRot(cam)
+            local direction = RotationToDirection(rot)
+            
+            local horizontal_move = GetControlNormal(0, 1) * 4
+            local vertical_move = GetControlNormal(0, 2) * 4
+
+            if horizontal_move ~= 0.0 or vertical_move ~= 0.0 then
+                SetCamRot(cam, rot.x - vertical_move, rot.y, rot.z - horizontal_move)
+            end
+
+            local shift = IsDisabledControlPressed(0, 21)
+            local new_pos = coords
+
+            if IsDisabledControlPressed(0, 32) then  -- W
+                new_pos = new_pos + direction * (shift and 4.0 or 1.2)
+            end
+            if IsDisabledControlPressed(0, 33) then  -- S
+                new_pos = new_pos - direction * (shift and 4.0 or 1.2)
+            end
+            if IsDisabledControlPressed(0, 34) then  -- A
+                new_pos = new_pos + vector3(-direction.y, direction.x, 0.0) * (shift and 4.0 or 1.2)
+            end
+            if IsDisabledControlPressed(0, 35) then  -- D
+                new_pos = new_pos + vector3(direction.y, -direction.x, 0.0) * (shift and 4.0 or 1.2)
+            end
+
+            SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
+            TaskStandStill(PlayerPedId(), 10)
+            SetFocusPosAndVel(new_pos.x, new_pos.y, new_pos.z, 0.0, 0.0, 0.0)
         end
     end
 end)
