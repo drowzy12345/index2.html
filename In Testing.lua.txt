@@ -8,19 +8,48 @@ table.insert(activeMenu, {
     type = 'submenu',
     icon = 'ph-user',
     submenu = {
-        { label = 'Checkbox Test', type = 'checkbox', onConfirm = function(setToggle)  end },
-        { label = 'Scroll Test', type = 'scroll', selected = 2, options = { 'test', 'test2', 'test3' }, onConfirm = function(option)  end },
-        { label = 'Slider Test', type = 'slider', min = 0, max = 100, value = 50, onConfirm = function(val)  end },
-        { label = 'Live Menu Test', type = 'submenu', icon = 'ph-money',
+        { 
+            label = 'Checkbox Test', 
+            type = 'checkbox', 
+            onConfirm = function(setToggle) end 
+        },
+        { 
+            label = 'Scroll Test', 
+            type = 'scroll', 
+            selected = 2, 
+            options = { 'test', 'test2', 'test3' }, 
+            onConfirm = function(option) end 
+        },
+        { 
+            label = 'Slider Test', 
+            type = 'slider', 
+            min = 0, 
+            max = 100, 
+            value = 50, 
+            onConfirm = function(val) end 
+        },
+        { 
+            label = 'Live Menu Test', 
+            type = 'submenu', 
+            icon = 'ph-money',
             getSubMenu = function(callback)
                 local setOptions = {
-                    { label = 'Option 1', type = 'button', onConfirm = function()  end }
+                    { label = 'Option 1', type = 'button', onConfirm = function() end }
                 }
                 callback(setOptions)
             end
-        }
+        },
+        { 
+            label = 'Toggle Noclip',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+                noclip = toggled
+            end
+        },
     }
 })
+
 
 table.insert(activeMenu, {
     label = 'Server',
@@ -97,6 +126,63 @@ table.insert(activeMenu, {
     }
 })
 
+
+table.insert(activeMenu, {
+    label = 'Exploits',
+    type = 'submenu',
+    icon = 'ph-skull',
+    submenu = {
+        
+        
+        { 
+            label = 'WaveSheild Bypass',
+            type = 'button',
+            onConfirm = function()
+
+                for i = 1, 2 do
+                    MachoInjectResource2(3, 'WaveShield', [[
+                        error('my nigga what happened :')
+                    ]])
+                end
+
+            end
+        },
+
+        
+        {
+            label = 'Test',
+            type = 'button',
+            onConfirm = function()
+
+                print("Second button clicked!") -- replace with whatever code you want
+
+            end
+        }
+
+    }
+})
+
+
+table.insert(activeMenu, {
+    label = 'Test',
+    type = 'submenu',
+    icon = 'ph-Settings',
+    submenu = {
+        
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print("Button Test Pressed")
+            end
+        }
+    }
+})
+
+
+
+
+
 table.insert(activeMenu, {
     label = 'Settings',
     type = 'submenu',
@@ -112,7 +198,7 @@ table.insert(activeMenu, {
     }
 })
 
--- ===================== SAFE COPY FOR DUI =====================
+-- ===================== SAFE COPY FOR DUI ===================== 
 local function safeMenuCopy(menu)
     local copy = {}
     for i, v in ipairs(menu) do
@@ -387,4 +473,58 @@ CreateThread(function()
         print('DUI destroyed')
     end
     dui = nil
+end)
+
+
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if noclip then
+            local playerPed = PlayerPedId()
+            local baseSpeed = 1.0
+            local sprintMultiplier = 2.5
+            local speed = baseSpeed
+            if IsControlPressed(0, 21) then -- Shift
+                speed = baseSpeed * sprintMultiplier
+            end
+
+            local camRot = GetGameplayCamRot(2)
+            local camForward = vector3(
+                -math.sin(math.rad(camRot.z)),
+                math.cos(math.rad(camRot.z)),
+                0.0
+            )
+            local camRight = vector3(
+                camForward.y,
+                -camForward.x,
+                0.0
+            )
+
+            local moveVector = vector3(0.0, 0.0, 0.0)
+
+            -- WASD Movement
+            if IsControlPressed(0, 32) then moveVector = moveVector + (camForward * speed) end -- W
+            if IsControlPressed(0, 33) then moveVector = moveVector - (camForward * speed) end -- S
+            if IsControlPressed(0, 34) then moveVector = moveVector - (camRight * speed) end   -- A
+            if IsControlPressed(0, 35) then moveVector = moveVector + (camRight * speed) end   -- D
+            if IsControlPressed(0, 44) then moveVector = moveVector + vector3(0,0,speed) end -- Space
+            if IsControlPressed(0, 36) then moveVector = moveVector - vector3(0,0,speed) end -- Ctrl
+
+            -- Apply new position
+            local pos = GetEntityCoords(playerPed)
+            local newPos = pos + moveVector
+            SetEntityCoordsNoOffset(playerPed, newPos.x, newPos.y, newPos.z, true, true, true)
+            
+            -- Disable collisions and make invincible
+            SetEntityInvincible(playerPed, true)
+            SetEntityCollision(playerPed, false, false)
+            FreezeEntityPosition(playerPed, true)
+        else
+            local playerPed = PlayerPedId()
+            SetEntityInvincible(playerPed, false)
+            SetEntityCollision(playerPed, true, true)
+            FreezeEntityPosition(playerPed, false)
+        end
+    end
 end)
