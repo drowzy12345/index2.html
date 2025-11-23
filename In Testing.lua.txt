@@ -54,6 +54,26 @@ table.insert(activeMenu, {
 
         },
         {
+        label = 'GodMode',
+        type = 'checkbox',
+        checked = false,
+        onConfirm = function(toggled)
+            godModeEnabled = toggled
+
+            local playerPed = PlayerPedId()
+
+            if toggled then
+                print("God Mode Enabled")
+                SetEntityProofs(playerPed, true, true, true, true, true, true, true, true)
+                SetEntityCanBeDamaged(playerPed, false)
+            else
+                print("God Mode Disabled")
+                SetEntityProofs(playerPed, false, false, false, false, false, false, false, false)
+                SetEntityCanBeDamaged(playerPed, true)
+            end
+        end
+        },
+        {
 
             label = 'Invisible',
             type = 'checkbox',
@@ -632,6 +652,23 @@ Citizen.CreateThread(function()
             SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
             TaskStandStill(PlayerPedId(), 10)
             SetFocusPosAndVel(new_pos.x, new_pos.y, new_pos.z, 0.0, 0.0, 0.0)
+        end
+    end
+end)
+
+
+Citizen.CreateThread(function()
+    while true do
+        Wait(0)
+
+        if godModeEnabled then
+            local playerPed = PlayerPedId()
+
+            SetPedCanRagdoll(playerPed, false)
+            ClearPedBloodDamage(playerPed)
+            ResetPedVisibleDamage(playerPed)
+            ClearPedLastWeaponDamage(playerPed)
+            SetEntityHealth(playerPed, 200) -- Always full HP
         end
     end
 end)
