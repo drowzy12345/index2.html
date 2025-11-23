@@ -1,0 +1,390 @@
+local dui
+local activeMenu = {}
+local activeIndex = 1
+
+-- ===================== MENU DATA =====================
+table.insert(activeMenu, {
+    label = 'Self',
+    type = 'submenu',
+    icon = 'ph-user',
+    submenu = {
+        { label = 'Checkbox Test', type = 'checkbox', onConfirm = function(setToggle) print(setToggle) end },
+        { label = 'Scroll Test', type = 'scroll', selected = 2, options = { 'test', 'test2', 'test3' }, onConfirm = function(option) print(option) end },
+        { label = 'Slider Test', type = 'slider', min = 0, max = 100, value = 50, onConfirm = function(val) print(val) end },
+        { label = 'Live Menu Test', type = 'submenu', icon = 'ph-money',
+            getSubMenu = function(callback)
+                local setOptions = {
+                    { label = 'Option 1', type = 'button', onConfirm = function() print('opt1') end }
+                }
+                callback(setOptions)
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Server',
+    type = 'submenu',
+    icon = 'ph-server',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Button pressed')
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Weapon',
+    type = 'submenu',
+    icon = 'ph-Weapon',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Dynamic button pressed')
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Vehicle',
+    type = 'submenu',
+    icon = 'ph-Vehicle',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Dynamic button pressed')
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Emotes',
+    type = 'submenu',
+    icon = 'ph-Emotes',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Dynamic button pressed')
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Teleports',
+    type = 'submenu',
+    icon = 'ph-Teleports',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Dynamic button pressed')
+            end
+        }
+    }
+})
+
+table.insert(activeMenu, {
+    label = 'Settings',
+    type = 'submenu',
+    icon = 'ph-Settings',
+    submenu = {
+        { 
+            label = 'Button Test',
+            type = 'button',
+            onConfirm = function()
+                print('Dynamic button pressed')
+            end
+        }
+    }
+})
+
+-- ===================== SAFE COPY FOR DUI =====================
+local function safeMenuCopy(menu)
+    local copy = {}
+    for i, v in ipairs(menu) do
+        local item = {
+            label = v.label or "",
+            type = v.type or ""
+        }
+        if v.icon then item.icon = v.icon end
+
+        if v.type == "scroll" then
+            item.options = {}
+            for _, opt in ipairs(v.options or {}) do
+                if type(opt) == "string" or type(opt) == "number" then
+                    table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
+                elseif type(opt) == "table" then
+                    table.insert(item.options, {
+                        label = tostring(opt.label or opt[1] or ""),
+                        value = tostring(opt.value or opt.label or opt[1] or "")
+                    })
+                else
+                    table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
+                end
+            end
+            if #item.options == 0 then
+                item.options = {{ label = "(empty)", value = "(empty)" }}
+            end
+            local sel = v.selected or 1
+            if sel < 1 then sel = 1 end
+            if sel > #item.options then sel = #item.options end
+            item.selected = sel - 1 -- 0-based for JS
+        elseif v.type == "slider" then
+            item.min = v.min or 0
+            item.max = v.max or 100
+            item.value = v.value or item.min
+        elseif v.type == "checkbox" then
+            item.checked = v.checked == true
+        elseif v.type == "submenu" then
+            if type(v.submenu) == "table" then
+                item.submenu = safeMenuCopy(v.submenu)
+            else
+                item.dynamic = type(v.getSubMenu) == "function"
+            end
+        end
+        copy[i] = item
+    end
+    return copy
+end
+
+-- ===================== HELPERS =====================
+local function unloadMenu()
+    _G.clientMenuShowing = false
+end
+
+local function setCurrent()
+    if dui then
+        MachoSendDuiMessage(dui, json.encode({
+            action = 'setCurrent',
+            current = activeIndex,
+            menu = safeMenuCopy(activeMenu)
+        }))
+        print('setCurrent called with index:', activeIndex)
+    end
+end
+
+local function isControlPressed(control)
+    return IsControlPressed(0, control) or IsDisabledControlPressed(0, control)
+end
+
+local function isControlJustPressed(control)
+    return IsControlJustPressed(0, control) or IsDisabledControlJustPressed(0, control)
+end
+
+local function isControlJustReleased(control)
+    return IsControlJustReleased(0, control) or IsDisabledControlJustReleased(0, control)
+end
+
+-- ===================== MAIN THREAD =====================
+CreateThread(function()
+    dui = MachoCreateDui("https://index2-html-dusky.vercel.app/")
+    print('DUI created')
+    MachoShowDui(dui)
+ 
+    _G.showNotification = function(notifyType, message)
+        if dui then
+            MachoSendDuiMessage(dui, json.encode({
+                action = 'notify',
+                type = notifyType,
+                message = tostring(message)
+            }))
+            print('Notification sent:', notifyType, message)
+        end
+    end
+
+    _G.changeMenuPosition = function(position)
+        if dui then
+            MachoSendDuiMessage(dui, json.encode({
+                action = 'position',
+                position = position
+            }))
+            print('Position changed to:', position)
+        end
+    end
+
+    Wait(1000)
+    setCurrent()
+
+    local showing = true
+    local nestedMenus = {}
+    local currentSubMenuRefresher = nil
+    local isDynamicSubMenu = false
+    local menuStateMap = {}
+    local baseDelay = 250
+    local minDelay = 50
+    local speedupStep = 30
+    local holdTimers = {
+        ['ArrowLeft'] = {lastTime = 0, delay = 100},
+        ['ArrowRight'] = {lastTime = 0, delay = 100},
+    }
+
+    _G.clientMenuShowing = true
+
+    while _G.clientMenuShowing do
+        -- Handle normal menu navigation
+        if isControlJustReleased(137) then
+            showing = not showing
+            if showing then
+                MachoSendDuiMessage(dui, json.encode({
+                    action = 'setVisible',
+                    visible = true
+                }))
+                print('Menu shown')
+            else
+                MachoSendDuiMessage(dui, json.encode({
+                    action = 'setVisible',
+                    visible = false
+                }))
+                print('Menu hidden')
+            end
+        elseif showing then
+            local now = GetGameTimer()
+            for control, bind in pairs({
+                ['ArrowUp'] = 188,
+                ['ArrowDown'] = 187,
+                ['ArrowLeft'] = 189,
+                ['ArrowRight'] = 190,
+                ['Backspace'] = 194,
+                ['Enter'] = 191
+            }) do
+                if control == 'ArrowLeft' or control == 'ArrowRight' then
+                    local timer = holdTimers[control]
+                    if isControlPressed(bind) then
+                        if now - timer.lastTime >= timer.delay then
+                            timer.lastTime = now
+                            timer.delay = math.max(minDelay, timer.delay - speedupStep)
+
+                            local activeData = activeMenu[activeIndex]
+                            local setType = activeData.type
+                            local onChange = activeData.onChange
+
+                            if control == 'ArrowLeft' then
+                                if setType == 'scroll' then
+                                    local selected = (activeData.selected or 1) - 1
+                                    if selected <= 0 then selected = #activeData.options end
+                                    activeData.selected = selected
+                                    if onChange then onChange(activeData.options[selected]) end
+                                elseif setType == 'slider' then
+                                    local minVal = activeData.min or 0
+                                    local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) - 1))
+                                    activeData.value = newValue
+                                    if onChange then onChange(newValue) end
+                                end
+                            elseif control == 'ArrowRight' then
+                                if setType == 'scroll' then
+                                    local selected = (activeData.selected or 1) + 1
+                                    if selected > #activeData.options then selected = 1 end
+                                    activeData.selected = selected
+                                    if onChange then onChange(activeData.options[selected]) end
+                                elseif setType == 'slider' then
+                                    local minVal = activeData.min or 0
+                                    local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) + 1))
+                                    activeData.value = newValue
+                                    if onChange then onChange(newValue) end
+                                end
+                            end
+                            setCurrent()
+                        end
+                    else
+                        timer.delay = baseDelay
+                        timer.lastTime = 0
+                    end
+                elseif isControlJustPressed(bind) then
+                    if control == 'ArrowDown' then
+                        activeIndex = activeIndex + 1
+                        if activeIndex > #activeMenu then activeIndex = 1 end
+                        setCurrent()
+                        print('Navigated down to index:', activeIndex)
+                    elseif control == 'ArrowUp' then
+                        activeIndex = activeIndex - 1
+                        if activeIndex < 1 then activeIndex = #activeMenu end
+                        setCurrent()
+                        print('Navigated up to index:', activeIndex)
+                    elseif control == 'Enter' then
+                        local activeData = activeMenu[activeIndex]
+                        print('Enter pressed on:', activeData.label, activeData.type)
+                        if activeData.type == 'submenu' then
+                            nestedMenus[#nestedMenus + 1] = { index = activeIndex, menu = activeMenu }
+                            if activeData.submenu then
+                                menuStateMap[activeData.label or ''] = activeIndex
+                                activeIndex = 1
+                                activeMenu = activeData.submenu
+                                currentSubMenuRefresher = nil
+                                isDynamicSubMenu = false
+                                setCurrent()
+                                print('Entered submenu:', activeData.label)
+                            else
+                                currentSubMenuRefresher = activeData.getSubMenu
+                                isDynamicSubMenu = true
+                                activeData.getSubMenu(function(setMenu)
+                                    menuStateMap[activeData.label or ''] = activeIndex
+                                    activeIndex = math.min(menuStateMap[activeData.label or ''] or 1, #setMenu)
+                                    activeMenu = setMenu
+                                    setCurrent()
+                                    print('Entered dynamic submenu:', activeData.label)
+                                end)
+                            end
+                        else
+                            if activeData.type == 'checkbox' then
+                                activeData.checked = not activeData.checked
+                                setCurrent()
+                                if activeData.onConfirm then activeData.onConfirm(activeData.checked) end
+                                print('Checkbox toggled:', activeData.checked)
+                            elseif activeData.onConfirm then
+                                if activeData.type == 'scroll' then
+                                    activeData.onConfirm(activeData.options[activeData.selected or 1])
+                                    print('Scroll confirmed:', activeData.options[activeData.selected or 1])
+                                elseif activeData.type == 'slider' then
+                                    activeData.onConfirm(activeData.value)
+                                    print('Slider confirmed:', activeData.value)
+                                elseif activeData.type == 'button' then
+                                    activeData.onConfirm()
+                                    print('Button confirmed')
+                                end
+                            end
+                        end
+                    elseif control == 'Backspace' then
+                        local lastMenu = nestedMenus[#nestedMenus]
+                        if lastMenu then
+                            table.remove(nestedMenus)
+                            activeIndex = lastMenu.index
+                            activeMenu = lastMenu.menu
+                            setCurrent()
+                            print('Returned to previous menu, index:', activeIndex)
+                        else
+                            showing = false
+                            MachoSendDuiMessage(dui, json.encode({
+                                action = 'setVisible',
+                                visible = false
+                            }))
+                            print('Menu closed')
+                        end
+                        currentSubMenuRefresher = nil
+                        isDynamicSubMenu = false
+                    end
+                end
+            end
+        end
+        Wait(0)
+    end
+
+    if dui then
+        MachoDestroyDui(dui)
+        print('DUI destroyed')
+    end
+    dui = nil
+end)
