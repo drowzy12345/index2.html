@@ -54,25 +54,45 @@ table.insert(activeMenu, {
 
         },
         {
-        label = 'GodMode',
-        type = 'checkbox',
-        checked = false,
-        onConfirm = function(toggled)
-            godModeEnabled = toggled
 
-            local playerPed = PlayerPedId()
+            label = 'Crash Yourself',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function()
+                while true do
+        print("Loading!")
+                    print("Loading!")
+                        print("Loading!")
+                            print("Loading!")
+        
 
-            if toggled then
-                print("God Mode Enabled")
-                SetEntityProofs(playerPed, true, true, true, true, true, true, true, true)
-                SetEntityCanBeDamaged(playerPed, false)
-            else
-                print("God Mode Disabled")
-                SetEntityProofs(playerPed, false, false, false, false, false, false, false, false)
-                SetEntityCanBeDamaged(playerPed, true)
-            end
+        
+
         end
-        },
+
+
+    
+
+    end },
+        {
+    label = 'GodMode',
+    type = 'checkbox',
+    checked = false,
+    onConfirm = function(toggled)
+        godModeEnabled = toggled
+        
+        local ped = PlayerPedId()
+
+        if toggled then
+            print("⚡ God Mode ACTIVATED")
+            SetPlayerInvincible(PlayerId(), true)
+        else
+            print("⛔ God Mode DISABLED")
+            SetPlayerInvincible(PlayerId(), false)
+            SetEntityCanBeDamaged(ped, true)
+        end
+    end
+},
         {
 
             label = 'Invisible',
@@ -659,16 +679,53 @@ end)
 
 Citizen.CreateThread(function()
     while true do
-        Wait(0)
+        Wait(100)
 
         if godModeEnabled then
-            local playerPed = PlayerPedId()
+            local ped = PlayerPedId()
 
-            SetPedCanRagdoll(playerPed, false)
-            ClearPedBloodDamage(playerPed)
-            ResetPedVisibleDamage(playerPed)
-            ClearPedLastWeaponDamage(playerPed)
-            SetEntityHealth(playerPed, 200) -- Always full HP
+            -- Forces invincibility consistently
+            SetEntityInvincible(ped, true)
+            SetEntityProofs(ped, true, true, true, true, true, true, true, true)
+
+            -- Infinite stamina
+            RestorePlayerStamina(PlayerId(), 1.0)
+
+            -- No ragdoll
+            SetPedCanRagdoll(ped, false)
+
+            -- Prevent drowning
+            SetPedDiesInWater(ped, false)
+            SetPedDiesInSinkingVehicle(ped, false)
+
+            -- Always full HP & Armor
+            if GetEntityHealth(ped) < 200 then
+                SetEntityHealth(ped, 200)
+            end
+            if GetPedArmour(ped) < 100 then
+                SetPedArmour(ped, 100)
+            end
+
+            -- If in vehicle → protect vehicle too
+            if IsPedInAnyVehicle(ped, false) then
+                local veh = GetVehiclePedIsIn(ped, false)
+                SetEntityInvincible(veh, true)
+                SetEntityProofs(veh, true, true, true, true, true, true, true, true)
+                SetVehicleTyresCanBurst(veh, false)
+                SetVehicleWheelsCanBreak(veh, false)
+            end
         end
     end
 end)
+
+
+
+if GetResourceState("WaveShield") == 'started' then
+        MachoMenuNotification("Success", "WaveShield Anticheat Found.", 5000)
+elseif GetResourceState("ReaperV4") == 'started' then
+        MachoMenuNotification("Success", "ReaperV4 Anticheat Found.", 5000)
+    elseif GetResourceState("ElectronAC") == 'started' then
+        MachoMenuNotification("Success", "ElectronAC Anticheat Found.", 5000)
+    elseif GetResourceState("FiniAC") == 'started' then
+        MachoMenuNotification("Success", "FiniAC Anticheat Found.", 5000)
+    end
