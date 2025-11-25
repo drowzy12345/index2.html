@@ -2451,6 +2451,61 @@ MachoInjectResource2(2, "ReaperV4", [[
 
 end)
 
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Reaper V4 Client Bypass", function()
+
+MachoInjectResource2(2, "ReaperV4", [[
+            pcall(function()
+                local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
+                local eventHandlers = {}
+                for name, raw in pairs(eventHandlersRaw) do
+                    if raw.handlers then
+                        for id, v in pairs(raw.handlers) do
+                            table.insert(eventHandlers, { handle = { ['key'] = id, ['name'] = name }, func = v, type = (string.find(name, "__cfx_nui") and "NUICallback") or (string.find(name, "__cfx_export") and "Export") or "Event" })
+                        end
+                    end
+                end
+                local reaper_newdetection
+                for i, v in pairs(eventHandlers) do
+                    local name = v["handle"]["name"]
+                    local func = v["func"]
+                    if name == "Reaper:NewDetection" then
+                        reaper_newdetection = func
+                    end
+                end
+                if type(reaper_newdetection) ~= "function" then
+                    return print("error")
+                end
+                local _, securityclient = debug.getupvalue(reaper_newdetection, 1)
+                for name, detection in pairs(securityclient["detections"]) do
+                    if detection["detected"] then
+                        securityclient["detections"][name]["detected"] = function(...)
+                            local args = { ... }
+                            print(name, "detected", json.encode(args or {}))
+                            return
+                        end
+                    end
+                    if detection["callback"] then
+                        securityclient["detections"][name]["callback"] = function(...)
+                            local args = { ... }
+                            print(name, "callback", json.encode(args or {}))
+                            return
+                        end
+                    end
+                end
+                for name, detection in pairs(securityclient["active_detections"]) do
+                    if detection["detected"] then
+                        securityclient["active_detections"][name]["detected"] = function(...) return end
+                    end
+                    if detection["callback"] then
+                        securityclient["active_detections"][name]["callback"] = function(...) return end
+                    end
+                end
+                Debug.setupvalue(reaper_newdetection, 1, securityclient)
+                print("ReaperV4 | Client Bypassed")
+            end)
+        ]])
+
+    end)
 
 MachoMenuButton(PLAYER_TAB_GROUP_ONE, "WaveSheild Bypass V1", function()
     
