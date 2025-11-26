@@ -2470,6 +2470,9 @@ local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Server")
 local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
 local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
+
+
+
 local function isResourceRunning(name)
     for i=0, GetNumResources()-1 do
         local resName = GetResourceByFindIndex(i)
@@ -2480,93 +2483,8 @@ local function isResourceRunning(name)
     return false
 end
 
-local DirtyMoneyInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter item name", "Item Name")
-local AmountInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter amount", "Item Amount")
-
-
--- DrugManv2 Button (unchanged)
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "DrugManv2", function()
-    local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
-    local typedAmount = MachoMenuGetInputbox(AmountInput)
-    local amountNumber = tonumber(typedAmount) or 0
-
-    if isResourceRunning("ak47_drugmanagerv2") then
-        TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
-            "69.420 CodePlug",
-            {
-                buyprice = 0,
-                currency = "cash",
-                label = "codeplug",
-                name = typedName,
-                sellprice = 0
-            },
-            amountNumber
-        )
-    elseif isResourceRunning("xmmx_letscookplus") then
-        TriggerServerEvent("xmmx_letscookplus:shop:buy",
-            "69.420 CodePlug",
-            {
-                buyprice = 0,
-                currency = "cash",
-                label = "codeplug",
-                name = typedName,
-                sellprice = 0
-            },
-            amountNumber
-        )
-    else
-        print("No supported drug manager resource running.")
-    end
-end)
-
--- Add special "MC9 Claim Milestones" button if and only if mc9-mainmenu is running
-if isResourceRunning("mc9-mainmenu") then
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "MC9 Claim All Milestones", function()
-        MachoInjectResource2(NewThreadNs, "mc9-mainmenu", [[
-
-      local data, playtime = mc9.callback.await("mc9-mainmenu:server:GetMilestoneReward", false)
-
-      for i,v in pairs(data) do
-
-        local result, message = mc9.callback.await("mc9-mainmenu:server:claimMilestoneReward", v)
-
-      end
-
-        ]])
-    end)
-end
-
-
-
-
-
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "FiveGuard Bypass", function()
-    for i = 0, GetNumResources() - 1 do
-        local resource = GetResourceByFindIndex(i)
-        local files = GetNumResourceMetadata(resource, 'client_script')
-        local foundFiveGuard = false
-        for j = 0, files - 1 do
-            local metadata = GetResourceMetadata(resource, 'client_script', j)
-            if metadata and string.find(metadata, "obfuscated") then
-                print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
-                foundFiveGuard = true
-                break
-            end
-        end
-        if foundFiveGuard then
-            MachoResourceStop(resource)
-            print("^7[Extorted]: Stopped Resource: " .. resource)
-            return resource
-        end
-    end
-
-    return nil
-end)
-
-
-
-
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat (Macho Notification)", function()
+-- Run Anti Cheat Checks when menu is created
+local function runAntiCheatChecks()
     local found = false
     local foundFiveGuard = false
 
@@ -2604,103 +2522,216 @@ MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat (Macho Notification)", f
     if not found and not foundFiveGuard then
         MachoMenuNotification("Info", "No main anticheats found.", 5000)
     end
+end
+
+-- EXECUTE AC CHECK ON MENU CREATION
+runAntiCheatChecks()
+
+local DirtyMoneyInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter item name", "Item Name")
+local AmountInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter amount", "Item Amount")
+
+-- DrugManv2 Button (unchanged)
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "DrugManv2", function()
+    local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
+    local typedAmount = MachoMenuGetInputbox(AmountInput)
+    local amountNumber = tonumber(typedAmount) or 0
+
+    if isResourceRunning("ak47_drugmanagerv2") then
+        TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
+            "69.420 CodePlug",
+            {
+                buyprice = 0,
+                currency = "cash",
+                label = "codeplug",
+                name = typedName,
+                sellprice = 0
+            },
+            amountNumber
+        )
+    elseif isResourceRunning("xmmx_letscookplus") then
+        TriggerServerEvent("xmmx_letscookplus:shop:buy",
+            "69.420 CodePlug",
+            {
+                buyprice = 0,
+                currency = "cash",
+                label = "codeplug",
+                name = typedName,
+                sellprice = 0
+            },
+            amountNumber
+        )
+    else
+        print("No supported drug manager resource running.")
+    end
 end)
 
+-- Add "Revive (wasabi_ambulance)" button for the revive trigger, not checking for resource anymore
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Revive (wasabi_ambulance)", function()
+    TriggerEvent('wasabi_ambulance:revive')
+end)
 
+-- Add special "MC9 Claim Milestones" button if and only if mc9-mainmenu is running
+if isResourceRunning("mc9-mainmenu") then
+    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "MC9 Claim All Milestones", function()
+        MachoInjectResource2(NewThreadNs, "mc9-mainmenu", [[
 
+      local data, playtime = mc9.callback.await("mc9-mainmenu:server:GetMilestoneReward", false)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Reaper V4 Bypass", function()
-    
-print("ReaperV4 Disabler")
+      for i,v in pairs(data) do
 
-MachoInjectResource2(2, "ReaperV4", [[
-    pcall(function()
-        local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-        local eventHandlers = {}
+        local result, message = mc9.callback.await("mc9-mainmenu:server:claimMilestoneReward", v)
 
-        for name, raw in pairs(eventHandlersRaw) do
-            if raw.handlers then
-                for id, v in pairs(raw.handlers) do
-                    table.insert(eventHandlers,
-                        {
-                            handle = {
-                                ['key'] = id,
-                                ['name'] = name
-                            },
-                            func = v,
-                            type = (string.find(name, "__cfx_nui") and "NUICallback") or
-                                (string.find(name, "__cfx_export") and "Export") or "Event"
-                        })
-                end
-            end
-        end
+      end
 
-        local reaper_newdetection
-        for i, v in pairs(eventHandlers) do
-            local name = v["handle"]["name"];
-            local func = v["func"]
-            --print(name)
-
-            if name == "Reaper:NewDetection" then
-                reaper_newdetection = func
-            end
-        end
-
-        if type(reaper_newdetection) ~= "function" then return print("error") end
-
-        local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
-
-        for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
-            if detection["detected"] then
-                securityclient["detections"][name]["detected"] = function(...)
-                    local args = { ... }
-                    print(name, "detected", json.encode(args or {}))
-                    return
-                end
-            end
-
-            if detection["callback"] then
-                securityclient["detections"][name]["callback"] = function(...)
-                    local args = { ... }
-                    print(name, "callback", json.encode(args or {}))
-                    return
-                end
-            end
-        end
-
-        for name, detection in pairs(securityclient["active_detections"]) do
-            if detection["detected"] then
-                securityclient["active_detections"][name]["detected"] = function(...)
-                    return
-                end
-            end
-
-            if detection["callback"] then
-                securityclient["active_detections"][name]["callback"] = function(...)
-                    return
-                end
-            end
-        end
-
-        Debug.setupvalue(reaper_newdetection, 1, securityclient)
-        print("ReaperV4 | Bypass Enabled")
+        ]])
     end)
-]])
+end
 
-end)
+-- Always display the FiveGuard Bypass button if FiveGuard is running anywhere
+do
+    local fiveguard_found = false
+    for i = 0, GetNumResources() - 1 do
+        local resource = GetResourceByFindIndex(i)
+        if resource and GetResourceState(resource) == "started" then
+            local files = GetNumResourceMetadata(resource, 'client_script')
+            for j = 0, files - 1 do
+                local metadata = GetResourceMetadata(resource, 'client_script', j)
+                if metadata and string.find(metadata, "obfuscated") then
+                    fiveguard_found = true
+                    break
+                end
+            end
+        end
+        if fiveguard_found then break end
+    end
 
+    if fiveguard_found then
+        MachoMenuButton(PLAYER_TAB_GROUP_ONE, "FiveGuard Bypass", function()
+            for i = 0, GetNumResources() - 1 do
+                local resource = GetResourceByFindIndex(i)
+                if resource and GetResourceState(resource) == "started" then
+                    local files = GetNumResourceMetadata(resource, 'client_script')
+                    local foundFiveGuard = false
+                    for j = 0, files - 1 do
+                        local metadata = GetResourceMetadata(resource, 'client_script', j)
+                        if metadata and string.find(metadata, "obfuscated") then
+                            print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
+                            foundFiveGuard = true
+                            break
+                        end
+                    end
+                    if foundFiveGuard then
+                        MachoResourceStop(resource)
+                        print("^7[Extorted]: Stopped Resource: " .. resource)
+                        return resource
+                    end
+                end
+            end
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "WaveSheild Bypass V1", function()
-    
+            return nil
+        end)
+    end
+end
 
-                for i = 1, 2 do
-                    MachoInjectResource2(3, 'WaveShield', [[
-                        error('my nigga what happened :(')
-                    ]])
+-- Check Anti Cheat (Macho Notification) only if one of the anticheat resources is running
+if isResourceRunning("WaveShield") or isResourceRunning("ReaperV4") or isResourceRunning("ElectronAC") or isResourceRunning("FiniAC") or isResourceRunning("FiveGuard") then
+    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat (Macho Notification)", function()
+        runAntiCheatChecks()
+    end)
+end
+
+-- Reaper V4 Bypass only if ReaperV4 is running
+if isResourceRunning("ReaperV4") then
+    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Reaper V4 Bypass", function()
+        
+    print("ReaperV4 Disabler")
+
+    MachoInjectResource2(2, "ReaperV4", [[
+        pcall(function()
+            local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
+            local eventHandlers = {}
+
+            for name, raw in pairs(eventHandlersRaw) do
+                if raw.handlers then
+                    for id, v in pairs(raw.handlers) do
+                        table.insert(eventHandlers,
+                            {
+                                handle = {
+                                    ['key'] = id,
+                                    ['name'] = name
+                                },
+                                func = v,
+                                type = (string.find(name, "__cfx_nui") and "NUICallback") or
+                                    (string.find(name, "__cfx_export") and "Export") or "Event"
+                            })
+                    end
+                end
+            end
+
+            local reaper_newdetection
+            for i, v in pairs(eventHandlers) do
+                local name = v["handle"]["name"];
+                local func = v["func"]
+                --print(name)
+
+                if name == "Reaper:NewDetection" then
+                    reaper_newdetection = func
+                end
+            end
+
+            if type(reaper_newdetection) ~= "function" then return print("error") end
+
+            local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
+
+            for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
+                if detection["detected"] then
+                    securityclient["detections"][name]["detected"] = function(...)
+                        local args = { ... }
+                        print(name, "detected", json.encode(args or {}))
+                        return
+                    end
                 end
 
+                if detection["callback"] then
+                    securityclient["detections"][name]["callback"] = function(...)
+                        local args = { ... }
+                        print(name, "callback", json.encode(args or {}))
+                        return
+                    end
+                end
+            end
 
-end)
+            for name, detection in pairs(securityclient["active_detections"]) do
+                if detection["detected"] then
+                    securityclient["active_detections"][name]["detected"] = function(...)
+                        return
+                    end
+                end
+
+                if detection["callback"] then
+                    securityclient["active_detections"][name]["callback"] = function(...)
+                        return
+                    end
+                end
+            end
+
+            Debug.setupvalue(reaper_newdetection, 1, securityclient)
+            print("ReaperV4 | Bypass Enabled")
+        end)
+    ]])
+    end)
+end
+
+-- WaveShield Bypass V1 only if WaveShield is running
+if isResourceRunning("WaveShield") then
+    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "WaveSheild Bypass V1", function()
+        for i = 1, 2 do
+            MachoInjectResource2(3, 'WaveShield', [[
+                error('my nigga what happened :(')
+            ]])
+        end
+    end)
+end
 
 
 
