@@ -1554,16 +1554,27 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
                         local SetPedMove = getg({83,101,116,80,101,100,77,111,118,101,82,97,116,101,79,118,101,114,114,105,100,101})
                         local Wait = getg({87,97,105,116})
 
-                        Citizen.CreateThread(function()
-                            while _G.fastRunEnabled do
+                        -- Store thread reference in _G for later control
+                        if not _G.fastRunThread or not coroutine.status(_G.fastRunThread) == "suspended" then
+                            _G.fastRunThread = Citizen.CreateThread(function()
+                                while _G.fastRunEnabled do
+                                    local ped = GetPlayerPed(-1)
+                                    if ped and ped ~= 0 then
+                                        SetRun(ped, 1.49)
+                                        SetPedMove(ped, 1.49)
+                                    end
+                                    Wait(1)
+                                end
+                                -- Reset back to normal on disable
                                 local ped = GetPlayerPed(-1)
                                 if ped and ped ~= 0 then
-                                    SetRun(ped, 1.49)
-                                    SetPedMove(ped, 1.49)
+                                    SetRun(ped, 1.0)
+                                    SetPedMove(ped, 1.0)
                                 end
-                                Wait(1)
-                            end
-                        end)
+                            end)
+                        end
+                    else
+                        _G.fastRunEnabled = true -- reactivate if needed
                     end
                 ]]
             )
@@ -1573,7 +1584,7 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
                     or (GetResourceState("ox_lib") == "started" and "ox_lib")
                     or "any",
                 [[
-                    if not _G.FastRunActive then _G.FastRunActive = false end
+                    if _G.FastRunActive == nil then _G.FastRunActive = false end
                     if not _G.FastRunThread then
                         _G.FastRunThread = true
 
@@ -1581,6 +1592,9 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
                             while true do
                                 Wait(0)
                                 if not _G.FastRunActive then
+                                    -- Reset when disabling
+                                    SetRunSprintMultiplierForPlayer(PlayerId(), 1.0)
+                                    SetPedMoveRateOverride(PlayerPedId(), 1.0)
                                     Wait(500)
                                     goto continue
                                 end
@@ -1605,7 +1619,7 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
 
         if GetResourceState("WaveShield") == "started" then
             Injection(
-                (GetResourceState("monitor") == "started" and "monitor")
+                (GetResourceState("WaveShield") == "started" and "WaveShield")
                     or (GetResourceState("ox_lib") == "started" and "ox_lib")
                     or "any",
                 [[
@@ -1615,16 +1629,28 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
                         for i=1,#fnbytes do s = s .. string.char(fnbytes[i]) end
                         return _G[s]
                     end
-                    getg({83,101,116,82,117,110,83,112,114,105,110,116,77,117,108,116,105,112,108,105,101,114,70,111,114,80,108,97,121,101,114})(getg({80,108,97,121,101,114,73,100})(), 1.0)
-                    getg({83,101,116,80,101,100,77,111,118,101,82,97,116,101,79,118,101,114,114,105,100,101})(getg({80,108,97,121,101,114,80,101,100,73,100})(), 1.0)
+                    local SetRun = getg({83,101,116,82,117,110,83,112,114,105,110,116,77,117,108,116,105,112,108,105,101,114,70,111,114,80,108,97,121,101,114})
+                    local SetPedMove = getg({83,101,116,80,101,100,77,111,118,101,82,97,116,101,79,118,101,114,114,105,100,101})
+                    local GetPlayerPed = getg({71,101,116,80,108,97,121,101,114,80,101,100})
+                    local ped = GetPlayerPed(-1)
+                    if ped and ped ~= 0 then
+                        SetRun(ped, 1.0)
+                        SetPedMove(ped, 1.0)
+                    end
                 ]]
             )
         else
-            MachoInjectResourceRaw("any", [[
-                _G.FastRunActive = false
-                SetRunSprintMultiplierForPlayer(PlayerId(), 1.0)
-                SetPedMoveRateOverride(PlayerPedId(), 1.0)
-            ]])
+            MachoInjectResourceRaw(
+                (GetResourceState("monitor") == "started" and "monitor")
+                    or (GetResourceState("ox_lib") == "started" and "ox_lib")
+                    or "any",
+                [[
+                    _G.FastRunActive = false
+                    -- Reset to normal; thread handles resetting on disable too
+                    SetRunSprintMultiplierForPlayer(PlayerId(), 1.0)
+                    SetPedMoveRateOverride(PlayerPedId(), 1.0)
+                ]]
+            )
         end
     end
 )
