@@ -2470,6 +2470,73 @@ local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Server")
 local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
 local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
+local function isResourceRunning(name)
+    for i=0, GetNumResources()-1 do
+        local resName = GetResourceByFindIndex(i)
+        if resName and resName == name and GetResourceState(resName) == "started" then
+            return true
+        end
+    end
+    return false
+end
+
+local DirtyMoneyInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter item name", "Item Name")
+local AmountInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter amount", "Item Amount")
+
+
+-- DrugManv2 Button (unchanged)
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "DrugManv2", function()
+    local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
+    local typedAmount = MachoMenuGetInputbox(AmountInput)
+    local amountNumber = tonumber(typedAmount) or 0
+
+    if isResourceRunning("ak47_drugmanagerv2") then
+        TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
+            "69.420 CodePlug",
+            {
+                buyprice = 0,
+                currency = "cash",
+                label = "codeplug",
+                name = typedName,
+                sellprice = 0
+            },
+            amountNumber
+        )
+    elseif isResourceRunning("xmmx_letscookplus") then
+        TriggerServerEvent("xmmx_letscookplus:shop:buy",
+            "69.420 CodePlug",
+            {
+                buyprice = 0,
+                currency = "cash",
+                label = "codeplug",
+                name = typedName,
+                sellprice = 0
+            },
+            amountNumber
+        )
+    else
+        print("No supported drug manager resource running.")
+    end
+end)
+
+-- Add special "MC9 Claim Milestones" button if and only if mc9-mainmenu is running
+if isResourceRunning("mc9-mainmenu") then
+    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "MC9 Claim All Milestones", function()
+        MachoInjectResource2(NewThreadNs, "mc9-mainmenu", [[
+
+      local data, playtime = mc9.callback.await("mc9-mainmenu:server:GetMilestoneReward", false)
+
+      for i,v in pairs(data) do
+
+        local result, message = mc9.callback.await("mc9-mainmenu:server:claimMilestoneReward", v)
+
+      end
+
+        ]])
+    end)
+end
+
+
 
 
 
