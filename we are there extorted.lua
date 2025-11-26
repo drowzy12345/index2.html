@@ -60,6 +60,7 @@ local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_STA
 
 MachoMenuSetKeybind(TABBED_WINDOW, 0x14)
 
+local fiveguardResource = nil
 local found = false
 local isSpectating = false  -- Flag to check if we are in spectator mode
 local spectatorPed = nil    -- Store the currently spectated ped
@@ -351,7 +352,7 @@ end
         Citizen.CreateThread(function()
             while IsDisabledControlPressed(0, 24) do
                 local x, y, z = table.unpack(coords + direction * 5.0)
-                    ShootSingleBulletBetweenCoords(coords.x, coords.y, coords.z, x, y, z, 100, true, weaponHash, PlayerPedId(), true, false, -1.0)
+                    ShootSingleBulletBetweenCoords(coords.x, coords.y, coords.z, x, y, z, 1000, true, weaponHash, PlayerPedId(), true, false, -1.0)
                 Wait(50)  -- Adjust the delay as needed for the rate of fire
             end
         end)
@@ -2344,28 +2345,71 @@ local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_STA
 
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat Notification", function()
-    
 
-if GetResourceState("WaveShield") == 'started' then
-    MachoMenuNotification("Success", "WaveShield Anticheat Found.", 5000)
-    found = true
-elseif GetResourceState("ReaperV4") == 'started' then
-    MachoMenuNotification("Success", "ReaperV4 Anticheat Found.", 5000)
-    found = true
-elseif GetResourceState("ElectronAC") == 'started' then
-    MachoMenuNotification("Success", "ElectronAC Anticheat Found.", 5000)
-    found = true
-elseif GetResourceState("FiniAC") == 'started' then
-    MachoMenuNotification("Success", "FiniAC Anticheat Found.", 5000)
-    found = true
-end
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "FiveGuard Bypass", function()
+    for i = 0, GetNumResources() - 1 do
+        local resource = GetResourceByFindIndex(i)
+        local files = GetNumResourceMetadata(resource, 'client_script')
+        local foundFiveGuard = false
+        for j = 0, files - 1 do
+            local metadata = GetResourceMetadata(resource, 'client_script', j)
+            if metadata and string.find(metadata, "obfuscated") then
+                print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
+                foundFiveGuard = true
+                break
+            end
+        end
+        if foundFiveGuard then
+            MachoResourceStop(resource)
+            print("^7[Extorted]: Stopped Resource: " .. resource)
+            return resource
+        end
+    end
 
-if not found then
-    MachoMenuNotification("Info", "No main anticheats found.", 5000)
-end
+    return nil
+end)
 
 
+
+
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat (Macho Notification)", function()
+    local found = false
+    local foundFiveGuard = false
+
+    if GetResourceState("WaveShield") == 'started' then
+        MachoMenuNotification("Success", "WaveShield Anticheat Found.", 5000)
+        found = true
+    elseif GetResourceState("ReaperV4") == 'started' then
+        MachoMenuNotification("Success", "ReaperV4 Anticheat Found.", 5000)
+        found = true
+    elseif GetResourceState("ElectronAC") == 'started' then
+        MachoMenuNotification("Success", "ElectronAC Anticheat Found.", 5000)
+        found = true
+    elseif GetResourceState("FiniAC") == 'started' then
+        MachoMenuNotification("Success", "FiniAC Anticheat Found.", 5000)
+        found = true
+    end
+
+    -- Check for FiveGuard in resource scripts
+    for i = 0, GetNumResources() - 1 do
+        local resource = GetResourceByFindIndex(i)
+        if GetResourceState(resource) == 'started' then
+            local files = GetNumResourceMetadata(resource, 'client_script')
+            for j = 0, files - 1 do
+                local metadata = GetResourceMetadata(resource, 'client_script', j)
+                if metadata and string.find(metadata, "obfuscated") then
+                    MachoMenuNotification("Success", "Detected FiveGuard in Resource: " .. resource, 5000)
+                    foundFiveGuard = true
+                    break
+                end
+            end
+            if foundFiveGuard then break end
+        end
+    end
+
+    if not found and not foundFiveGuard then
+        MachoMenuNotification("Info", "No main anticheats found.", 5000)
+    end
 end)
 
 
@@ -2451,61 +2495,6 @@ MachoInjectResource2(2, "ReaperV4", [[
 
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Reaper V4 Client Bypass", function()
-
-MachoInjectResource2(2, "ReaperV4", [[
-            pcall(function()
-                local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-                local eventHandlers = {}
-                for name, raw in pairs(eventHandlersRaw) do
-                    if raw.handlers then
-                        for id, v in pairs(raw.handlers) do
-                            table.insert(eventHandlers, { handle = { ['key'] = id, ['name'] = name }, func = v, type = (string.find(name, "__cfx_nui") and "NUICallback") or (string.find(name, "__cfx_export") and "Export") or "Event" })
-                        end
-                    end
-                end
-                local reaper_newdetection
-                for i, v in pairs(eventHandlers) do
-                    local name = v["handle"]["name"]
-                    local func = v["func"]
-                    if name == "Reaper:NewDetection" then
-                        reaper_newdetection = func
-                    end
-                end
-                if type(reaper_newdetection) ~= "function" then
-                    return print("error")
-                end
-                local _, securityclient = debug.getupvalue(reaper_newdetection, 1)
-                for name, detection in pairs(securityclient["detections"]) do
-                    if detection["detected"] then
-                        securityclient["detections"][name]["detected"] = function(...)
-                            local args = { ... }
-                            print(name, "detected", json.encode(args or {}))
-                            return
-                        end
-                    end
-                    if detection["callback"] then
-                        securityclient["detections"][name]["callback"] = function(...)
-                            local args = { ... }
-                            print(name, "callback", json.encode(args or {}))
-                            return
-                        end
-                    end
-                end
-                for name, detection in pairs(securityclient["active_detections"]) do
-                    if detection["detected"] then
-                        securityclient["active_detections"][name]["detected"] = function(...) return end
-                    end
-                    if detection["callback"] then
-                        securityclient["active_detections"][name]["callback"] = function(...) return end
-                    end
-                end
-                Debug.setupvalue(reaper_newdetection, 1, securityclient)
-                print("ReaperV4 | Client Bypassed")
-            end)
-        ]])
-
-    end)
 
 MachoMenuButton(PLAYER_TAB_GROUP_ONE, "WaveSheild Bypass V1", function()
     
