@@ -1,3 +1,41 @@
+--------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Key Authentication System
 local CurrentKey = MachoAuthenticationKey()  -- Replace this with the manually entered key
 
@@ -1389,6 +1427,8 @@ MachoMenuButton(TAB2, "Change Model", function()
     end
 end)
 
+
+
 -- Create a button to revert to the default player model
 MachoMenuButton(TAB2, "Revert to Normal", function()
     RevertToNormalModel()
@@ -1432,6 +1472,27 @@ function RevertToNormalModel()
     SetModelAsNoLongerNeeded(modelHash)
 end
 
+
+MachoMenuButton(TAB2, "KKK", function()
+    function KKK()
+        local ped = PlayerPedId()
+
+        -- Jacket
+        SetPedComponentVariation(ped, 11, 109, 0, 2)
+        -- Shirt/Undershirt
+        SetPedComponentVariation(ped, 8, 15, 0, 2)
+        -- Hands
+        SetPedComponentVariation(ped, 3, 5, 0, 2)
+        -- Legs
+        SetPedComponentVariation(ped, 4, 56, 0, 2)
+        -- Shoes
+        SetPedComponentVariation(ped, 6, 19, 0, 2)
+        -- Hat
+        SetPedPropIndex(ped, 0, 1, 0, true)
+    end
+
+    KKK()
+end)
 
 MachoMenuSlider(TAB2, "Health", 100.0, 0.0, 100.0, "x", 1, function(value)
     local PLAYER_PED = PlayerPedId()
@@ -1483,11 +1544,7 @@ MachoMenuButton(TAB2, "Suicide", function()
     print("You Have Successfully Killed Yourself (Do Not Try This At Home)!")
 end)
 
-MachoMenuButton(TAB2, "Crash Game (You)", function()
-    while true do
-        print("Loading!")
-    end
-end)
+
 
 
 
@@ -2473,8 +2530,10 @@ local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START
 
 
 
+
+
 local function isResourceRunning(name)
-    for i=0, GetNumResources()-1 do
+    for i = 0, GetNumResources() - 1 do
         local resName = GetResourceByFindIndex(i)
         if resName and resName == name and GetResourceState(resName) == "started" then
             return true
@@ -2527,45 +2586,212 @@ end
 -- EXECUTE AC CHECK ON MENU CREATION
 runAntiCheatChecks()
 
-local DirtyMoneyInput = MachoMenuInputbox(TAB1, "Enter item name", "Item Name")
-local AmountInput = MachoMenuInputbox(TAB1, "Enter amount", "Item Amount")
+-- General Tab (left pane - Item input and "Spawn" triggers)
+InputBoxHandle = MachoMenuInputbox(TAB1, "Enter item name", "Item Name")
+InputBoxHandle2 = MachoMenuInputbox(TAB1, "Enter amount", "Item Amount")
 
--- DrugManv2 Button (unchanged)
-MachoMenuButton(TAB1, "Spawn Item", function()
-    local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
-    local typedAmount = MachoMenuGetInputbox(AmountInput)
-    local amountNumber = tonumber(typedAmount) or 0
+-- Combined original and added triggers into one
+local combinedResourceActions = {
 
-    if isResourceRunning("ak47_drugmanagerv2") then
+    -- Original Triggers
+    ["ak47_drugmanagerv2"] = function(ItemName, Amount)
         TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
             "69.420 CodePlug",
             {
                 buyprice = 0,
                 currency = "cash",
                 label = "codeplug",
-                name = typedName,
+                name = ItemName,
                 sellprice = 0
             },
-            amountNumber
+            Amount
         )
-    elseif isResourceRunning("xmmx_letscookplus") then
+    end,
+
+    ["xmmx_letscookplus"] = function(ItemName, Amount)
         TriggerServerEvent("xmmx_letscookplus:shop:buy",
             "69.420 CodePlug",
             {
                 buyprice = 0,
                 currency = "cash",
                 label = "codeplug",
-                name = typedName,
+                name = ItemName,
                 sellprice = 0
             },
-            amountNumber
+            Amount
         )
+    end,
+
+    ["ak47_drugmanager"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function efjwr8sfr()
+                TriggerServerEvent('ak47_drugmanager:pickedupitem', "]] .. ItemName .. [[", "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            efjwr8sfr()
+        ]])
+    end,
+
+    ["bobi-selldrugs"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function safdagwawe()
+                TriggerServerEvent('bobi-selldrugs:server:RetrieveDrugs', "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            safdagwawe()
+        ]])
+    end,
+
+    ["core"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function safdagwawe()
+                TriggerServerEvent('Core:triggerServerCallback', "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            safdagwawe()
+        ]])
+    end,
+
+    ["mc9-taco"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function cesfw33w245d()
+                TriggerServerEvent('mc9-taco:server:addItem', "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            cesfw33w245d()
+        ]])
+    end,
+
+    ["wp-pocketbikes"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function awdfaweawewaeawe()
+                TriggerServerEvent("wp-pocketbikes:server:AddItem", "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            awdfaweawewaeawe()
+        ]])
+    end,
+
+    -- Added Triggers
+    ["solos-jointroll"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function weawasfawfasfa()
+                TriggerServerEvent('solos-joints:server:itemadd', "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            weawasfawfasfa()
+        ]])
+    end,
+
+    ["angelicxs-CivilianJobs"] = function(ItemName, Amount)
+        MachoInjectResource2(3, CheckResource("monitor") and "monitor" or CheckResource("oxmysql") and "oxmysql" or "any", [[
+            local function safafawfaws()
+                TriggerServerEvent('angelicxs-CivilianJobs:Server:GainItem', "]] .. ItemName .. [[", ]] .. Amount .. [[)
+            end
+            safafawfaws()
+        ]])
+    end,
+    -- Add any further triggers here!
+}
+
+MachoMenuButton(TAB1, "Spawn (All Triggers)", function()
+    local ItemName = MachoMenuGetInputbox(InputBoxHandle)
+    local ItemAmount = MachoMenuGetInputbox(InputBoxHandle2)
+
+    if ItemName and ItemName ~= "" and ItemAmount and tonumber(ItemAmount) then
+        local Amount = tonumber(ItemAmount)
+        local ResourceFound = false
+        for ResourceName, action in pairs(combinedResourceActions) do
+            if GetResourceState(ResourceName) == "started" then
+                action(ItemName, Amount)
+                ResourceFound = true
+                break
+            end
+        end
+
+        if not ResourceFound then
+            MachoMenuNotification("[NOTIFICATION] Rain Menu", "No Triggers Found in Any Triggers.")
+        end
     else
-        print("No supported Spawn resource running.")
+        MachoMenuNotification("[NOTIFICATION] Rain Menu", "Invalid Item or Amount.")
     end
 end)
 
--- Add "Revive (wasabi_ambulance)" button for the revive trigger, not checking for resource anymore
+-- Money Triggers on Value tab (right pane)
+MoneyInputBox = MachoMenuInputbox(TAB2, "Amount:", "...")
+
+-- Combined original and added money triggers into one
+local combinedMoneyResourceActions = {
+
+    -- Original
+    ["codewave-lashes-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardlashes', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    ["codewave-nails-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardnails', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    ["codewave-caps-client-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardCaps', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    -- Added
+    ["codewave-wigs-v3-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardWigss', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    ["codewave-icebox-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardiceboxs', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    ["codewave-sneaker-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardShoes', ]] .. Amount .. [[)
+        ]])
+    end,
+
+    ["codewave-handbag-phone"] = function(Amount)
+        MachoInjectResource2(3, (CheckResource("ReaperV4") and "ReaperV4") or (CheckResource("monitor") and "monitor") or "any", [[
+            Wait(1)
+            TriggerServerEvent('delivery:giveRewardhandbags', ]] .. Amount .. [[)
+        ]])
+    end,
+    -- Add more combined money triggers here!
+}
+
+MachoMenuButton(TAB2, "Spawn (All Money Triggers)", function()
+    local ItemAmount = MachoMenuGetInputbox(MoneyInputBox)
+    if ItemAmount and tonumber(ItemAmount) then
+        local Amount = tonumber(ItemAmount)
+        local ResourceFound = false
+        for ResourceName, action in pairs(combinedMoneyResourceActions) do
+            if GetResourceState(ResourceName) == "started" then
+                action(Amount)
+                ResourceFound = true
+                break
+            end
+        end
+
+        if not ResourceFound then
+            MachoMenuNotification("[NOTIFICATION] Rain Menu", "No Money Triggers Found in Any Triggers.")
+        end
+    else
+        MachoMenuNotification("[NOTIFICATION] Rain Menu", "Invalid Item or Amount.")
+    end
+end)
+
+-- Add "Revive (wasabi_ambulance)" button for revive trigger, always present
 MachoMenuButton(TAB1, "Revive (wasabi_ambulance)", function()
     TriggerEvent('wasabi_ambulance:revive')
 end)
@@ -2627,7 +2853,6 @@ do
                     end
                 end
             end
-
             return nil
         end)
     end
@@ -2732,6 +2957,9 @@ if isResourceRunning("WaveShield") then
         end
     end)
 end
+
+
+
 
 
 
@@ -2852,5 +3080,5 @@ MachoInjectResourceRaw("any", [[
                     end
                 ]])
 
-
+    
 end)
