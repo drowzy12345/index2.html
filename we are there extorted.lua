@@ -2531,7 +2531,7 @@ local DirtyMoneyInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter item name
 local AmountInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter amount", "Item Amount")
 
 -- DrugManv2 Button (unchanged)
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "DrugManv2", function()
+MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Spawn Item", function()
     local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
     local typedAmount = MachoMenuGetInputbox(AmountInput)
     local amountNumber = tonumber(typedAmount) or 0
@@ -2561,7 +2561,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_ONE, "DrugManv2", function()
             amountNumber
         )
     else
-        print("No supported drug manager resource running.")
+        print("No supported Spawn resource running.")
     end
 end)
 
