@@ -55,8 +55,8 @@ MachoMenuSetAccent(TABBED_WINDOW, 0, 125, 255)
 MachoMenuSmallText(TABBED_WINDOW, "Drowzy V2.3")
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Self")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 MachoMenuSetKeybind(TABBED_WINDOW, 0x14)
 
@@ -1323,7 +1323,7 @@ local destination = vector3(
 end)
 
 -- Self Player Options
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Invisibility", function()
+MachoMenuCheckbox(TAB1, "Invisibility", function()
     MachoInjectResource("any", [[
         local PlayerPed = PlayerPedId()
         SetEntityVisible(PlayerPed, false, false)
@@ -1345,7 +1345,7 @@ end)
 
 local godModeEnabled = false
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "God Mode", function()
+MachoMenuCheckbox(TAB1, "God Mode", function()
     godModeEnabled = true
     print("God Mode Enabled")
 end, function()
@@ -1376,7 +1376,7 @@ end)
 local modelInputBox = MachoMenuInputbox(PLAYER_TAB_GROUP_TWO, "Enter Model Name", "e.g., a_m_m_bevhills_01")
 
 -- Create a button that, when clicked, retrieves the input and changes the player model
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Change Model", function()
+MachoMenuButton(TAB2, "Change Model", function()
     -- Retrieve the input from the previously created input box
     local modelName = MachoMenuGetInputbox(modelInputBox)
 
@@ -1390,7 +1390,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Change Model", function()
 end)
 
 -- Create a button to revert to the default player model
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Revert to Normal", function()
+MachoMenuButton(TAB2, "Revert to Normal", function()
     RevertToNormalModel()
 end)
 
@@ -1433,7 +1433,7 @@ function RevertToNormalModel()
 end
 
 
-MachoMenuSlider(PLAYER_TAB_GROUP_TWO, "Health", 100.0, 0.0, 100.0, "x", 1, function(value)
+MachoMenuSlider(TAB2, "Health", 100.0, 0.0, 100.0, "x", 1, function(value)
     local PLAYER_PED = PlayerPedId()
     local CURRENT_HEALTH = GetEntityHealth(PLAYER_PED)
     local SLIDER_HEALTH = math.floor(value * 2)
@@ -1447,14 +1447,14 @@ MachoMenuSlider(PLAYER_TAB_GROUP_TWO, "Health", 100.0, 0.0, 100.0, "x", 1, funct
     print("You have successfully set your Health to " .. CURRENT_HEALTH .. "!")
 end)
 
-MachoMenuSlider(PLAYER_TAB_GROUP_TWO, "Armour", 0.0, 0.0, 100.0, "x", 1, function(value)
+MachoMenuSlider(TAB2, "Armour", 0.0, 0.0, 100.0, "x", 1, function(value)
     local PLAYER_PED = PlayerPedId()
     
     SetPedArmour(PLAYER_PED, tonumber(math.floor(value)))
     print("You have successfully set your Armour to " .. tonumber(math.floor(value)))
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Heal (SAFE)", function()
+MachoMenuButton(TAB2, "Heal (SAFE)", function()
     local PLAYER_PED = PlayerPedId()
 
     SetEntityHealth(PLAYER_PED, 200)
@@ -1462,28 +1462,28 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Heal (SAFE)", function()
     print("You have successfully healed yourself!")
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Max Health (SAFE)", function()
+MachoMenuButton(TAB2, "Max Health (SAFE)", function()
     local PLAYER_PED = PlayerPedId()
     
     SetEntityHealth(PLAYER_PED, 200)
     print("You have successfully set your Health to the maximum value!")
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Max Armour (SAFE)", function()
+MachoMenuButton(TAB2, "Max Armour (SAFE)", function()
     local PLAYER_PED = PlayerPedId()
     
     SetPedArmour(PLAYER_PED, 100)
     print("You have successfully set your Armour to the maximum value!")
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Suicide", function()
+MachoMenuButton(TAB2, "Suicide", function()
     local PLAYER_PED = PlayerPedId()
     
     SetEntityHealth(PLAYER_PED, 0)
     print("You Have Successfully Killed Yourself (Do Not Try This At Home)!")
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Crash Game (You)", function()
+MachoMenuButton(TAB2, "Crash Game (You)", function()
     while true do
         print("Loading!")
     end
@@ -1494,7 +1494,7 @@ end)
 
 local noRagdollEnabled = false
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "No Ragdoll", function(checked)
+MachoMenuCheckbox(TAB1, "No Ragdoll", function(checked)
     noRagdollEnabled = checked
 end)
 
@@ -1512,25 +1512,25 @@ Citizen.CreateThread(function()
 end)
 
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Anti HS", function()
+MachoMenuCheckbox(TAB1, "Anti HS", function()
     
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "No Collision", function()
+MachoMenuCheckbox(TAB1, "No Collision", function()
     
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "PsyGun", function()
+MachoMenuCheckbox(TAB1, "PsyGun", function()
     
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "One Punch Man", function()
+MachoMenuCheckbox(TAB1, "One Punch Man", function()
     
 end)
 
 
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
+MachoMenuCheckbox(TAB1, "Fast Run",
     function()
         print("Fast Run Enabled")
 
@@ -1657,7 +1657,7 @@ MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run",
 
 
 -- Checkbox For Heat Vision
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Heat Vision", function()
+MachoMenuCheckbox(TAB1, "Heat Vision", function()
     local JAi7EkCyHw2ioIQ = true
     SetSeethrough(JAi7EkCyHw2ioIQ)
 
@@ -1666,7 +1666,7 @@ end, function()
     SetSeethrough(JAi7EkCyHw2ioIQ)
 end)
 -- Checkbox For Night Vision
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Night Vision", function()
+MachoMenuCheckbox(TAB1, "Night Vision", function()
     local nWEHC6n0j4g92 = true
     SetNightvision(nWEHC6n0j4g92)
 
@@ -1676,7 +1676,7 @@ end, function()
 end)
 
 -- Shrink Ped checkbox
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Shrink Ped", function()
+MachoMenuCheckbox(TAB1, "Shrink Ped", function()
     -- When checkbox is checked, shrink the player character
     SetPedConfigFlag(PlayerPedId(), 223, true)
 end, function()
@@ -1684,7 +1684,7 @@ end, function()
     SetPedConfigFlag(PlayerPedId(), 223, false)
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Toggle handcuffs", function()
+MachoMenuCheckbox(TAB1, "Toggle handcuffs", function()
     
 end)
 
@@ -1711,7 +1711,7 @@ local function ToggleNoclip()
 end
 
 -- Create a checkbox in the menu to toggle noclip
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "No Clip", function(checked)
+MachoMenuCheckbox(TAB1, "No Clip", function(checked)
     ToggleNoclip()
 end)
 
@@ -1812,15 +1812,15 @@ Citizen.CreateThread(function()
     end
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Run", function()
+MachoMenuCheckbox(TAB1, "Fast Run", function()
     
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Fast Swim", function()
+MachoMenuCheckbox(TAB1, "Fast Swim", function()
     
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Super Jump", function()
+MachoMenuCheckbox(TAB1, "Super Jump", function()
     superJumpEnabled = not superJumpEnabled
     print("Super Jump:", superJumpEnabled and "Enabled" or "Disabled")
 
@@ -1844,7 +1844,7 @@ local function RandomizePlayerClothes() -- Moved function definition outside and
     SetPedRandomProps(playerPed)
 end
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Random Clothes", function() -- Removed 'isChecked' parameter as it's irrelevant for a button
+MachoMenuButton(TAB2, "Random Clothes", function() -- Removed 'isChecked' parameter as it's irrelevant for a button
     RandomizePlayerClothes() -- Call the function to randomize clothes every time the button is pressed
     print("Random Clothes: Randomized!") -- Feedback message for button press
 end)
@@ -1864,7 +1864,7 @@ Citizen.CreateThread(function()
 end)
 
 -- Checkbox to toggle Auto Heal
-MachoMenuCheckbox(PLAYER_TAB_GROUP_TWO, "Auto Heal", function()
+MachoMenuCheckbox(TAB2, "Auto Heal", function()
     AutoHeal = true  -- Enables auto heal
     print("Auto Heal Enabled")
 end, function()
@@ -1883,22 +1883,22 @@ local function RandomizePlayerClothes() -- Moved function definition outside and
 end
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Random Clothes", function() -- Removed 'isChecked' parameter as it's irrelevant for a button
+MachoMenuButton(TAB2, "Random Clothes", function() -- Removed 'isChecked' parameter as it's irrelevant for a button
     RandomizePlayerClothes() -- Call the function to randomize clothes every time the button is pressed
     print("Random Clothes: Randomized!") -- Feedback message for button press
 end)
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Weapon")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 -- Create an input box in the desired menu group
-local weaponInputBox = MachoMenuInputbox(PLAYER_TAB_GROUP_TWO, "Enter Weapon Name", "e.g., WEAPON_PISTOL")
+local weaponInputBox = MachoMenuInputbox(TAB2, "Enter Weapon Name", "e.g., WEAPON_PISTOL")
 
 
 -- Create a button that, when clicked, retrieves the input and gives the weapon
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Give Weapon", function()
+MachoMenuButton(TAB2, "Give Weapon", function()
     -- Retrieve the input from the previously created input box
     local weaponName = MachoMenuGetInputbox(weaponInputBox)
 
@@ -1928,7 +1928,7 @@ function GiveWeaponByName(weaponName)
     end
 end
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Add Infinite Ammo", function()
+MachoMenuButton(TAB2, "Add Infinite Ammo", function()
     local playerPed = PlayerPedId()  -- Get the player's ped ID
     local weaponHash = GetSelectedPedWeapon(playerPed)  -- Get the current weapon's hash
 
@@ -1949,8 +1949,8 @@ end)
 
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Online")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -1982,11 +1982,11 @@ local OnlinePlayers = GetOnlinePlayers()
 
 
 -- Tab Groups
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-MachoMenuDropDown(PLAYER_TAB_GROUP_ONE, "Online Players", HandleOnlinePlayers, table.unpack(OnlinePlayers))
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+MachoMenuDropDown(TAB1, "Online Players", HandleOnlinePlayers, table.unpack(OnlinePlayers))
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Piggyback", function()
+MachoMenuButton(TAB2, "Attach Piggyback", function()
     local playerPed = GetPlayerPed(-1)
     local closestPlayer, closestDist = nil, math.huge
     local playerCoords = GetEntityCoords(playerPed)
@@ -2014,7 +2014,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Piggyback", function()
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Force Carry", function()
+MachoMenuButton(TAB2, "Attach Force Carry", function()
     local playerPed = GetPlayerPed(-1)
     local closestPlayer, closestDist = nil, math.huge
     local playerCoords = GetEntityCoords(playerPed)
@@ -2042,7 +2042,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Force Carry", function()
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Force Drag", function()
+MachoMenuButton(TAB2, "Attach Force Drag", function()
     local playerPed = GetPlayerPed(-1)
     local closestPlayer, closestDist = nil, math.huge
     local playerCoords = GetEntityCoords(playerPed)
@@ -2070,7 +2070,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Force Drag", function()
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Meditate on Head", function()
+MachoMenuButton(TAB2, "Attach Meditate on Head", function()
     local playerPed = GetPlayerPed(-1)
     local closestPlayer, closestDist = nil, math.huge
     local playerCoords = GetEntityCoords(playerPed)
@@ -2099,7 +2099,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach Meditate on Head", function()
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Detach from player", function()
+MachoMenuButton(TAB2, "Detach from player", function()
     local playerPed = GetPlayerPed(-1)
     if attachedToPlayer then
         ClearPedTasksImmediately(playerPed)
@@ -2112,7 +2112,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Detach from player", function()
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach my vehicle to nearest player", function()
+MachoMenuButton(TAB2, "Attach my vehicle to nearest player", function()
     local playerPed = GetPlayerPed(-1) -- Get local player ped
     local vehicle = GetVehiclePedIsIn(playerPed, false) -- Get the vehicle the player is in
     
@@ -2144,7 +2144,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Attach my vehicle to nearest player", fun
     end
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Detach my vehicle from player", function()
+MachoMenuButton(TAB2, "Detach my vehicle from player", function()
     local playerPed = GetPlayerPed(-1) -- Get local player ped
     local vehicle = GetVehiclePedIsIn(playerPed, false) -- Get the vehicle the player is in
     
@@ -2159,8 +2159,8 @@ end)
 
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Vehicle")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -2208,7 +2208,7 @@ end
 
 
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Speed Boost", function()
+MachoMenuCheckbox(TAB1, "Speed Boost", function()
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false) 
 
@@ -2224,7 +2224,7 @@ end)
 local vehicleGodModeEnabled = false
 local lastVehicle = 0
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Vehicle God Mode", function()
+MachoMenuCheckbox(TAB1, "Vehicle God Mode", function()
     vehicleGodModeEnabled = true
     print("Vehicle God Mode Enabled!")
 end, function()
@@ -2257,7 +2257,7 @@ Citizen.CreateThread(function()
     end
 end)
 
- MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "invisible vehicle", function()
+ MachoMenuCheckbox(TAB1, "invisible vehicle", function()
     
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, False)
@@ -2272,7 +2272,7 @@ end)
 
 local tractionEnabled = false
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Vehicle Traction", function()
+MachoMenuCheckbox(TAB1, "Vehicle Traction", function()
     tractionEnabled = true
     print("Vehicle Traction Enabled!")
 end, function()
@@ -2309,9 +2309,9 @@ end)
 end
 
 -- Create a button to repair the vehicle
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Repair Vehicle", repairVehicle)
+MachoMenuButton(TAB2, "Repair Vehicle", repairVehicle)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Flip Vehicle Upright", function()
+MachoMenuButton(TAB2,"Flip Vehicle Upright", function()
 
     SetVehicleOnGroundProperly(GetVehiclePedIsIn(PlayerPedId(), 0))
     
@@ -2369,11 +2369,11 @@ local function applyMaxCosmetics()
 end
 
 -- Add button to trigger max cosmetics
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Max Cosmetics", function()
+MachoMenuButton(TAB2, "Max Cosmetics", function()
   applyMaxCosmetics()
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Max Performance", function()
+MachoMenuButton(TAB2, "Max Performance", function()
 
     SetVehicleModKit(pVehicle, 0)
     SetVehicleMod(pVehicle, 11, GetNumVehicleMods(pVehicle, 11) - 1, false)
@@ -2387,20 +2387,20 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO, "Max Performance", function()
     ToggleVehicleMod(pVehicle, 21, true)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Clean Vehicle", function()
+MachoMenuButton(TAB2,"Clean Vehicle", function()
 
     SetVehicleDirtLevel(GetVehiclePedIsIn(PlayerPedId(), 0), 0.0)
      
  end)
 
- MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Dirty Vehicle", function()
+ MachoMenuButton(TAB2,"Dirty Vehicle", function()
 
     SetVehicleDirtLevel(GetVehiclePedIsIn(PlayerPedId(), 0), 15.0)
      
  end)
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 50 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 50 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2408,7 +2408,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 50 Mph", function()
     SetVehicleForwardSpeed(playerVehicle, 50)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 100 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 100 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2417,7 +2417,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 100 Mph", function()
     
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 250 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 250 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2426,7 +2426,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 250 Mph", function()
     
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 500 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 500 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2435,7 +2435,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 500 Mph", function()
     
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 1000 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 1000 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2444,7 +2444,7 @@ MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 1000 Mph", function()
     
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO,"Shoot Vehicle (YOU) 5000 Mph", function()
+MachoMenuButton(TAB2,"Shoot Vehicle (YOU) 5000 Mph", function()
 
     local playerPed = PlayerPedId()
     local playerVehicle = GetVehiclePedIsIn(playerPed, false)
@@ -2456,19 +2456,19 @@ end)
 
 
 -- Add Button to Warp into Nearest Vehicle
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Warp Nearest Vehicle (Click Twice)", function()
+MachoMenuButton(TAB1, "Warp Nearest Vehicle (Click Twice)", function()
     local playerPed = PlayerPedId() -- Get the player's ped
     WarpPedIntoNearestVehicle(playerPed)
 end)
 
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Risky")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Server")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -2527,11 +2527,11 @@ end
 -- EXECUTE AC CHECK ON MENU CREATION
 runAntiCheatChecks()
 
-local DirtyMoneyInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter item name", "Item Name")
-local AmountInput = MachoMenuInputbox(PLAYER_TAB_GROUP_ONE, "Enter amount", "Item Amount")
+local DirtyMoneyInput = MachoMenuInputbox(TAB1, "Enter item name", "Item Name")
+local AmountInput = MachoMenuInputbox(TAB1, "Enter amount", "Item Amount")
 
 -- DrugManv2 Button (unchanged)
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Spawn Item", function()
+MachoMenuButton(TAB1, "Spawn Item", function()
     local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
     local typedAmount = MachoMenuGetInputbox(AmountInput)
     local amountNumber = tonumber(typedAmount) or 0
@@ -2566,13 +2566,13 @@ MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Spawn Item", function()
 end)
 
 -- Add "Revive (wasabi_ambulance)" button for the revive trigger, not checking for resource anymore
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Revive (wasabi_ambulance)", function()
+MachoMenuButton(TAB1, "Revive (wasabi_ambulance)", function()
     TriggerEvent('wasabi_ambulance:revive')
 end)
 
 -- Add special "MC9 Claim Milestones" button if and only if mc9-mainmenu is running
 if isResourceRunning("mc9-mainmenu") then
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "MC9 Claim All Milestones", function()
+    MachoMenuButton(TAB1, "MC9 Claim All Milestones", function()
         MachoInjectResource2(NewThreadNs, "mc9-mainmenu", [[
 
       local data, playtime = mc9.callback.await("mc9-mainmenu:server:GetMilestoneReward", false)
@@ -2606,7 +2606,7 @@ do
     end
 
     if fiveguard_found then
-        MachoMenuButton(PLAYER_TAB_GROUP_ONE, "FiveGuard Bypass", function()
+        MachoMenuButton(TAB1, "FiveGuard Bypass", function()
             for i = 0, GetNumResources() - 1 do
                 local resource = GetResourceByFindIndex(i)
                 if resource and GetResourceState(resource) == "started" then
@@ -2635,14 +2635,14 @@ end
 
 -- Check Anti Cheat (Macho Notification) only if one of the anticheat resources is running
 if isResourceRunning("WaveShield") or isResourceRunning("ReaperV4") or isResourceRunning("ElectronAC") or isResourceRunning("FiniAC") or isResourceRunning("FiveGuard") then
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Check Anti Cheat (Macho Notification)", function()
+    MachoMenuButton(TAB1, "Check Anti Cheat (Macho Notification)", function()
         runAntiCheatChecks()
     end)
 end
 
 -- Reaper V4 Bypass only if ReaperV4 is running
 if isResourceRunning("ReaperV4") then
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Reaper V4 Bypass", function()
+    MachoMenuButton(TAB1, "Reaper V4 Bypass", function()
         
     print("ReaperV4 Disabler")
 
@@ -2724,7 +2724,7 @@ end
 
 -- WaveShield Bypass V1 only if WaveShield is running
 if isResourceRunning("WaveShield") then
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, "WaveSheild Bypass V1", function()
+    MachoMenuButton(TAB1, "WaveSheild Bypass V1", function()
         for i = 1, 2 do
             MachoInjectResource2(3, 'WaveShield', [[
                 error('my nigga what happened :(')
@@ -2736,8 +2736,8 @@ end
 
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Animations")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 -- Function to play animations to reduce redundancy
 local function playAnim(dict, anim, controllable)
@@ -2751,14 +2751,14 @@ end
 
 -- Animation Menu Buttons
 -- Stop animation button
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, "Stop Animation", function()
+MachoMenuButton(TAB1, "Stop Animation", function()
     ClearPedTasksImmediately(PlayerPedId())
 end)
 
 -- Upperbody only checkbox
 local anim_controllable = false  -- Define outside the button to persist the toggle
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Upperbody only (controllable)", anim_controllable, function(tog)
+MachoMenuCheckbox(TAB1, "Upperbody only (controllable)", anim_controllable, function(tog)
     anim_controllable = tog
 end)
 
@@ -2773,7 +2773,7 @@ local anims = {
 }
 
 for k,v in pairs(anims) do
-    MachoMenuButton(PLAYER_TAB_GROUP_ONE, ""..v.name, function()
+    MachoMenuButton(TAB1, ""..v.name, function()
         RequestAnimDict(v.dict)
         if HasAnimDictLoaded(v.dict) then
             TaskPlayAnim(PlayerPedId(), v.dict, v.anim, 8.0, 8.0, -1, anim_controllable and 51 or 15, 1.0, 0.0, 0.0, 0.0)
@@ -2782,53 +2782,53 @@ for k,v in pairs(anims) do
 end
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Female Sex', function()
+MachoMenuButton(TAB1, 'Female Sex', function()
     playAnim('rcmpaparazzo_2', 'shag_loop_poppy', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Fuck Her', function()
+MachoMenuButton(TAB1, 'Fuck Her', function()
     playAnim('rcmpaparazzo_2', 'shag_loop_a', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Turn GAY', function()
+MachoMenuButton(TAB1, 'Turn GAY', function()
     playAnim('mini@strip_club@private_dance@part1', 'priv_dance_p1', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, '360', function()
+MachoMenuButton(TAB1, '360', function()
     playAnim('mini@strip_club@pole_dance@pole_dance1', 'pd_dance_01', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Cheer', function()
+MachoMenuButton(TAB1, 'Cheer', function()
     playAnim('rcmfanatic1celebrate', 'celebrate', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Electrocution', function()
+MachoMenuButton(TAB1, 'Electrocution', function()
     playAnim('ragdoll@human', 'electrocute', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Suicide', function()
+MachoMenuButton(TAB1, 'Suicide', function()
     playAnim('mp_suicide', 'pistol', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Take a Shower', function()
+MachoMenuButton(TAB1, 'Take a Shower', function()
     playAnim('mp_safehouseshower@male@', 'male_shower_idle_b', anim_controllable)
 end)
 
-MachoMenuButton(PLAYER_TAB_GROUP_ONE, 'Dog', function()
+MachoMenuButton(TAB1, 'Dog', function()
     playAnim('creatures@rottweiler@move', 'pee_right_idle', anim_controllable)
 end)
 
 
 
 local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Setting")
-local PLAYER_TAB_GROUP_ONE = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local PLAYER_TAB_GROUP_TWO = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, 'Crash YourSelf V1', function()
+MachoMenuButton(TAB2, 'Crash YourSelf V1', function()
     
 while true do
         print("Loading!")
@@ -2838,7 +2838,7 @@ while true do
 end)
 
 
-MachoMenuButton(PLAYER_TAB_GROUP_TWO, 'Crash YourSelf V2 (Improved)', function()
+MachoMenuButton(TAB2, 'Crash YourSelf V2 (Improved)', function()
     
 MachoInjectResourceRaw("any", [[
                     local p4 = 4
