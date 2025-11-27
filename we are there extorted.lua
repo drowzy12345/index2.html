@@ -54,9 +54,9 @@ local TABBED_WINDOW = MachoMenuTabbedWindow("Extorted.lua", MENU_START_COORDS.x,
 MachoMenuSetAccent(TABBED_WINDOW, 0, 125, 255)
 MachoMenuSmallText(TABBED_WINDOW, "Drowzy V2.3")
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Self")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Self")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 MachoMenuSetKeybind(TABBED_WINDOW, 0x14)
 
@@ -1335,7 +1335,7 @@ end, function()
     ]])
 end)
 
-MachoMenuCheckbox(PLAYER_TAB_GROUP_ONE, "Freecam", function()
+MachoMenuCheckbox(TAB1, "Freecam", function()
     fuse_toggles.remote_ped.enabled = true
     Citizen.CreateThread(toggle_camera)
 end, function()
@@ -1373,7 +1373,7 @@ Citizen.CreateThread(function()
 end)
 
 -- Create an input box in the desired menu group for model name
-local modelInputBox = MachoMenuInputbox(PLAYER_TAB_GROUP_TWO, "Enter Model Name", "e.g., a_m_m_bevhills_01")
+local modelInputBox = MachoMenuInputbox(TAB2, "Enter Model Name", "e.g., a_m_m_bevhills_01")
 
 -- Create a button that, when clicked, retrieves the input and changes the player model
 MachoMenuButton(TAB2, "Change Model", function()
@@ -1888,9 +1888,9 @@ MachoMenuButton(TAB2, "Random Clothes", function() -- Removed 'isChecked' parame
     print("Random Clothes: Randomized!") -- Feedback message for button press
 end)
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Weapon")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Weapon")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 -- Create an input box in the desired menu group
@@ -1948,9 +1948,9 @@ end)
 
 
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Online")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Online")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -1982,9 +1982,9 @@ local OnlinePlayers = GetOnlinePlayers()
 
 
 -- Tab Groups
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
 MachoMenuDropDown(TAB1, "Online Players", HandleOnlinePlayers, table.unpack(OnlinePlayers))
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 MachoMenuButton(TAB2, "Attach Piggyback", function()
     local playerPed = GetPlayerPed(-1)
@@ -2158,9 +2158,9 @@ end)
 
 
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Vehicle")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Vehicle")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -2462,13 +2462,13 @@ MachoMenuButton(TAB1, "Warp Nearest Vehicle (Click Twice)", function()
 end)
 
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Risky")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Risky")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Server")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Server")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
@@ -2735,9 +2735,9 @@ end
 
 
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Animations")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Animations")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 -- Function to play animations to reduce redundancy
 local function playAnim(dict, anim, controllable)
@@ -2820,9 +2820,9 @@ end)
 
 
 
-local PLAYER_TAB = MachoMenuAddTab(TABBED_WINDOW, "Setting")
-local TAB1 = MachoMenuGroup(PLAYER_TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
-local TAB2 = MachoMenuGroup(PLAYER_TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
+local TAB = MachoMenuAddTab(TABBED_WINDOW, "Setting")
+local TAB1 = MachoMenuGroup(TAB, "General", SECTION_ONE_START.x, SECTION_ONE_START.y, SECTION_ONE_END.x, SECTION_ONE_END.y)
+local TAB2 = MachoMenuGroup(TAB, "Value", SECTION_TWO_START.x, SECTION_TWO_START.y, SECTION_TWO_END.x, SECTION_TWO_END.y)
 
 
 
