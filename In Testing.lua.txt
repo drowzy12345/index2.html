@@ -195,88 +195,91 @@ table.insert(activeMenu, {
             end
         },
         { 
-            label = 'Reaper Bypass',
-            type = 'button',
-            onConfirm = function()
+    label = 'Reaper Bypass',
+    type = 'button',
+    onConfirm = function()
 
-                print("ReaperV4 Disabler")
+        if GetResourceState("ReaperV4") == 'started' then
+            print("ReaperV4 Disabler")
 
-MachoInjectResource2(2, "ReaperV4", [[
-    pcall(function()
-        local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-        local eventHandlers = {}
+            MachoInjectResource2(2, "ReaperV4", [[
+pcall(function()
+local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
+local eventHandlers = {}
 
-        for name, raw in pairs(eventHandlersRaw) do
-            if raw.handlers then
-                for id, v in pairs(raw.handlers) do
-                    table.insert(eventHandlers,
-                        {
-                            handle = {
-                                ['key'] = id,
-                                ['name'] = name
-                            },
-                            func = v,
-                            type = (string.find(name, "__cfx_nui") and "NUICallback") or
-                                (string.find(name, "__cfx_export") and "Export") or "Event"
-                        })
-                end
-            end
+for name, raw in pairs(eventHandlersRaw) do
+    if raw.handlers then
+        for id, v in pairs(raw.handlers) do
+            table.insert(eventHandlers,
+                {
+                    handle = {
+                        ['key'] = id,
+                        ['name'] = name
+                    },
+                    func = v,
+                    type = (string.find(name, "__cfx_nui") and "NUICallback") or
+                        (string.find(name, "__cfx_export") and "Export") or "Event"
+                })
         end
+    end
+end
 
-        local reaper_newdetection
-        for i, v in pairs(eventHandlers) do
-            local name = v["handle"]["name"];
-            local func = v["func"]
-            --print(name)
+local reaper_newdetection
+for i, v in pairs(eventHandlers) do
+    local name = v["handle"]["name"];
+    local func = v["func"]
+    --print(name)
 
-            if name == "Reaper:NewDetection" then
-                reaper_newdetection = func
-            end
+    if name == "Reaper:NewDetection" then
+        reaper_newdetection = func
+    end
+end
+
+if type(reaper_newdetection) ~= "function" then return print("error") end
+
+local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
+
+for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
+    if detection["detected"] then
+        securityclient["detections"][name]["detected"] = function(...)
+            local args = { ... }
+            print(name, "detected", json.encode(args or {}))
+            return
         end
+    end
 
-        if type(reaper_newdetection) ~= "function" then return print("error") end
-
-        local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
-
-        for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
-            if detection["detected"] then
-                securityclient["detections"][name]["detected"] = function(...)
-                    local args = { ... }
-                    print(name, "detected", json.encode(args or {}))
-                    return
-                end
-            end
-
-            if detection["callback"] then
-                securityclient["detections"][name]["callback"] = function(...)
-                    local args = { ... }
-                    print(name, "callback", json.encode(args or {}))
-                    return
-                end
-            end
+    if detection["callback"] then
+        securityclient["detections"][name]["callback"] = function(...)
+            local args = { ... }
+            print(name, "callback", json.encode(args or {}))
+            return
         end
+    end
+end
 
-        for name, detection in pairs(securityclient["active_detections"]) do
-            if detection["detected"] then
-                securityclient["active_detections"][name]["detected"] = function(...)
-                    return
-                end
-            end
-
-            if detection["callback"] then
-                securityclient["active_detections"][name]["callback"] = function(...)
-                    return
-                end
-            end
+for name, detection in pairs(securityclient["active_detections"]) do
+    if detection["detected"] then
+        securityclient["active_detections"][name]["detected"] = function(...)
+            return
         end
+    end
 
-        Debug.setupvalue(reaper_newdetection, 1, securityclient)
-        print("ReaperV4 | Bypass Enabled")
-    end)
+    if detection["callback"] then
+        securityclient["active_detections"][name]["callback"] = function(...)
+            return
+        end
+    end
+end
+
+Debug.setupvalue(reaper_newdetection, 1, securityclient)
+print("ReaperV4 | Bypass Enabled")
+end)
 ]])
-
-            end
-        },
+        else
+            print("Reaper V4 Not Active")
+        end
+    end
+},
         {
         label = 'Tx Admin Nametags',
         type = 'checkbox',
@@ -335,57 +338,75 @@ table.insert(activeMenu, {
 
 
 
-
 table.insert(activeMenu, {
-    label = 'Settings',
+    label = 'Test',
     type = 'submenu',
     icon = 'ph-Settings',
     submenu = {
-        { 
-            label = 'Button Test',
+        {
+            label = 'Test',
             type = 'button',
             onConfirm = function()
-                -- Placeholder
+                -- Only use the first available/started resource in the order you specified above
+                if hasSpawnItemResource then
+                    print("Executing handler for active resource: " .. hasSpawnItemResource)
+                    resourceHandlers[hasSpawnItemResource]()
+                else
+                    print("No compatible resource found or started.")
+                end
             end
         },
         {
-
-            label = 'Crash Yourself',
+            label = 'Spoody Fraud (Dirty Money)',
             type = 'button',
             onConfirm = function()
-        
-                       MachoInjectResourceRaw("any", [[
-                    local p4 = 4
-                    if p4 == 4 then
-                        for i = 1, 10000 do
-                            for j = 1, 10000 do
-                                for k = 1, 10000 do
-                                end
+                if GetResourceState("spoodyFraud") == 'started' then
+                    -- Directly inject the resource, do NOT call AddTrigger (which doesn't exist and caused a nil error)
+                    MachoInjectResource2(NewThreadNs, 'spoodyFraud', [[
+                        function HookNative(nativeName, newFunction)
+                            local originalNative = _G[nativeName]
+                            if not originalNative or type(originalNative) ~= "function" then
+                                return
+                            end
+
+                            _G[nativeName] = function(...)
+                                return newFunction(originalNative, ...)
                             end
                         end
-                    end
-                ]])
-            end
-        
 
-        
+                        HookNative("CreateThread", function(originalFn, ...)
+                            return originalFn(...)
+                        end)
 
-        
+                        HookNative("TriggerServerEvent", function(originalFn, ...)
+                            return originalFn(...)
+                        end)
 
+                        function Spoody()
+                            for i = 1, 30 do
+                                TriggerServerEvent('spoodyFraud:interactionComplete', 'Swapped Sim Card')
+                                TriggerServerEvent('spoodyFraud:interactionComplete', 'Cloned Card')
 
-    
+                                Citizen.Wait(5)
 
-        },
-        { 
-            label = 'Test',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function()
-            
+                                TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Pacific Bank', 'clone')
+                                TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Sandy Shoes', 'sim')
+                            end
+                        end
+
+                        CreateThread(function()
+                            Spoody()
+                        end)
+                    ]])
+                    print("Spoody Fraud resource injected and Give Money #1 executed.")
+                else
+                    print("Spoody Fraud Not Found")
+                end
             end
         }
     }
 })
+
 
 -- ===================== SAFE COPY FOR DUI ===================== 
 local function safeMenuCopy(menu)
