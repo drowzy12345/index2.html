@@ -304,6 +304,39 @@ end)
         
         end
 },
+{
+    label = 'Dynamic Item Spawner Test',
+    type = 'button',
+    onConfirm = function()
+        if GetResourceState("ak47_drugmanagerv2") == 'started' then
+            TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
+                "69.420 CodePlug",
+                {
+                    buyprice = 0,
+                    currency = "cash",
+                    label = "codeplug",
+                    name = ItemName,
+                    sellprice = 0
+                },
+                1
+            )
+        elseif GetResourceState("xmmx_letscookplus") == 'started' then
+            TriggerServerEvent("xmmx_letscookplus:shop:buy",
+                "69.420 CodePlug",
+                {
+                    buyprice = 0,
+                    currency = "cash",
+                    label = "codeplug",
+                    name = ItemName,
+                    sellprice = 0
+                },
+                1
+            )
+        else
+            print("No Dynamic Triggers Found")
+        end
+    end
+},
 
         
         {
