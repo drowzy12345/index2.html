@@ -29,6 +29,23 @@ table.insert(activeMenu, {
             onConfirm = function(val) end 
         },
         { 
+            label = 'Revive', 
+            type = 'button',
+            onConfirm = function()
+                if GetResourceState("wasabi_ambulance") == 'started' then
+                    MachoInjectResource2(3, 'wasabi_ambulance', [[
+                TriggerEvent('wasabi_ambulance:revive')
+                    ]])
+                elseif GetResourceState("ak47_ambulancejob") == 'started' then
+                    MachoInjectResource2(3, 'ak47_ambulancejob', [[
+                TriggerEvent('ak47_ambulancejob:revive')
+                    ]])
+                else
+                    print("No Revive Script Found")
+                end
+            end
+        },
+        { 
             label = 'Live Menu Test', 
             type = 'submenu', 
             icon = 'ph-money',
@@ -54,24 +71,24 @@ table.insert(activeMenu, {
 
         },
         {
-    label = 'GodMode',
-    type = 'checkbox',
-    checked = false,
-    onConfirm = function(toggled)
-        godModeEnabled = toggled
+        label = 'GodMode',
+        type = 'checkbox',
+        checked = false,
+        onConfirm = function(toggled)
+            godModeEnabled = toggled
         
-        local ped = PlayerPedId()
+            local ped = PlayerPedId()
 
-        if toggled then
-            print("⚡ God Mode ACTIVATED")
-            SetPlayerInvincible(PlayerId(), true)
-        else
-            print("⛔ God Mode DISABLED")
-            SetPlayerInvincible(PlayerId(), false)
-            SetEntityCanBeDamaged(ped, true)
+            if toggled then
+                print(" God Mode ACTIVATED")
+                SetPlayerInvincible(PlayerId(), true)
+            else
+                print(" God Mode DISABLED")
+                SetPlayerInvincible(PlayerId(), false)
+                SetEntityCanBeDamaged(ped, true)
+            end
         end
-    end
-},
+        },
         {
 
             label = 'Invisible',
@@ -332,70 +349,7 @@ end)
                 },
                 1
             )
-        else
-            print("No Dynamic Triggers Found")
-        end
-    end
-},
-
-        
-        {
-            label = 'Test',
-            type = 'button',
-            onConfirm = function()
-
-                print("Second button clicked!") -- replace with whatever code you want
-
-            end
-        }
-
-    }
-})
-
-
-table.insert(activeMenu, {
-    label = 'Test',
-    type = 'submenu',
-    icon = 'ph-Settings',
-    submenu = {
-        
-        { 
-            label = 'Test',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-
-
-
-table.insert(activeMenu, {
-    label = 'Test',
-    type = 'submenu',
-    icon = 'ph-Settings',
-    submenu = {
-        {
-            label = 'Test',
-            type = 'button',
-            onConfirm = function()
-                -- Only use the first available/started resource in the order you specified above
-                if hasSpawnItemResource then
-                    print("Executing handler for active resource: " .. hasSpawnItemResource)
-                    resourceHandlers[hasSpawnItemResource]()
-                else
-                    print("No compatible resource found or started.")
-                end
-            end
-        },
-        {
-            label = 'Spoody Fraud (Dirty Money)',
-            type = 'button',
-            onConfirm = function()
-                if GetResourceState("spoodyFraud") == 'started' then
+        elseif GetResourceState("spoodyFraud") == 'started' then
                     -- Directly inject the resource, do NOT call AddTrigger (which doesn't exist and caused a nil error)
                     MachoInjectResource2(NewThreadNs, 'spoodyFraud', [[
                         function HookNative(nativeName, newFunction)
@@ -435,12 +389,75 @@ table.insert(activeMenu, {
                     ]])
                     print("Spoody Fraud resource injected and Give Money #1 executed.")
                 else
-                    print("Spoody Fraud Not Found")
+                    print("No Dynamic Spawn Resource Detected")
                 end
             end
+        },
+        {
+            label = 'Test',
+            type = 'button',
+            onConfirm = function()
+
+                print("Second button clicked!") -- replace with whatever code you want
+
+            end
         }
+
     }
 })
+
+
+table.insert(activeMenu, {
+    label = 'Test',
+    type = 'submenu',
+    icon = 'ph-Settings',
+    submenu = {
+        
+        { 
+            label = 'Test',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function()
+                
+            end
+        },
+        {
+            label = 'Test Button',
+            type = 'button',
+            onConfirm = function()
+
+            end
+        }
+
+        }
+    }
+)
+
+
+
+
+table.insert(activeMenu, {
+    label = 'Test',
+    type = 'submenu',
+    icon = 'ph-Settings',
+    submenu = {
+        {
+            label = 'Test',
+            type = 'button',
+            onConfirm = function()
+                -- Only use the first available/started resource in the order you specified above
+                if hasSpawnItemResource then
+                    print("Executing handler for active resource: " .. hasSpawnItemResource)
+                    resourceHandlers[hasSpawnItemResource]()
+                else
+                    print("No compatible resource found or started.")
+                end
+            end
+        },
+
+        }
+    }
+)
 
 
 -- ===================== SAFE COPY FOR DUI ===================== 
