@@ -182,18 +182,20 @@ table.insert(activeMenu, {
         
         
         { 
-            label = 'WaveSheild Bypass',
-            type = 'button',
-            onConfirm = function()
-
-                for i = 1, 2 do
-                    MachoInjectResource2(3, 'WaveShield', [[
-                        error('my nigga what happened :')
-                    ]])
-                end
-
+    label = 'WaveSheild Bypass',
+    type = 'button',
+    onConfirm = function()
+        if GetResourceState("WaveShield") == 'started' then
+            for i = 1, 2 do
+                MachoInjectResource2(3, 'WaveShield', [[
+                    error('An unexpected error occurred.')
+                ]])
             end
-        },
+        else
+            print("WaveShield Not Found")
+        end
+    end
+},
         { 
     label = 'Reaper Bypass',
     type = 'button',
@@ -276,7 +278,7 @@ print("ReaperV4 | Bypass Enabled")
 end)
 ]])
         else
-            print("Reaper V4 Not Active")
+            print("Reaper V4 Not Found")
         end
     end
 },
