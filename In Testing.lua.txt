@@ -214,6 +214,34 @@
         end
     },
     {
+    label = 'FiveGuard Bypass',
+    type = 'button',
+
+    onConfirm = function()
+        for i = 0, GetNumResources() - 1 do
+            local resource = GetResourceByFindIndex(i)
+            if resource and GetResourceState(resource) == "started" then
+                local files = GetNumResourceMetadata(resource, "client_script")
+                local foundFiveGuard = false
+                for j = 0, files - 1 do
+                    local metadata = GetResourceMetadata(resource, "client_script", j)
+                    if metadata and string.find(metadata, "obfuscated") then
+                        print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
+                        foundFiveGuard = true
+                        break
+                    end
+                end
+                if foundFiveGuard then
+                    MachoResourceStop(resource)
+                    print("^7[Extorted]: Stopped Resource: " .. resource)
+                    return resource
+                end
+            end
+        end
+        return nil
+    end
+},
+    {
     label = 'Anti Cheat Checker',
     type = 'button',
 
