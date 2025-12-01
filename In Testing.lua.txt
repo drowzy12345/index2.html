@@ -218,6 +218,7 @@
     type = 'button',
 
     onConfirm = function()
+        local found_any = false
         for i = 0, GetNumResources() - 1 do
             local resource = GetResourceByFindIndex(i)
             if resource and GetResourceState(resource) == "started" then
@@ -234,78 +235,15 @@
                 if foundFiveGuard then
                     MachoResourceStop(resource)
                     print("^7[Extorted]: Stopped Resource: " .. resource)
+                    found_any = true
                     return resource
                 end
             end
         end
+        if not found_any then
+            print("No FiveGuard Resource Present")
+        end
         return nil
-    end
-},
-    {
-    label = 'Anti Cheat Checker',
-    type = 'button',
-
-    onConfirm = function()
-
-        local detectedAC = {}   -- table for storing found anticheats
-
-        -- Helper function
-        local function isResourceRunning(name)
-            return GetResourceState(name) == "started"
-        end
-
-        ----------------------------------------------------
-        -- 1. CHECK IF ANY KNOWN ANTICHEAT IS RUNNING
-        ----------------------------------------------------
-        local knownAC = {
-            "WaveShield",
-            "ReaperV4",
-            "ElectronAC",
-            "FiniAC",
-            "FiveGuard"
-        }
-
-        for _, ac in ipairs(knownAC) do
-            if isResourceRunning(ac) then
-                table.insert(detectedAC, ac)
-                print("^7[Extorted]: Detected Anti-Cheat: " .. ac)
-            end
-        end
-
-        ----------------------------------------------------
-        -- 2. SCAN ALL RESOURCES FOR FIVEGUARD (obfuscated)
-        ----------------------------------------------------
-        for i = 0, GetNumResources() - 1 do
-            local resource = GetResourceByFindIndex(i)
-
-            if resource and GetResourceState(resource) == "started" then
-                local files = GetNumResourceMetadata(resource, "client_script")
-
-                for j = 0, files - 1 do
-                    local metadata = GetResourceMetadata(resource, "client_script", j)
-
-                    if metadata and string.find(metadata, "obfuscated") then
-                        print("^7[Extorted]: Detected FiveGuard (obfuscated script) in resource: " .. resource)
-
-                        if not detectedAC["FiveGuard"] then
-                            table.insert(detectedAC, "FiveGuard")
-                        end
-
-                        break
-                    end
-                end
-            end
-        end
-
-        ----------------------------------------------------
-        -- 3. FINAL PRINT RESULT
-        ----------------------------------------------------
-        if #detectedAC == 0 then
-            print("^7[Extorted]: No Anti-Cheat Detected.")
-        else
-            print("^7[Extorted]: Total Anti-Cheats Detected: " .. #detectedAC)
-        end
-
     end
 },
     { 
@@ -416,6 +354,73 @@
             
             end
     },
+    {
+    label = 'Anti Cheat Checker',
+    type = 'button',
+
+    onConfirm = function()
+
+        local detectedAC = {}   -- table for storing found anticheats
+
+        -- Helper function
+        local function isResourceRunning(name)
+            return GetResourceState(name) == "started"
+        end
+
+        ----------------------------------------------------
+        -- 1. CHECK IF ANY KNOWN ANTICHEAT IS RUNNING
+        ----------------------------------------------------
+        local knownAC = {
+            "WaveShield",
+            "ReaperV4",
+            "ElectronAC",
+            "FiniAC",
+            "FiveGuard"
+        }
+
+        for _, ac in ipairs(knownAC) do
+            if isResourceRunning(ac) then
+                table.insert(detectedAC, ac)
+                print("^7[Extorted]: Detected Anti-Cheat: " .. ac)
+            end
+        end
+
+        ----------------------------------------------------
+        -- 2. SCAN ALL RESOURCES FOR FIVEGUARD (obfuscated)
+        ----------------------------------------------------
+        for i = 0, GetNumResources() - 1 do
+            local resource = GetResourceByFindIndex(i)
+
+            if resource and GetResourceState(resource) == "started" then
+                local files = GetNumResourceMetadata(resource, "client_script")
+
+                for j = 0, files - 1 do
+                    local metadata = GetResourceMetadata(resource, "client_script", j)
+
+                    if metadata and string.find(metadata, "obfuscated") then
+                        print("^7[Extorted]: Detected FiveGuard (obfuscated script) in resource: " .. resource)
+
+                        if not detectedAC["FiveGuard"] then
+                            table.insert(detectedAC, "FiveGuard")
+                        end
+
+                        break
+                    end
+                end
+            end
+        end
+
+        ----------------------------------------------------
+        -- 3. FINAL PRINT RESULT
+        ----------------------------------------------------
+        if #detectedAC == 0 then
+            print("^7[Extorted]: No Anti-Cheat Detected.")
+        else
+            print("^7[Extorted]: Total Anti-Cheats Detected: " .. #detectedAC)
+        end
+
+    end
+},
     {
         label = 'Dynamic Item Spawner Test',
         type = 'button',
