@@ -1,916 +1,990 @@
-local dui
-local activeMenu = {}
-local activeIndex = 1
-
--- ===================== MENU DATA =====================
-table.insert(activeMenu, {
-    label = 'Self',
-    type = 'submenu',
-    icon = 'ph-user',
-    submenu = {
-        { 
-            label = 'Checkbox Test', 
-            type = 'checkbox', 
-            onConfirm = function(setToggle) end 
-        },
-        { 
-            label = 'Scroll Test', 
-            type = 'scroll', 
-            selected = 2, 
-            options = { 'test', 'test2', 'test3' }, 
-            onConfirm = function(option) end 
-        },
-        { 
-            label = 'Slider Test', 
-            type = 'slider', 
-            min = 0, 
-            max = 100, 
-            value = 50, 
-            onConfirm = function(val) end 
-        },
-        { 
-            label = 'Revive', 
-            type = 'button',
-            onConfirm = function()
-                if GetResourceState("wasabi_ambulance") == 'started' then
-                    MachoInjectResource2(3, 'wasabi_ambulance', [[
-                TriggerEvent('wasabi_ambulance:revive')
-                    ]])
-                elseif GetResourceState("ak47_ambulancejob") == 'started' then
-                    MachoInjectResource2(3, 'ak47_ambulancejob', [[
-                TriggerEvent('ak47_ambulancejob:revive')
-                    ]])
-                else
-                    print("No Revive Script Found")
-                end
-            end
-        },
-        { 
-            label = 'Live Menu Test', 
-            type = 'submenu', 
-            icon = 'ph-money',
-            getSubMenu = function(callback)
-                local setOptions = {
-                    { label = 'Option 1', type = 'button', onConfirm = function() end }
-                }
-                callback(setOptions)
-            end
-        },
-        {
-
-
-            label = 'Toggle Freecam',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function(toggled)
-                cam_active = toggled
-                toggle_camera()
-            end
-
-
-
-        },
-        {
-        label = 'GodMode',
-        type = 'checkbox',
-        checked = false,
-        onConfirm = function(toggled)
-            godModeEnabled = toggled
-        
-            local ped = PlayerPedId()
-
-            if toggled then
-                print(" God Mode ACTIVATED")
-                SetPlayerInvincible(PlayerId(), true)
-            else
-                print(" God Mode DISABLED")
-                SetPlayerInvincible(PlayerId(), false)
-                SetEntityCanBeDamaged(ped, true)
-            end
-        end
-        },
-        {
-
-            label = 'Invisible',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function(toggled)
-            local ped = PlayerPedId()
-        if toggled then
-            SetEntityVisible(ped, false, false)
-         else
-            SetEntityVisible(ped, true, false)
-                end
-            end
-        },
-        { 
-            label = 'Toggle Noclip',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function(toggled)
-                noclip = toggled
-            end
-        },
-    }
-})
-
-
-table.insert(activeMenu, {
-    label = 'Server',
-    type = 'submenu',
-    icon = 'ph-server',
-    submenu = {
-        { 
-            label = 'Button Test',
-            type = 'button',
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-table.insert(activeMenu, {
-    label = 'Weapon',
-    type = 'submenu',
-    icon = 'ph-Weapon',
-    submenu = {
-        { 
-            label = 'Button Test',
-            type = 'button',
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-table.insert(activeMenu, {
-    label = 'Vehicle',
-    type = 'submenu',
-    icon = 'ph-Vehicle',
-    submenu = {
-        { 
-            label = 'Button Test',
-            type = 'button',
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-table.insert(activeMenu, {
-    label = 'Emotes',
-    type = 'submenu',
-    icon = 'ph-Emotes',
-    submenu = {
-        { 
-            label = 'Button Test',
-            type = 'button',
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-table.insert(activeMenu, {
-    label = 'Teleports',
-    type = 'submenu',
-    icon = 'ph-Teleports',
-    submenu = {
-        { 
-            label = 'Button Test',
-            type = 'button',
-            onConfirm = function()
-                
-            end
-        }
-    }
-})
-
-
-table.insert(activeMenu, {
-    label = 'Exploits',
-    type = 'submenu',
-    icon = 'ph-skull',
-    submenu = {
-        
-        
-        { 
-    label = 'WaveSheild Bypass',
-    type = 'button',
-    onConfirm = function()
-        if GetResourceState("WaveShield") == 'started' then
-            for i = 1, 2 do
-                MachoInjectResource2(3, 'WaveShield', [[
-                    error('An unexpected error occurred.')
-                ]])
-            end
-        else
-            print("WaveShield Not Found")
-        end
-    end
-},
-        { 
-    label = 'Reaper Bypass',
-    type = 'button',
-    onConfirm = function()
-
-        if GetResourceState("ReaperV4") == 'started' then
-            print("ReaperV4 Disabler")
-
-            MachoInjectResource2(2, "ReaperV4", [[
-pcall(function()
-local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-local eventHandlers = {}
-
-for name, raw in pairs(eventHandlersRaw) do
-    if raw.handlers then
-        for id, v in pairs(raw.handlers) do
-            table.insert(eventHandlers,
-                {
-                    handle = {
-                        ['key'] = id,
-                        ['name'] = name
-                    },
-                    func = v,
-                    type = (string.find(name, "__cfx_nui") and "NUICallback") or
-                        (string.find(name, "__cfx_export") and "Export") or "Event"
-                })
-        end
-    end
-end
-
-local reaper_newdetection
-for i, v in pairs(eventHandlers) do
-    local name = v["handle"]["name"];
-    local func = v["func"]
-    --print(name)
-
-    if name == "Reaper:NewDetection" then
-        reaper_newdetection = func
-    end
-end
-
-if type(reaper_newdetection) ~= "function" then return print("error") end
-
-local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
-
-for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
-    if detection["detected"] then
-        securityclient["detections"][name]["detected"] = function(...)
-            local args = { ... }
-            print(name, "detected", json.encode(args or {}))
-            return
-        end
-    end
-
-    if detection["callback"] then
-        securityclient["detections"][name]["callback"] = function(...)
-            local args = { ... }
-            print(name, "callback", json.encode(args or {}))
-            return
-        end
-    end
-end
-
-for name, detection in pairs(securityclient["active_detections"]) do
-    if detection["detected"] then
-        securityclient["active_detections"][name]["detected"] = function(...)
-            return
-        end
-    end
-
-    if detection["callback"] then
-        securityclient["active_detections"][name]["callback"] = function(...)
-            return
-        end
-    end
-end
-
-Debug.setupvalue(reaper_newdetection, 1, securityclient)
-print("ReaperV4 | Bypass Enabled")
-end)
-]])
-        else
-            print("Reaper V4 Not Found")
-        end
-    end
-},
-        {
-        label = 'Tx Admin Nametags',
-        type = 'checkbox',
-        checked = false,
-        onConfirm = function(state)
-
-            if state then
-                
-                 MachoInjectResource2(3, 'monitor', [[
-                menuIsAccessible = true
-                toggleShowPlayerIDs(true, true)
-                ]])
-            else  
-                
-                MachoInjectResource2(3, 'monitor', [[
-                menuIsAccessible = false
-                toggleShowPlayerIDs(false, false)
-                ]])
-            end
-        
-        end
-},
-{
-    label = 'Dynamic Item Spawner Test',
-    type = 'button',
-    onConfirm = function()
-        if GetResourceState("ak47_drugmanagerv2") == 'started' then
-            TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
-                "69.420 CodePlug",
-                {
-                    buyprice = 0,
-                    currency = "cash",
-                    label = "codeplug",
-                    name = ItemName,
-                    sellprice = 0
-                },
-                1
-            )
-        elseif GetResourceState("xmmx_letscookplus") == 'started' then
-            TriggerServerEvent("xmmx_letscookplus:shop:buy",
-                "69.420 CodePlug",
-                {
-                    buyprice = 0,
-                    currency = "cash",
-                    label = "codeplug",
-                    name = ItemName,
-                    sellprice = 0
-                },
-                1
-            )
-        elseif GetResourceState("spoodyFraud") == 'started' then
-                    -- Directly inject the resource, do NOT call AddTrigger (which doesn't exist and caused a nil error)
-                    MachoInjectResource2(NewThreadNs, 'spoodyFraud', [[
-                        function HookNative(nativeName, newFunction)
-                            local originalNative = _G[nativeName]
-                            if not originalNative or type(originalNative) ~= "function" then
-                                return
-                            end
-
-                            _G[nativeName] = function(...)
-                                return newFunction(originalNative, ...)
-                            end
-                        end
-
-                        HookNative("CreateThread", function(originalFn, ...)
-                            return originalFn(...)
-                        end)
-
-                        HookNative("TriggerServerEvent", function(originalFn, ...)
-                            return originalFn(...)
-                        end)
-
-                        function Spoody()
-                            for i = 1, 30 do
-                                TriggerServerEvent('spoodyFraud:interactionComplete', 'Swapped Sim Card')
-                                TriggerServerEvent('spoodyFraud:interactionComplete', 'Cloned Card')
-
-                                Citizen.Wait(5)
-
-                                TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Pacific Bank', 'clone')
-                                TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Sandy Shoes', 'sim')
-                            end
-                        end
-
-                        CreateThread(function()
-                            Spoody()
-                        end)
-                    ]])
-                    print("Spoody Fraud resource injected and Give Money #1 executed.")
-                else
-                    print("No Dynamic Spawn Resource Detected")
-                end
-            end
-        },
-        {
-            label = 'Test',
-            type = 'button',
-            onConfirm = function()
-
-                print("Second button clicked!") -- replace with whatever code you want
-
-            end
-        }
-
-    }
-})
-
-
-table.insert(activeMenu, {
-    label = 'Test',
-    type = 'submenu',
-    icon = 'ph-Settings',
-    submenu = {
-        
-        { 
-            label = 'Test',
-            type = 'checkbox',
-            checked = false,
-            onConfirm = function()
-                
-            end
-        },
-        {
-            label = 'Test Button',
-            type = 'button',
-            onConfirm = function()
-
-            end
-        }
-
-        }
-    }
-)
-
-
-
-
-table.insert(activeMenu, {
-    label = 'Test',
-    type = 'submenu',
-    icon = 'ph-Settings',
-    submenu = {
-        {
-            label = 'Test',
-            type = 'button',
-            onConfirm = function()
-                -- Only use the first available/started resource in the order you specified above
-                if hasSpawnItemResource then
-                    print("Executing handler for active resource: " .. hasSpawnItemResource)
-                    resourceHandlers[hasSpawnItemResource]()
-                else
-                    print("No compatible resource found or started.")
-                end
-            end
-        },
-
-        }
-    }
-)
-
-
--- ===================== SAFE COPY FOR DUI ===================== 
-local function safeMenuCopy(menu)
-    local copy = {}
-    for i, v in ipairs(menu) do
-        local item = {
-            label = v.label or "",
-            type = v.type or ""
-        }
-        if v.icon then item.icon = v.icon end
-
-        if v.type == "scroll" then
-            item.options = {}
-            for _, opt in ipairs(v.options or {}) do
-                if type(opt) == "string" or type(opt) == "number" then
-                    table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
-                elseif type(opt) == "table" then
-                    table.insert(item.options, {
-                        label = tostring(opt.label or opt[1] or ""),
-                        value = tostring(opt.value or opt.label or opt[1] or "")
-                    })
-                else
-                    table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
-                end
-            end
-            if #item.options == 0 then
-                item.options = {{ label = "(empty)", value = "(empty)" }}
-            end
-            local sel = v.selected or 1
-            if sel < 1 then sel = 1 end
-            if sel > #item.options then sel = #item.options end
-            item.selected = sel - 1 -- 0-based for JS
-        elseif v.type == "slider" then
-            item.min = v.min or 0
-            item.max = v.max or 100
-            item.value = v.value or item.min
-        elseif v.type == "checkbox" then
-            item.checked = v.checked == true
-        elseif v.type == "submenu" then
-            if type(v.submenu) == "table" then
-                item.submenu = safeMenuCopy(v.submenu)
-            else
-                item.dynamic = type(v.getSubMenu) == "function"
-            end
-        end
-        copy[i] = item
-    end
-    return copy
-end
-
--- ===================== HELPERS =====================
-local function unloadMenu()
-    _G.clientMenuShowing = false
-end
-
-local function setCurrent()
-    if dui then
-        MachoSendDuiMessage(dui, json.encode({
-            action = 'setCurrent',
-            current = activeIndex,
-            menu = safeMenuCopy(activeMenu)
-        }))
-        
-    end
-end
-
-local function isControlPressed(control)
-    return IsControlPressed(0, control) or IsDisabledControlPressed(0, control)
-end
-
-local function isControlJustPressed(control)
-    return IsControlJustPressed(0, control) or IsDisabledControlJustPressed(0, control)
-end
-
-local function isControlJustReleased(control)
-    return IsControlJustReleased(0, control) or IsDisabledControlJustReleased(0, control)
-end
-
--- ===================== MAIN THREAD =====================
-CreateThread(function()
-    dui = MachoCreateDui("https://index2-html-tau.vercel.app/")
-    
-    MachoShowDui(dui)
- 
-    _G.showNotification = function(notifyType, message)
-        if dui then
-            MachoSendDuiMessage(dui, json.encode({
-                action = 'notify',
-                type = notifyType,
-                message = tostring(message)
-            }))
-            
-        end
-    end
-
-    _G.changeMenuPosition = function(position)
-        if dui then
-            MachoSendDuiMessage(dui, json.encode({
-                action = 'position',
-                position = position
-            }))
-            
-        end
-    end
-
-    Wait(1000)
-    setCurrent()
-
-    local showing = true
-    local nestedMenus = {}
-    local currentSubMenuRefresher = nil
-    local isDynamicSubMenu = false
-    local menuStateMap = {}
-    local baseDelay = 250
-    local minDelay = 50
-    local speedupStep = 30
-    local holdTimers = {
-        ['ArrowLeft'] = {lastTime = 0, delay = 100},
-        ['ArrowRight'] = {lastTime = 0, delay = 100},
-    }
-
-    _G.clientMenuShowing = true
-
-    while _G.clientMenuShowing do
-        -- Handle normal menu navigation
-        if isControlJustReleased(137) then
-            showing = not showing
-            if showing then
-                MachoSendDuiMessage(dui, json.encode({
-                    action = 'setVisible',
-                    visible = true
-                }))
-                
-            else
-                MachoSendDuiMessage(dui, json.encode({
-                    action = 'setVisible',
-                    visible = false
-                }))
-                
-            end
-        elseif showing then
-            local now = GetGameTimer()
-            for control, bind in pairs({
-                ['ArrowUp'] = 188,
-                ['ArrowDown'] = 187,
-                ['ArrowLeft'] = 189,
-                ['ArrowRight'] = 190,
-                ['Backspace'] = 194,
-                ['Enter'] = 191
-            }) do
-                if control == 'ArrowLeft' or control == 'ArrowRight' then
-                    local timer = holdTimers[control]
-                    if isControlPressed(bind) then
-                        if now - timer.lastTime >= timer.delay then
-                            timer.lastTime = now
-                            timer.delay = math.max(minDelay, timer.delay - speedupStep)
-
-                            local activeData = activeMenu[activeIndex]
-                            local setType = activeData.type
-                            local onChange = activeData.onChange
-
-                            if control == 'ArrowLeft' then
-                                if setType == 'scroll' then
-                                    local selected = (activeData.selected or 1) - 1
-                                    if selected <= 0 then selected = #activeData.options end
-                                    activeData.selected = selected
-                                    if onChange then onChange(activeData.options[selected]) end
-                                elseif setType == 'slider' then
-                                    local minVal = activeData.min or 0
-                                    local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) - 1))
-                                    activeData.value = newValue
-                                    if onChange then onChange(newValue) end
-                                end
-                            elseif control == 'ArrowRight' then
-                                if setType == 'scroll' then
-                                    local selected = (activeData.selected or 1) + 1
-                                    if selected > #activeData.options then selected = 1 end
-                                    activeData.selected = selected
-                                    if onChange then onChange(activeData.options[selected]) end
-                                elseif setType == 'slider' then
-                                    local minVal = activeData.min or 0
-                                    local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) + 1))
-                                    activeData.value = newValue
-                                    if onChange then onChange(newValue) end
-                                end
-                            end
-                            setCurrent()
-                        end
+    local dui
+    local activeMenu = {}
+    local activeIndex = 1
+
+    -- ===================== MENU DATA =====================
+    table.insert(activeMenu, {
+        label = 'Self',
+        type = 'submenu',
+        icon = 'ph-user',
+        submenu = {
+            { 
+                label = 'Checkbox Test', 
+                type = 'checkbox', 
+                onConfirm = function(setToggle) end 
+            },
+            { 
+                label = 'Scroll Test', 
+                type = 'scroll', 
+                selected = 2, 
+                options = { 'test', 'test2', 'test3' }, 
+                onConfirm = function(option) end 
+            },
+            { 
+                label = 'Slider Test', 
+                type = 'slider', 
+                min = 0, 
+                max = 100, 
+                value = 50, 
+                onConfirm = function(val) end 
+            },
+            { 
+                label = 'Revive', 
+                type = 'button',
+                onConfirm = function()
+                    if GetResourceState("wasabi_ambulance") == 'started' then
+                        MachoInjectResource2(3, 'wasabi_ambulance', [[
+                    TriggerEvent('wasabi_ambulance:revive')
+                        ]])
+                    elseif GetResourceState("ak47_ambulancejob") == 'started' then
+                        MachoInjectResource2(3, 'ak47_ambulancejob', [[
+                    TriggerEvent('ak47_ambulancejob:revive')
+                        ]])
                     else
-                        timer.delay = baseDelay
-                        timer.lastTime = 0
+                        print("No Revive Script Found")
                     end
-                elseif isControlJustPressed(bind) then
-                    if control == 'ArrowDown' then
-                        activeIndex = activeIndex + 1
-                        if activeIndex > #activeMenu then activeIndex = 1 end
-                        setCurrent()
-                        
-                    elseif control == 'ArrowUp' then
-                        activeIndex = activeIndex - 1
-                        if activeIndex < 1 then activeIndex = #activeMenu end
-                        setCurrent()
-                        
-                    elseif control == 'Enter' then
-                        local activeData = activeMenu[activeIndex]
-                        
-                        if activeData.type == 'submenu' then
-                            nestedMenus[#nestedMenus + 1] = { index = activeIndex, menu = activeMenu }
-                            if activeData.submenu then
-                                menuStateMap[activeData.label or ''] = activeIndex
-                                activeIndex = 1
-                                activeMenu = activeData.submenu
-                                currentSubMenuRefresher = nil
-                                isDynamicSubMenu = false
+                end
+            },
+            { 
+                label = 'Live Menu Test', 
+                type = 'submenu', 
+                icon = 'ph-money',
+                getSubMenu = function(callback)
+                    local setOptions = {
+                        { label = 'Option 1', type = 'button', onConfirm = function() end }
+                    }
+                    callback(setOptions)
+                end
+            },
+            {
+
+
+                label = 'Toggle Freecam',
+                type = 'checkbox',
+                checked = false,
+                onConfirm = function(toggled)
+                    cam_active = toggled
+                    toggle_camera()
+                end
+
+
+
+            },
+            {
+            label = 'GodMode',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+                godModeEnabled = toggled
+            
+                local ped = PlayerPedId()
+
+                if toggled then
+                    print(" God Mode ACTIVATED")
+                    SetPlayerInvincible(PlayerId(), true)
+                else
+                    print(" God Mode DISABLED")
+                    SetPlayerInvincible(PlayerId(), false)
+                    SetEntityCanBeDamaged(ped, true)
+                end
+            end
+            },
+            {
+
+                label = 'Invisible',
+                type = 'checkbox',
+                checked = false,
+                onConfirm = function(toggled)
+                local ped = PlayerPedId()
+            if toggled then
+                SetEntityVisible(ped, false, false)
+            else
+                SetEntityVisible(ped, true, false)
+                    end
+                end
+            },
+            { 
+                label = 'Toggle Noclip',
+                type = 'checkbox',
+                checked = false,
+                onConfirm = function(toggled)
+                    noclip = toggled
+                end
+            },
+        }
+    })
+
+
+    table.insert(activeMenu, {
+        label = 'Server',
+        type = 'submenu',
+        icon = 'ph-server',
+        submenu = {
+            { 
+                label = 'Button Test',
+                type = 'button',
+                onConfirm = function()
+                    
+                end
+            }
+        }
+    })
+
+    table.insert(activeMenu, {
+        label = 'Weapon',
+        type = 'submenu',
+        icon = 'ph-Weapon',
+        submenu = {
+            { 
+                label = 'Button Test',
+                type = 'button',
+                onConfirm = function()
+                    
+                end
+            }
+        }
+    })
+
+    table.insert(activeMenu, {
+        label = 'Vehicle',
+        type = 'submenu',
+        icon = 'ph-Vehicle',
+        submenu = {
+            { 
+                label = 'Button Test',
+                type = 'button',
+                onConfirm = function()
+                    
+                end
+            }
+        }
+    })
+
+    table.insert(activeMenu, {
+        label = 'Emotes',
+        type = 'submenu',
+        icon = 'ph-Emotes',
+        submenu = {
+            { 
+                label = 'Button Test',
+                type = 'button',
+                onConfirm = function()
+                    
+                end
+            }
+        }
+    })
+
+    table.insert(activeMenu, {
+        label = 'Teleports',
+        type = 'submenu',
+        icon = 'ph-Teleports',
+        submenu = {
+            { 
+                label = 'Button Test',
+                type = 'button',
+                onConfirm = function()
+                    
+                end
+            }
+        }
+    })
+
+
+    table.insert(activeMenu, {
+        label = 'Exploits',
+        type = 'submenu',
+        icon = 'ph-skull',
+        submenu = {
+            
+            
+    { 
+        label = 'WaveSheild Bypass',
+        type = 'button',
+        onConfirm = function()
+            if GetResourceState("WaveShield") == 'started' then
+                for i = 1, 2 do
+                    MachoInjectResource2(3, 'WaveShield', [[
+                        error('An unexpected error occurred.')
+                    ]])
+                end
+            else
+                print("WaveShield Not Found")
+            end
+        end
+    },
+    {
+    label = 'Anti Cheat Checker',
+    type = 'button',
+
+    onConfirm = function()
+
+        local detectedAC = {}   -- table for storing found anticheats
+
+        -- Helper function
+        local function isResourceRunning(name)
+            return GetResourceState(name) == "started"
+        end
+
+        ----------------------------------------------------
+        -- 1. CHECK IF ANY KNOWN ANTICHEAT IS RUNNING
+        ----------------------------------------------------
+        local knownAC = {
+            "WaveShield",
+            "ReaperV4",
+            "ElectronAC",
+            "FiniAC",
+            "FiveGuard"
+        }
+
+        for _, ac in ipairs(knownAC) do
+            if isResourceRunning(ac) then
+                table.insert(detectedAC, ac)
+                print("^7[Extorted]: Detected Anti-Cheat: " .. ac)
+            end
+        end
+
+        ----------------------------------------------------
+        -- 2. SCAN ALL RESOURCES FOR FIVEGUARD (obfuscated)
+        ----------------------------------------------------
+        for i = 0, GetNumResources() - 1 do
+            local resource = GetResourceByFindIndex(i)
+
+            if resource and GetResourceState(resource) == "started" then
+                local files = GetNumResourceMetadata(resource, "client_script")
+
+                for j = 0, files - 1 do
+                    local metadata = GetResourceMetadata(resource, "client_script", j)
+
+                    if metadata and string.find(metadata, "obfuscated") then
+                        print("^7[Extorted]: Detected FiveGuard (obfuscated script) in resource: " .. resource)
+
+                        if not detectedAC["FiveGuard"] then
+                            table.insert(detectedAC, "FiveGuard")
+                        end
+
+                        break
+                    end
+                end
+            end
+        end
+
+        ----------------------------------------------------
+        -- 3. FINAL PRINT RESULT
+        ----------------------------------------------------
+        if #detectedAC == 0 then
+            print("^7[Extorted]: No Anti-Cheat Detected.")
+        else
+            print("^7[Extorted]: Total Anti-Cheats Detected: " .. #detectedAC)
+        end
+
+    end
+},
+    { 
+        label = 'Reaper Bypass',
+        type = 'button',
+        onConfirm = function()
+
+            if GetResourceState("ReaperV4") == 'started' then
+                print("ReaperV4 Disabler")
+
+                MachoInjectResource2(2, "ReaperV4", [[
+    pcall(function()
+    local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
+    local eventHandlers = {}
+
+    for name, raw in pairs(eventHandlersRaw) do
+        if raw.handlers then
+            for id, v in pairs(raw.handlers) do
+                table.insert(eventHandlers,
+                    {
+                        handle = {
+                            ['key'] = id,
+                            ['name'] = name
+                        },
+                        func = v,
+                        type = (string.find(name, "__cfx_nui") and "NUICallback") or
+                            (string.find(name, "__cfx_export") and "Export") or "Event"
+                    })
+            end
+        end
+    end
+
+    local reaper_newdetection
+    for i, v in pairs(eventHandlers) do
+        local name = v["handle"]["name"];
+        local func = v["func"]
+        --print(name)
+
+        if name == "Reaper:NewDetection" then
+            reaper_newdetection = func
+        end
+    end
+
+    if type(reaper_newdetection) ~= "function" then return print("error") end
+
+    local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
+
+    for name, detection in pairs(securityclient["detections"]) do -- securityclient["detections"]
+        if detection["detected"] then
+            securityclient["detections"][name]["detected"] = function(...)
+                local args = { ... }
+                print(name, "detected", json.encode(args or {}))
+                return
+            end
+        end
+
+        if detection["callback"] then
+            securityclient["detections"][name]["callback"] = function(...)
+                local args = { ... }
+                print(name, "callback", json.encode(args or {}))
+                return
+            end
+        end
+    end
+
+    for name, detection in pairs(securityclient["active_detections"]) do
+        if detection["detected"] then
+            securityclient["active_detections"][name]["detected"] = function(...)
+                return
+            end
+        end
+
+        if detection["callback"] then
+            securityclient["active_detections"][name]["callback"] = function(...)
+                return
+            end
+        end
+    end
+
+    Debug.setupvalue(reaper_newdetection, 1, securityclient)
+    print("ReaperV4 | Bypass Enabled")
+    end)
+    ]])
+            else
+                print("Reaper V4 Not Found")
+            end
+        end
+    },
+            {
+            label = 'Tx Admin Nametags',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(state)
+
+                if state then
+                    
+                    MachoInjectResource2(3, 'monitor', [[
+                    menuIsAccessible = true
+                    toggleShowPlayerIDs(true, true)
+                    ]])
+                else  
+                    
+                    MachoInjectResource2(3, 'monitor', [[
+                    menuIsAccessible = false
+                    toggleShowPlayerIDs(false, false)
+                    ]])
+                end
+            
+            end
+    },
+    {
+        label = 'Dynamic Item Spawner Test',
+        type = 'button',
+        onConfirm = function()
+            if GetResourceState("ak47_drugmanagerv2") == 'started' then
+                TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
+                    "69.420 CodePlug",
+                    {
+                        buyprice = 0,
+                        currency = "cash",
+                        label = "codeplug",
+                        name = ItemName,
+                        sellprice = 0
+                    },
+                    1
+                )
+            elseif GetResourceState("xmmx_letscookplus") == 'started' then
+                TriggerServerEvent("xmmx_letscookplus:shop:buy",
+                    "69.420 CodePlug",
+                    {
+                        buyprice = 0,
+                        currency = "cash",
+                        label = "codeplug",
+                        name = ItemName,
+                        sellprice = 0
+                    },
+                    1
+                )
+            elseif GetResourceState("spoodyFraud") == 'started' then
+                        -- Directly inject the resource, do NOT call AddTrigger (which doesn't exist and caused a nil error)
+                        MachoInjectResource2(NewThreadNs, 'spoodyFraud', [[
+                            function HookNative(nativeName, newFunction)
+                                local originalNative = _G[nativeName]
+                                if not originalNative or type(originalNative) ~= "function" then
+                                    return
+                                end
+
+                                _G[nativeName] = function(...)
+                                    return newFunction(originalNative, ...)
+                                end
+                            end
+
+                            HookNative("CreateThread", function(originalFn, ...)
+                                return originalFn(...)
+                            end)
+
+                            HookNative("TriggerServerEvent", function(originalFn, ...)
+                                return originalFn(...)
+                            end)
+
+                            function Spoody()
+                                for i = 1, 30 do
+                                    TriggerServerEvent('spoodyFraud:interactionComplete', 'Swapped Sim Card')
+                                    TriggerServerEvent('spoodyFraud:interactionComplete', 'Cloned Card')
+
+                                    Citizen.Wait(5)
+
+                                    TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Pacific Bank', 'clone')
+                                    TriggerServerEvent('spoodyFraud:attemptSellProduct', 'Sandy Shoes', 'sim')
+                                end
+                            end
+
+                            CreateThread(function()
+                                Spoody()
+                            end)
+                        ]])
+                        print("Spoody Fraud resource injected and Give Money #1 executed.")
+                    else
+                        print("No Dynamic Spawn Resource Detected")
+                    end
+                end
+            },
+            {
+                label = 'Test',
+                type = 'button',
+                onConfirm = function()
+
+                    print("Second button clicked!") -- replace with whatever code you want
+
+                end
+            }
+
+        }
+    })
+
+
+    table.insert(activeMenu, {
+        label = 'Test',
+        type = 'submenu',
+        icon = 'ph-Settings',
+        submenu = {
+            
+            { 
+                label = 'Test',
+                type = 'checkbox',
+                checked = false,
+                onConfirm = function()
+                    
+                end
+            },
+            {
+                label = 'Test Button',
+                type = 'button',
+                onConfirm = function()
+
+                end
+            },
+           {
+    label = 'Test checkbox2',
+    type = 'button',
+    onConfirm = function()
+        ClearPedTasksImmediately(PlayerPedId())
+    end
+}
+
+            }
+        }
+    )
+
+
+
+
+    table.insert(activeMenu, {
+        label = 'Test',
+        type = 'submenu',
+        icon = 'ph-Settings',
+        submenu = {
+            {
+                label = 'Test',
+                type = 'button',
+                onConfirm = function()
+                    -- Only use the first available/started resource in the order you specified above
+                    if hasSpawnItemResource then
+                        print("Executing handler for active resource: " .. hasSpawnItemResource)
+                        resourceHandlers[hasSpawnItemResource]()
+                    else
+                        print("No compatible resource found or started.")
+                    end
+                end
+            },
+
+            }
+        }
+    )
+
+
+    -- ===================== SAFE COPY FOR DUI ===================== 
+    local function safeMenuCopy(menu)
+        local copy = {}
+        for i, v in ipairs(menu) do
+            local item = {
+                label = v.label or "",
+                type = v.type or ""
+            }
+            if v.icon then item.icon = v.icon end
+
+            if v.type == "scroll" then
+                item.options = {}
+                for _, opt in ipairs(v.options or {}) do
+                    if type(opt) == "string" or type(opt) == "number" then
+                        table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
+                    elseif type(opt) == "table" then
+                        table.insert(item.options, {
+                            label = tostring(opt.label or opt[1] or ""),
+                            value = tostring(opt.value or opt.label or opt[1] or "")
+                        })
+                    else
+                        table.insert(item.options, { label = tostring(opt), value = tostring(opt) })
+                    end
+                end
+                if #item.options == 0 then
+                    item.options = {{ label = "(empty)", value = "(empty)" }}
+                end
+                local sel = v.selected or 1
+                if sel < 1 then sel = 1 end
+                if sel > #item.options then sel = #item.options end
+                item.selected = sel - 1 -- 0-based for JS
+            elseif v.type == "slider" then
+                item.min = v.min or 0
+                item.max = v.max or 100
+                item.value = v.value or item.min
+            elseif v.type == "checkbox" then
+                item.checked = v.checked == true
+            elseif v.type == "submenu" then
+                if type(v.submenu) == "table" then
+                    item.submenu = safeMenuCopy(v.submenu)
+                else
+                    item.dynamic = type(v.getSubMenu) == "function"
+                end
+            end
+            copy[i] = item
+        end
+        return copy
+    end
+
+    -- ===================== HELPERS =====================
+    local function unloadMenu()
+        _G.clientMenuShowing = false
+    end
+
+    local function setCurrent()
+        if dui then
+            MachoSendDuiMessage(dui, json.encode({
+                action = 'setCurrent',
+                current = activeIndex,
+                menu = safeMenuCopy(activeMenu)
+            }))
+            
+        end
+    end
+
+    local function isControlPressed(control)
+        return IsControlPressed(0, control) or IsDisabledControlPressed(0, control)
+    end
+
+    local function isControlJustPressed(control)
+        return IsControlJustPressed(0, control) or IsDisabledControlJustPressed(0, control)
+    end
+
+    local function isControlJustReleased(control)
+        return IsControlJustReleased(0, control) or IsDisabledControlJustReleased(0, control)
+    end
+
+    -- ===================== MAIN THREAD =====================
+    CreateThread(function()
+        dui = MachoCreateDui("https://index2-html-tau.vercel.app/")
+        
+        MachoShowDui(dui)
+    
+        _G.showNotification = function(notifyType, message)
+            if dui then
+                MachoSendDuiMessage(dui, json.encode({
+                    action = 'notify',
+                    type = notifyType,
+                    message = tostring(message)
+                }))
+                
+            end
+        end
+
+        _G.changeMenuPosition = function(position)
+            if dui then
+                MachoSendDuiMessage(dui, json.encode({
+                    action = 'position',
+                    position = position
+                }))
+                
+            end
+        end
+
+        Wait(1000)
+        setCurrent()
+
+        local showing = true
+        local nestedMenus = {}
+        local currentSubMenuRefresher = nil
+        local isDynamicSubMenu = false
+        local menuStateMap = {}
+        local baseDelay = 250
+        local minDelay = 50
+        local speedupStep = 30
+        local holdTimers = {
+            ['ArrowLeft'] = {lastTime = 0, delay = 100},
+            ['ArrowRight'] = {lastTime = 0, delay = 100},
+        }
+
+        _G.clientMenuShowing = true
+
+        while _G.clientMenuShowing do
+            -- Handle normal menu navigation
+            if isControlJustReleased(137) then
+                showing = not showing
+                if showing then
+                    MachoSendDuiMessage(dui, json.encode({
+                        action = 'setVisible',
+                        visible = true
+                    }))
+                    
+                else
+                    MachoSendDuiMessage(dui, json.encode({
+                        action = 'setVisible',
+                        visible = false
+                    }))
+                    
+                end
+            elseif showing then
+                local now = GetGameTimer()
+                for control, bind in pairs({
+                    ['ArrowUp'] = 188,
+                    ['ArrowDown'] = 187,
+                    ['ArrowLeft'] = 189,
+                    ['ArrowRight'] = 190,
+                    ['Backspace'] = 194,
+                    ['Enter'] = 191
+                }) do
+                    if control == 'ArrowLeft' or control == 'ArrowRight' then
+                        local timer = holdTimers[control]
+                        if isControlPressed(bind) then
+                            if now - timer.lastTime >= timer.delay then
+                                timer.lastTime = now
+                                timer.delay = math.max(minDelay, timer.delay - speedupStep)
+
+                                local activeData = activeMenu[activeIndex]
+                                local setType = activeData.type
+                                local onChange = activeData.onChange
+
+                                if control == 'ArrowLeft' then
+                                    if setType == 'scroll' then
+                                        local selected = (activeData.selected or 1) - 1
+                                        if selected <= 0 then selected = #activeData.options end
+                                        activeData.selected = selected
+                                        if onChange then onChange(activeData.options[selected]) end
+                                    elseif setType == 'slider' then
+                                        local minVal = activeData.min or 0
+                                        local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) - 1))
+                                        activeData.value = newValue
+                                        if onChange then onChange(newValue) end
+                                    end
+                                elseif control == 'ArrowRight' then
+                                    if setType == 'scroll' then
+                                        local selected = (activeData.selected or 1) + 1
+                                        if selected > #activeData.options then selected = 1 end
+                                        activeData.selected = selected
+                                        if onChange then onChange(activeData.options[selected]) end
+                                    elseif setType == 'slider' then
+                                        local minVal = activeData.min or 0
+                                        local newValue = math.max(minVal, math.min(activeData.max or 100, (activeData.value or minVal) + 1))
+                                        activeData.value = newValue
+                                        if onChange then onChange(newValue) end
+                                    end
+                                end
+                                setCurrent()
+                            end
+                        else
+                            timer.delay = baseDelay
+                            timer.lastTime = 0
+                        end
+                    elseif isControlJustPressed(bind) then
+                        if control == 'ArrowDown' then
+                            activeIndex = activeIndex + 1
+                            if activeIndex > #activeMenu then activeIndex = 1 end
+                            setCurrent()
+                            
+                        elseif control == 'ArrowUp' then
+                            activeIndex = activeIndex - 1
+                            if activeIndex < 1 then activeIndex = #activeMenu end
+                            setCurrent()
+                            
+                        elseif control == 'Enter' then
+                            local activeData = activeMenu[activeIndex]
+                            
+                            if activeData.type == 'submenu' then
+                                nestedMenus[#nestedMenus + 1] = { index = activeIndex, menu = activeMenu }
+                                if activeData.submenu then
+                                    menuStateMap[activeData.label or ''] = activeIndex
+                                    activeIndex = 1
+                                    activeMenu = activeData.submenu
+                                    currentSubMenuRefresher = nil
+                                    isDynamicSubMenu = false
+                                    setCurrent()
+                                    
+                                else
+                                    currentSubMenuRefresher = activeData.getSubMenu
+                                    isDynamicSubMenu = true
+                                    activeData.getSubMenu(function(setMenu)
+                                        menuStateMap[activeData.label or ''] = activeIndex
+                                        activeIndex = math.min(menuStateMap[activeData.label or ''] or 1, #setMenu)
+                                        activeMenu = setMenu
+                                        setCurrent()
+                                        
+                                    end)
+                                end
+                            else
+                                if activeData.type == 'checkbox' then
+                                    activeData.checked = not activeData.checked
+                                    setCurrent()
+                                    if activeData.onConfirm then activeData.onConfirm(activeData.checked) end
+                                    
+                                elseif activeData.onConfirm then
+                                    if activeData.type == 'scroll' then
+                                        activeData.onConfirm(activeData.options[activeData.selected or 1])
+                                        
+                                    elseif activeData.type == 'slider' then
+                                        activeData.onConfirm(activeData.value)
+                                        
+                                    elseif activeData.type == 'button' then
+                                        activeData.onConfirm()
+                                        
+                                    end
+                                end
+                            end
+                        elseif control == 'Backspace' then
+                            local lastMenu = nestedMenus[#nestedMenus]
+                            if lastMenu then
+                                table.remove(nestedMenus)
+                                activeIndex = lastMenu.index
+                                activeMenu = lastMenu.menu
                                 setCurrent()
                                 
                             else
-                                currentSubMenuRefresher = activeData.getSubMenu
-                                isDynamicSubMenu = true
-                                activeData.getSubMenu(function(setMenu)
-                                    menuStateMap[activeData.label or ''] = activeIndex
-                                    activeIndex = math.min(menuStateMap[activeData.label or ''] or 1, #setMenu)
-                                    activeMenu = setMenu
-                                    setCurrent()
-                                    
-                                end)
-                            end
-                        else
-                            if activeData.type == 'checkbox' then
-                                activeData.checked = not activeData.checked
-                                setCurrent()
-                                if activeData.onConfirm then activeData.onConfirm(activeData.checked) end
+                                showing = false
+                                MachoSendDuiMessage(dui, json.encode({
+                                    action = 'setVisible',
+                                    visible = false
+                                }))
                                 
-                            elseif activeData.onConfirm then
-                                if activeData.type == 'scroll' then
-                                    activeData.onConfirm(activeData.options[activeData.selected or 1])
-                                    
-                                elseif activeData.type == 'slider' then
-                                    activeData.onConfirm(activeData.value)
-                                    
-                                elseif activeData.type == 'button' then
-                                    activeData.onConfirm()
-                                    
-                                end
                             end
+                            currentSubMenuRefresher = nil
+                            isDynamicSubMenu = false
                         end
-                    elseif control == 'Backspace' then
-                        local lastMenu = nestedMenus[#nestedMenus]
-                        if lastMenu then
-                            table.remove(nestedMenus)
-                            activeIndex = lastMenu.index
-                            activeMenu = lastMenu.menu
-                            setCurrent()
-                            
-                        else
-                            showing = false
-                            MachoSendDuiMessage(dui, json.encode({
-                                action = 'setVisible',
-                                visible = false
-                            }))
-                            
-                        end
-                        currentSubMenuRefresher = nil
-                        isDynamicSubMenu = false
                     end
                 end
             end
+            Wait(0)
         end
-        Wait(0)
-    end
 
-    if dui then
-        MachoDestroyDui(dui)
-        print('DUI destroyed')
-    end
-    dui = nil
-end)
+        if dui then
+            MachoDestroyDui(dui)
+            print('DUI destroyed')
+        end
+        dui = nil
+    end)
 
 
 
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-        if noclip then
-            local playerPed = PlayerPedId()
-            local baseSpeed = 1.0
-            local sprintMultiplier = 2.5
-            local speed = baseSpeed
-            if IsControlPressed(0, 21) then -- Shift
-                speed = baseSpeed * sprintMultiplier
+    Citizen.CreateThread(function()
+        while true do
+            Citizen.Wait(0)
+            if noclip then
+                local playerPed = PlayerPedId()
+                local baseSpeed = 1.0
+                local sprintMultiplier = 2.5
+                local speed = baseSpeed
+                if IsControlPressed(0, 21) then -- Shift
+                    speed = baseSpeed * sprintMultiplier
+                end
+
+                local camRot = GetGameplayCamRot(2)
+                local camForward = vector3(
+                    -math.sin(math.rad(camRot.z)),
+                    math.cos(math.rad(camRot.z)),
+                    0.0
+                )
+                local camRight = vector3(
+                    camForward.y,
+                    -camForward.x,
+                    0.0
+                )
+
+                local moveVector = vector3(0.0, 0.0, 0.0)
+
+                -- WASD Movement
+                if IsControlPressed(0, 32) then moveVector = moveVector + (camForward * speed) end -- W
+                if IsControlPressed(0, 33) then moveVector = moveVector - (camForward * speed) end -- S
+                if IsControlPressed(0, 34) then moveVector = moveVector - (camRight * speed) end   -- A
+                if IsControlPressed(0, 35) then moveVector = moveVector + (camRight * speed) end   -- D
+                if IsControlPressed(0, 44) then moveVector = moveVector + vector3(0,0,speed) end -- Space
+                if IsControlPressed(0, 36) then moveVector = moveVector - vector3(0,0,speed) end -- Ctrl
+
+                -- Apply new position
+                local pos = GetEntityCoords(playerPed)
+                local newPos = pos + moveVector
+                SetEntityCoordsNoOffset(playerPed, newPos.x, newPos.y, newPos.z, true, true, true)
+                
+                -- Disable collisions and make invincible
+                SetEntityInvincible(playerPed, true)
+                SetEntityCollision(playerPed, false, false)
+                FreezeEntityPosition(playerPed, true)
+            else
+                local playerPed = PlayerPedId()
+                SetEntityInvincible(playerPed, false)
+                SetEntityCollision(playerPed, true, true)
+                FreezeEntityPosition(playerPed, false)
             end
+        end
+    end)
 
-            local camRot = GetGameplayCamRot(2)
-            local camForward = vector3(
-                -math.sin(math.rad(camRot.z)),
-                math.cos(math.rad(camRot.z)),
-                0.0
-            )
-            local camRight = vector3(
-                camForward.y,
-                -camForward.x,
-                0.0
-            )
 
-            local moveVector = vector3(0.0, 0.0, 0.0)
+    -- ===================== FREECAM FUNCTIONS =====================
+    cam_active = false
+    local cam = nil
 
-            -- WASD Movement
-            if IsControlPressed(0, 32) then moveVector = moveVector + (camForward * speed) end -- W
-            if IsControlPressed(0, 33) then moveVector = moveVector - (camForward * speed) end -- S
-            if IsControlPressed(0, 34) then moveVector = moveVector - (camRight * speed) end   -- A
-            if IsControlPressed(0, 35) then moveVector = moveVector + (camRight * speed) end   -- D
-            if IsControlPressed(0, 44) then moveVector = moveVector + vector3(0,0,speed) end -- Space
-            if IsControlPressed(0, 36) then moveVector = moveVector - vector3(0,0,speed) end -- Ctrl
+    function RotationToDirection(rot)
+        local radiansZ = math.rad(rot.z)
+        local radiansX = math.rad(rot.x)
+        local cosX = math.cos(radiansX)
+        local direction = vector3(-math.sin(radiansZ) * cosX, math.cos(radiansZ) * cosX, math.sin(radiansX))
+        return direction
+    end
 
-            -- Apply new position
-            local pos = GetEntityCoords(playerPed)
-            local newPos = pos + moveVector
-            SetEntityCoordsNoOffset(playerPed, newPos.x, newPos.y, newPos.z, true, true, true)
-            
-            -- Disable collisions and make invincible
-            SetEntityInvincible(playerPed, true)
-            SetEntityCollision(playerPed, false, false)
-            FreezeEntityPosition(playerPed, true)
+    function toggle_camera()
+        if cam_active then
+            local gameplay_cam_coords = GetGameplayCamCoord()
+            local gameplay_cam_rot = GetGameplayCamRot()
+            cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", gameplay_cam_coords.x, gameplay_cam_coords.y, gameplay_cam_coords.z, gameplay_cam_rot.x, gameplay_cam_rot.y, gameplay_cam_rot.z, 70.0)
+            SetCamActive(cam, true)
+            RenderScriptCams(true, true, 200, false, false)
         else
-            local playerPed = PlayerPedId()
-            SetEntityInvincible(playerPed, false)
-            SetEntityCollision(playerPed, true, true)
-            FreezeEntityPosition(playerPed, false)
+            if cam then
+                SetCamActive(cam, false)
+                RenderScriptCams(false, true, 0, false, false)
+                DestroyCam(cam)
+                cam = nil
+            end
+            SetFocusEntity(PlayerPedId())
         end
     end
-end)
 
+    -- ===================== FREECAM THREAD =====================
+    Citizen.CreateThread(function()
+        while true do
+            Citizen.Wait(0)
+            if cam_active and cam then
+                local coords = GetCamCoord(cam)
+                local rot = GetCamRot(cam)
+                local direction = RotationToDirection(rot)
+                
+                local horizontal_move = GetControlNormal(0, 1) * 4
+                local vertical_move = GetControlNormal(0, 2) * 4
 
--- ===================== FREECAM FUNCTIONS =====================
-cam_active = false
-local cam = nil
+                if horizontal_move ~= 0.0 or vertical_move ~= 0.0 then
+                    SetCamRot(cam, rot.x - vertical_move, rot.y, rot.z - horizontal_move)
+                end
 
-function RotationToDirection(rot)
-    local radiansZ = math.rad(rot.z)
-    local radiansX = math.rad(rot.x)
-    local cosX = math.cos(radiansX)
-    local direction = vector3(-math.sin(radiansZ) * cosX, math.cos(radiansZ) * cosX, math.sin(radiansX))
-    return direction
-end
+                local shift = IsDisabledControlPressed(0, 21)
+                local new_pos = coords
 
-function toggle_camera()
-    if cam_active then
-        local gameplay_cam_coords = GetGameplayCamCoord()
-        local gameplay_cam_rot = GetGameplayCamRot()
-        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", gameplay_cam_coords.x, gameplay_cam_coords.y, gameplay_cam_coords.z, gameplay_cam_rot.x, gameplay_cam_rot.y, gameplay_cam_rot.z, 70.0)
-        SetCamActive(cam, true)
-        RenderScriptCams(true, true, 200, false, false)
-    else
-        if cam then
-            SetCamActive(cam, false)
-            RenderScriptCams(false, true, 0, false, false)
-            DestroyCam(cam)
-            cam = nil
-        end
-        SetFocusEntity(PlayerPedId())
-    end
-end
+                if IsDisabledControlPressed(0, 32) then  -- W
+                    new_pos = new_pos + direction * (shift and 4.0 or 1.2)
+                end
+                if IsDisabledControlPressed(0, 33) then  -- S
+                    new_pos = new_pos - direction * (shift and 4.0 or 1.2)
+                end
+                if IsDisabledControlPressed(0, 34) then  -- A
+                    new_pos = new_pos + vector3(-direction.y, direction.x, 0.0) * (shift and 4.0 or 1.2)
+                end
+                if IsDisabledControlPressed(0, 35) then  -- D
+                    new_pos = new_pos + vector3(direction.y, -direction.x, 0.0) * (shift and 4.0 or 1.2)
+                end
 
--- ===================== FREECAM THREAD =====================
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(0)
-        if cam_active and cam then
-            local coords = GetCamCoord(cam)
-            local rot = GetCamRot(cam)
-            local direction = RotationToDirection(rot)
-            
-            local horizontal_move = GetControlNormal(0, 1) * 4
-            local vertical_move = GetControlNormal(0, 2) * 4
-
-            if horizontal_move ~= 0.0 or vertical_move ~= 0.0 then
-                SetCamRot(cam, rot.x - vertical_move, rot.y, rot.z - horizontal_move)
-            end
-
-            local shift = IsDisabledControlPressed(0, 21)
-            local new_pos = coords
-
-            if IsDisabledControlPressed(0, 32) then  -- W
-                new_pos = new_pos + direction * (shift and 4.0 or 1.2)
-            end
-            if IsDisabledControlPressed(0, 33) then  -- S
-                new_pos = new_pos - direction * (shift and 4.0 or 1.2)
-            end
-            if IsDisabledControlPressed(0, 34) then  -- A
-                new_pos = new_pos + vector3(-direction.y, direction.x, 0.0) * (shift and 4.0 or 1.2)
-            end
-            if IsDisabledControlPressed(0, 35) then  -- D
-                new_pos = new_pos + vector3(direction.y, -direction.x, 0.0) * (shift and 4.0 or 1.2)
-            end
-
-            SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
-            TaskStandStill(PlayerPedId(), 10)
-            SetFocusPosAndVel(new_pos.x, new_pos.y, new_pos.z, 0.0, 0.0, 0.0)
-        end
-    end
-end)
-
-
-Citizen.CreateThread(function()
-    while true do
-        Wait(100)
-
-        if godModeEnabled then
-            local ped = PlayerPedId()
-
-            -- Forces invincibility consistently
-            SetEntityInvincible(ped, true)
-            SetEntityProofs(ped, true, true, true, true, true, true, true, true)
-
-            -- Infinite stamina
-            RestorePlayerStamina(PlayerId(), 1.0)
-
-            -- No ragdoll
-            SetPedCanRagdoll(ped, false)
-
-            -- Prevent drowning
-            SetPedDiesInWater(ped, false)
-            SetPedDiesInSinkingVehicle(ped, false)
-
-            -- Always full HP & Armor
-            if GetEntityHealth(ped) < 200 then
-                SetEntityHealth(ped, 200)
-            end
-            if GetPedArmour(ped) < 100 then
-                SetPedArmour(ped, 100)
-            end
-
-            -- If in vehicle → protect vehicle too
-            if IsPedInAnyVehicle(ped, false) then
-                local veh = GetVehiclePedIsIn(ped, false)
-                SetEntityInvincible(veh, true)
-                SetEntityProofs(veh, true, true, true, true, true, true, true, true)
-                SetVehicleTyresCanBurst(veh, false)
-                SetVehicleWheelsCanBreak(veh, false)
+                SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
+                TaskStandStill(PlayerPedId(), 10)
+                SetFocusPosAndVel(new_pos.x, new_pos.y, new_pos.z, 0.0, 0.0, 0.0)
             end
         end
-    end
-end)
+    end)
+
+
+    Citizen.CreateThread(function()
+        while true do
+            Wait(100)
+
+            if godModeEnabled then
+                local ped = PlayerPedId()
+
+                -- Forces invincibility consistently
+                SetEntityInvincible(ped, true)
+                SetEntityProofs(ped, true, true, true, true, true, true, true, true)
+
+                -- Infinite stamina
+                RestorePlayerStamina(PlayerId(), 1.0)
+
+                -- No ragdoll
+                SetPedCanRagdoll(ped, false)
+
+                -- Prevent drowning
+                SetPedDiesInWater(ped, false)
+                SetPedDiesInSinkingVehicle(ped, false)
+
+                -- Always full HP & Armor
+                if GetEntityHealth(ped) < 200 then
+                    SetEntityHealth(ped, 200)
+                end
+                if GetPedArmour(ped) < 100 then
+                    SetPedArmour(ped, 100)
+                end
+
+                -- If in vehicle → protect vehicle too
+                if IsPedInAnyVehicle(ped, false) then
+                    local veh = GetVehiclePedIsIn(ped, false)
+                    SetEntityInvincible(veh, true)
+                    SetEntityProofs(veh, true, true, true, true, true, true, true, true)
+                    SetVehicleTyresCanBurst(veh, false)
+                    SetVehicleWheelsCanBreak(veh, false)
+                end
+            end
+        end
+    end)
 
 
 
-if GetResourceState("WaveShield") == 'started' then
-        MachoMenuNotification("Success", "WaveShield Anticheat Found.", 5000)
-elseif GetResourceState("ReaperV4") == 'started' then
-        MachoMenuNotification("Success", "ReaperV4 Anticheat Found.", 5000)
-    elseif GetResourceState("ElectronAC") == 'started' then
-        MachoMenuNotification("Success", "ElectronAC Anticheat Found.", 5000)
-    elseif GetResourceState("FiniAC") == 'started' then
-        MachoMenuNotification("Success", "FiniAC Anticheat Found.", 5000)
-    end
+    if GetResourceState("WaveShield") == 'started' then
+            MachoMenuNotification("Success", "WaveShield Anticheat Found.", 5000)
+    elseif GetResourceState("ReaperV4") == 'started' then
+            MachoMenuNotification("Success", "ReaperV4 Anticheat Found.", 5000)
+        elseif GetResourceState("ElectronAC") == 'started' then
+            MachoMenuNotification("Success", "ElectronAC Anticheat Found.", 5000)
+        elseif GetResourceState("FiniAC") == 'started' then
+            MachoMenuNotification("Success", "FiniAC Anticheat Found.", 5000)
+        end
