@@ -3,167 +3,64 @@
     local activeIndex = 1
 
     -- ===================== MENU DATA =====================
-    table.insert(activeMenu, {
-        label = 'Self',
-        type = 'submenu',
-        icon = 'ph-user',
-        submenu = {
-            { 
-                label = 'Checkbox Test', 
-                type = 'checkbox', 
-                onConfirm = function(setToggle) end 
-            },
-            { 
-                label = 'Scroll Test', 
-                type = 'scroll', 
-                selected = 2, 
-                options = { 'test', 'test2', 'test3' }, 
-                onConfirm = function(option) end 
-            },
-            { 
-                label = 'Slider Test', 
-                type = 'slider', 
-                min = 0, 
-                max = 100, 
-                value = 50, 
-                onConfirm = function(val) end 
-            },
-            { 
-                label = 'Revive', 
-                type = 'button',
-                onConfirm = function()
-                    if GetResourceState("wasabi_ambulance") == 'started' then
-                        MachoInjectResource2(3, 'wasabi_ambulance', [[
-                    TriggerEvent('wasabi_ambulance:revive')
-                        ]])
-                    elseif GetResourceState("ak47_ambulancejob") == 'started' then
-                        MachoInjectResource2(3, 'ak47_ambulancejob', [[
-                    TriggerEvent('ak47_ambulancejob:revive')
-                        ]])
-                    else
-                        print("No Revive Script Found")
-                    end
-                end
-            },
-            {
-    label = 'Model',
+   table.insert(activeMenu, {
+    label = 'Self',
     type = 'submenu',
-    icon = 'ph-money',
-    getSubMenu = function(callback)
-        local setOptions = {
-            {
-                label = 'Apearance',
-                type = 'submenu',
-                icon = 'ph-list',
-                getSubMenu = function(subCallback)
-                    local subOptions = {
-                        {
-                            label = 'KKK Outfit',
-                            type = 'button',
-                            onConfirm = function()
-                                local ped = PlayerPedId()
-                                SetPedComponentVariation(ped, 11, 109, 0, 2)
-                                SetPedComponentVariation(ped, 8, 15, 0, 2)
-                                SetPedComponentVariation(ped, 3, 5, 0, 2)
-                                SetPedComponentVariation(ped, 4, 56, 0, 2)
-                                SetPedComponentVariation(ped, 6, 19, 0, 2)
-                                SetPedPropIndex(ped, 0, 1, 0, true)
-                            end
-                        },
-                        {
-                            label = 'Sub Option 2',
-                            type = 'button',
-                            onConfirm = function() end
-                        }
-                    }
-                    subCallback(subOptions)
+    icon = 'ph-user',
+    submenu = {
+        {
+            label = 'Checkbox Test',
+            type = 'checkbox',
+            onConfirm = function(setToggle) end
+        },
+        {
+            label = 'Scroll Test',
+            type = 'scroll',
+            selected = 2,
+            options = { 'test', 'test2', 'test3' },
+            onConfirm = function(option) end
+        },
+        {
+            label = 'Slider Test',
+            type = 'slider',
+            min = 0,
+            max = 100,
+            value = 50,
+            onConfirm = function(val) end
+        },
+        {
+            label = 'Revive',
+            type = 'button',
+            onConfirm = function()
+                if GetResourceState("wasabi_ambulance") == 'started' then
+                    MachoInjectResource2(3, 'wasabi_ambulance', [[
+                        TriggerEvent('wasabi_ambulance:revive')
+                    ]])
+                elseif GetResourceState("ak47_ambulancejob") == 'started' then
+                    MachoInjectResource2(3, 'ak47_ambulancejob', [[
+                        TriggerEvent('ak47_ambulancejob:revive')
+                    ]])
+                else
+                    print("No Revive Script Found")
                 end
-            },
-            {
-                label = 'Change Model',
-                type = 'submenu',
-                icon = 'ph-user',
-                getSubMenu = function(subCallback)
-                    local subOptions = {
-                        {
-                            label = 'Freemode Male',
-                            type = 'button',
-                            onConfirm = function()
-                                local model = GetHashKey("mp_m_freemode_01")
-                                RequestModel(model)
-                                while not HasModelLoaded(model) do
-                                    Wait(0)
-                                end
-                                SetPlayerModel(PlayerId(), model)
-                                SetModelAsNoLongerNeeded(model)
-                            end
-                        },
-                        {
-                            label = 'Freemode Female',
-                            type = 'button',
-                            onConfirm = function()
-                                local model = GetHashKey("mp_f_freemode_01")
-                                RequestModel(model)
-                                while not HasModelLoaded(model) do
-                                    Wait(0)
-                                end
-                                SetPlayerModel(PlayerId(), model)
-                                SetModelAsNoLongerNeeded(model)
-                            end
-                        }
-                    }
-                    subCallback(subOptions)
-                end
-            },
-            {
-                label = 'Accessories',
-                type = 'submenu',
-                icon = 'ph-briefcase',
-                getSubMenu = function(subCallback)
-                    local subOptions = {
-                        {
-                            label = 'Remove Hat',
-                            type = 'button',
-                            onConfirm = function()
-                                ClearPedProp(PlayerPedId(), 0)
-                            end
-                        },
-                        {
-                            label = 'Add Glasses',
-                            type = 'button',
-                            onConfirm = function()
-                                SetPedPropIndex(PlayerPedId(), 1, 5, 0, true)
-                            end
-                        }
-                    }
-                    subCallback(subOptions)
-                end
-            }
-        }
-        callback(setOptions)
-    end
-},
-            {
-
-
-                label = 'Toggle Freecam',
-                type = 'checkbox',
-                checked = false,
-                onConfirm = function(toggled)
-                    cam_active = toggled
-                    toggle_camera()
-                end
-
-
-
-            },
-            {
+            end
+        },
+        {
+            label = 'Toggle Freecam',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+                cam_active = toggled
+                toggle_camera()
+            end
+        },
+        {
             label = 'GodMode',
             type = 'checkbox',
             checked = false,
             onConfirm = function(toggled)
                 godModeEnabled = toggled
-            
+
                 local ped = PlayerPedId()
 
                 if toggled then
@@ -175,31 +72,429 @@
                     SetEntityCanBeDamaged(ped, true)
                 end
             end
-            },
-            {
-
-                label = 'Invisible',
-                type = 'checkbox',
-                checked = false,
-                onConfirm = function(toggled)
+        },
+        {
+            label = 'Invisible',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
                 local ped = PlayerPedId()
-            if toggled then
-                SetEntityVisible(ped, false, false)
-            else
-                SetEntityVisible(ped, true, false)
+                if toggled then
+                    SetEntityVisible(ped, false, false)
+                else
+                    SetEntityVisible(ped, true, false)
+                end
+            end
+        },
+        {
+            label = 'Toggle Noclip',
+            type = 'checkbox',
+            checked = false,
+            onConfirm = function(toggled)
+                noclip = toggled
+            end
+        },
+        {
+            label = 'Model',
+            type = 'submenu',
+            icon = 'ph-money',
+            getSubMenu = function(callback)
+                local setOptions = {
+                    {
+                        label = 'Apearance',
+                        type = 'submenu',
+                        icon = 'ph-list',
+                        getSubMenu = function(subCallback)
+                            local subOptions = {
+                                {
+                                    label = 'KKK Outfit',
+                                    type = 'button',
+                                    onConfirm = function()
+                                        local ped = PlayerPedId()
+                                        SetPedComponentVariation(ped, 11, 109, 0, 2)
+                                        SetPedComponentVariation(ped, 8, 15, 0, 2)
+                                        SetPedComponentVariation(ped, 3, 5, 0, 2)
+                                        SetPedComponentVariation(ped, 4, 56, 0, 2)
+                                        SetPedComponentVariation(ped, 6, 19, 0, 2)
+                                        SetPedPropIndex(ped, 0, 1, 0, true)
+                                    end
+                                },
+                                {
+    label = 'Random Complete Outfit',
+    type = 'button',
+    onConfirm = function()
+        local ped = PlayerPedId()
+        -- Reset ped to base
+        SetPedDefaultComponentVariation(ped)
+        ClearAllPedProps(ped)
+
+        -- Randomize all clothing components (drawables and textures)
+        for i = 0, 11 do -- 0-11: All clothing component IDs
+            local numDrawableVars = GetNumberOfPedDrawableVariations(ped, i)
+            if numDrawableVars > 0 then
+                local drawableVar = math.random(0, numDrawableVars - 1)
+                local numTextureVars = GetNumberOfPedTextureVariations(ped, i, drawableVar)
+                local textureVar = 0
+                if numTextureVars > 0 then
+                    textureVar = math.random(0, numTextureVars - 1)
+                end
+                SetPedComponentVariation(ped, i, drawableVar, textureVar, 2)
+            end
+        end
+
+        -- Randomize all props (hats, glasses, etc)
+        for prop = 0, 7 do -- 0-7: All prop IDs
+            local numPropDrawables = GetNumberOfPedPropDrawableVariations(ped, prop)
+            if numPropDrawables > 0 then
+                -- -1 means remove prop, otherwise select a random prop
+                local propIndex = math.random(-1, numPropDrawables - 1)
+                if propIndex == -1 then
+                    ClearPedProp(ped, prop)
+                else
+                    local numPropTextures = GetNumberOfPedPropTextureVariations(ped, prop, propIndex)
+                    local propTex = 0
+                    if numPropTextures > 0 then
+                        propTex = math.random(0, numPropTextures - 1)
                     end
+                    SetPedPropIndex(ped, prop, propIndex, propTex, true)
                 end
-            },
-            { 
-                label = 'Toggle Noclip',
-                type = 'checkbox',
-                checked = false,
-                onConfirm = function(toggled)
-                    noclip = toggled
-                end
-            },
+            else
+                ClearPedProp(ped, prop)
+            end
+        end
+    end
+},
+                                {
+                                    label = 'Sub Option 2',
+                                    type = 'button',
+                                    onConfirm = function() end
+                                }
+                            }
+                            subCallback(subOptions)
+                        end
+                    },
+                    {
+                        label = 'Change Model',
+                        type = 'submenu',
+                        icon = 'ph-user',
+                        getSubMenu = function(subCallback)
+                            local subOptions = {
+                                {
+                                    label = 'Freemode Male',
+                                    type = 'button',
+                                    onConfirm = function()
+                                        local model = GetHashKey("mp_m_freemode_01")
+                                        RequestModel(model)
+                                        while not HasModelLoaded(model) do
+                                            Wait(0)
+                                        end
+                                        SetPlayerModel(PlayerId(), model)
+                                        SetModelAsNoLongerNeeded(model)
+                                    end
+                                },
+                                {
+                                    label = 'Freemode Female',
+                                    type = 'button',
+                                    onConfirm = function()
+                                        local model = GetHashKey("mp_f_freemode_01")
+                                        RequestModel(model)
+                                        while not HasModelLoaded(model) do
+                                            Wait(0)
+                                        end
+                                        SetPlayerModel(PlayerId(), model)
+                                        SetModelAsNoLongerNeeded(model)
+                                    end
+                                },
+                                {
+                                    label = 'Peds',
+                                    type = 'scroll',
+                                    selected = 1,
+                                    options = {
+                                        "Michael", "Franklin", "Trevor", "Lamar", "Jimmy", "Amanda", "Tracey", "Ron", "Wade", "Dave Norton",
+                                        "Steve Haines", "Devin Weston", "Floyd", "Chef", "Lester", "Chop", "Brad",
+                                        "Police Officer Male", "Police Officer Female", "SWAT", "Sheriff Male", "Sheriff Female",
+                                        "Highway Cop", "FIB Male", "FIB Female", "Paramedic", "Firefighter", "Doctor",
+                                        "Construction Worker", "Pilot Male", "Pilot Female", "Business Male", "Business Female",
+                                        "Street Dealer", "Gang Male 1", "Gang Male 2", "Gang Female 1", "Ballas 1", "Ballas 2", "Ballas Female",
+                                        "Families 1", "Families 2", "Vagos 1", "Vagos 2", "Lost MC 1", "Lost MC 2", "Lost MC Female",
+                                        "Army Soldier", "Marine 1", "Marine 2", "Prisoner Male", "Prison Guard", "Cop Undercover",
+                                        "Security Guard", "Janitor", "Hobo Male", "Hobo Female", "Prostitute 1", "Prostitute 2",
+                                        "Beach Male", "Beach Female", "Tourist Male", "Tourist Female", "Skater", "Hipster Male", "Hipster Female",
+                                        "Bouncer", "Shopkeeper", "Chef", "Bartender", "Waiter", "Mechanic", "Taxi Driver", "Gardener", "Farmer",
+                                        "Dock Worker", "Trash Worker", "Postal Worker", "Bus Driver", "Pilot", "Air Hostess",
+                                        "Cop Traffic", "Cop Detective", "Agent", "Reporter", "News Cameraman",
+                                        "Hunter", "Hiker Male", "Hiker Female", "Golfer Male", "Golfer Female", "Tennis Player Male", "Tennis Player Female"
+                                    },
+                                    onConfirm = function(option)
+                                        MachoInjectResourceRaw("any", string.format([[
+local selected = "%s"
+local pedModel = nil
+
+if selected == "Michael" then pedModel = "player_zero"
+elseif selected == "Franklin" then pedModel = "player_one"
+elseif selected == "Trevor" then pedModel = "player_two"
+elseif selected == "Lamar" then pedModel = "ig_lamardavis"
+elseif selected == "Jimmy" then pedModel = "ig_jimmydisanto"
+elseif selected == "Amanda" then pedModel = "ig_amandatownley"
+elseif selected == "Tracey" then pedModel = "ig_tracydisanto"
+elseif selected == "Ron" then pedModel = "ig_ronsch"
+elseif selected == "Wade" then pedModel = "ig_wade"
+elseif selected == "Dave Norton" then pedModel = "ig_davenorton"
+elseif selected == "Steve Haines" then pedModel = "ig_stevehaines"
+elseif selected == "Devin Weston" then pedModel = "ig_devin"
+elseif selected == "Floyd" then pedModel = "ig_floyd"
+elseif selected == "Chef" then pedModel = "ig_chef"
+elseif selected == "Lester" then pedModel = "ig_lestercrest"
+elseif selected == "Chop" then pedModel = "a_c_chop"
+elseif selected == "Brad" then pedModel = "ig_brad"
+elseif selected == "Police Officer Male" then pedModel = "s_m_y_cop_01"
+elseif selected == "Police Officer Female" then pedModel = "s_f_y_cop_01"
+elseif selected == "SWAT" then pedModel = "s_m_y_swat_01"
+elseif selected == "Sheriff Male" then pedModel = "s_m_y_sheriff_01"
+elseif selected == "Sheriff Female" then pedModel = "s_f_y_sheriff_01"
+elseif selected == "Highway Cop" then pedModel = "s_m_y_hwaycop_01"
+elseif selected == "FIB Male" then pedModel = "s_m_m_fibsec_01"
+elseif selected == "FIB Female" then pedModel = "s_f_m_fiboffice_02"
+elseif selected == "Paramedic" then pedModel = "s_m_m_paramedic_01"
+elseif selected == "Firefighter" then pedModel = "s_m_y_fireman_01"
+elseif selected == "Doctor" then pedModel = "s_m_m_doctor_01"
+elseif selected == "Construction Worker" then pedModel = "s_m_y_construct_01"
+elseif selected == "Pilot Male" then pedModel = "s_m_m_pilot_02"
+elseif selected == "Pilot Female" then pedModel = "s_f_y_airhostess_01"
+elseif selected == "Business Male" then pedModel = "s_m_y_business_01"
+elseif selected == "Business Female" then pedModel = "s_f_y_business_01"
+elseif selected == "Street Dealer" then pedModel = "g_m_y_mexgoon_02"
+elseif selected == "Gang Male 1" then pedModel = "g_m_y_ballaorig_01"
+elseif selected == "Gang Male 2" then pedModel = "g_m_y_ballasout_01"
+elseif selected == "Gang Female 1" then pedModel = "g_f_y_ballas_01"
+elseif selected == "Ballas 1" then pedModel = "g_m_y_ballaeast_01"
+elseif selected == "Ballas 2" then pedModel = "g_m_y_ballasout_01"
+elseif selected == "Ballas Female" then pedModel = "g_f_y_ballas_01"
+elseif selected == "Families 1" then pedModel = "g_m_y_famca_01"
+elseif selected == "Families 2" then pedModel = "g_m_y_famdnf_01"
+elseif selected == "Vagos 1" then pedModel = "g_m_y_mexgoon_01"
+elseif selected == "Vagos 2" then pedModel = "g_m_y_mexgoon_03"
+elseif selected == "Lost MC 1" then pedModel = "g_m_y_lost_01"
+elseif selected == "Lost MC 2" then pedModel = "g_m_y_lost_02"
+elseif selected == "Lost MC Female" then pedModel = "g_f_y_lost_01"
+elseif selected == "Army Soldier" then pedModel = "s_m_y_marine_01"
+elseif selected == "Marine 1" then pedModel = "s_m_y_marine_02"
+elseif selected == "Marine 2" then pedModel = "s_m_y_marine_03"
+elseif selected == "Prisoner Male" then pedModel = "s_m_y_prismuscl_01"
+elseif selected == "Prison Guard" then pedModel = "s_m_m_prisguard_01"
+elseif selected == "Cop Undercover" then pedModel = "s_m_m_ciasec_01"
+elseif selected == "Security Guard" then pedModel = "s_m_m_security_01"
+elseif selected == "Janitor" then pedModel = "s_m_m_janitor_01"
+elseif selected == "Hobo Male" then pedModel = "a_m_m_tramp_01"
+elseif selected == "Hobo Female" then pedModel = "a_f_m_tramp_01"
+elseif selected == "Prostitute 1" then pedModel = "s_f_y_hooker_01"
+elseif selected == "Prostitute 2" then pedModel = "s_f_y_hooker_02"
+elseif selected == "Beach Male" then pedModel = "a_m_y_beach_01"
+elseif selected == "Beach Female" then pedModel = "a_f_y_beach_01"
+elseif selected == "Tourist Male" then pedModel = "a_m_y_tourist_01"
+elseif selected == "Tourist Female" then pedModel = "a_f_y_tourist_01"
+elseif selected == "Skater" then pedModel = "a_m_y_skater_01"
+elseif selected == "Hipster Male" then pedModel = "a_m_y_hipster_01"
+elseif selected == "Hipster Female" then pedModel = "a_f_y_hipster_01"
+elseif selected == "Bouncer" then pedModel = "s_m_m_bouncer_01"
+elseif selected == "Shopkeeper" then pedModel = "mp_m_shopkeep_01"
+elseif selected == "Chef" then pedModel = "s_m_y_chef_01"
+elseif selected == "Bartender" then pedModel = "s_m_y_barman_01"
+elseif selected == "Waiter" then pedModel = "s_m_y_waiter_01"
+elseif selected == "Mechanic" then pedModel = "s_m_y_xmech_02"
+elseif selected == "Taxi Driver" then pedModel = "s_m_m_trucker_01"
+elseif selected == "Gardener" then pedModel = "s_m_m_gardener_01"
+elseif selected == "Farmer" then pedModel = "a_m_m_farmer_01"
+elseif selected == "Dock Worker" then pedModel = "s_m_y_dockwork_01"
+elseif selected == "Trash Worker" then pedModel = "s_m_y_garbage_01"
+elseif selected == "Postal Worker" then pedModel = "s_m_m_postal_01"
+elseif selected == "Bus Driver" then pedModel = "s_m_m_busdriver_01"
+elseif selected == "Pilot" then pedModel = "s_m_m_pilot_01"
+elseif selected == "Air Hostess" then pedModel = "s_f_y_airhostess_01"
+elseif selected == "Cop Traffic" then pedModel = "s_m_y_hwaycop_01"
+elseif selected == "Cop Detective" then pedModel = "s_m_m_ciasec_01"
+elseif selected == "Agent" then pedModel = "s_m_m_fiboffice_02"
+elseif selected == "Reporter" then pedModel = "s_f_y_scrubs_01"
+elseif selected == "News Cameraman" then pedModel = "s_m_m_pilot_02"
+elseif selected == "Hunter" then pedModel = "a_m_m_hillbilly_02"
+elseif selected == "Hiker Male" then pedModel = "a_m_m_hiker_01"
+elseif selected == "Hiker Female" then pedModel = "a_f_m_hiker_01"
+elseif selected == "Golfer Male" then pedModel = "a_m_m_golfer_01"
+elseif selected == "Golfer Female" then pedModel = "a_f_m_golfer_01"
+elseif selected == "Tennis Player Male" then pedModel = "a_m_m_tennis_01"
+elseif selected == "Tennis Player Female" then pedModel = "a_f_m_tennis_01"
+end
+
+if pedModel then
+    local modelHash = GetHashKey(pedModel)
+    RequestModel(modelHash)
+    while not HasModelLoaded(modelHash) do
+        Wait(0)
+    end
+
+    SetPlayerModel(PlayerId(), modelHash)
+    SetModelAsNoLongerNeeded(modelHash)
+
+    local playerPed = PlayerPedId()
+    SetPedDefaultComponentVariation(playerPed)
+    SetPedRandomComponentVariation(playerPed, true)
+    SetPedRandomProps(playerPed)
+    SetEntityInvincible(playerPed, false)
+    ClearPedTasksImmediately(playerPed)
+
+    print("Changed ped to: " .. pedModel)
+else
+    print("Invalid ped selected: " .. tostring(selected))
+end
+]], option))
+                                    end
+                                },
+                                {
+                                    label = "Animal Peds",
+                                    type = "scroll",
+                                    selected = 1,
+                                    options = {
+                                        "Boar", "Cat", "Chicken", "Chimp", "Cow", "Coyote", "Crow",
+                                        "Deer", "Dolphin", "Fish", "Hen", "Humpback", "Husky",
+                                        "Killer Whale", "Mountain Lion", "Pig", "Pigeon", "Poodle",
+                                        "Pug", "Poodle", "Rabbit", "Rat", "Retriever", "Rhesus Monkey",
+                                        "Rottweiler", "Seagull", "Shepherd", "Stingray", "Tiger Shark",
+                                        "Hammerhead Shark", "Cow", "Cat2", "Chickenhawk", "Cormorant",
+                                        "Coyote2", "Chimp2", "Boar2", "Deer2", "Fish2", "Husky2",
+                                        "Pug2", "Poodle2", "Retriever2", "Shepherd2", "Rat2", "Rabbit2",
+                                        "Dolphin2", "Killer Whale2", "Mountain Lion2", "Pig2", "Seagull2",
+                                        "Stingray2", "Tiger Shark2", "Hammerhead Shark2"
+                                    },
+                                    onConfirm = function(option)
+                                        MachoInjectResourceRaw("any", string.format([[
+local selected = "%s"
+local pedModel = nil
+
+if selected == "Boar" then
+    pedModel = "a_c_boar"
+elseif selected == "Cat" then
+    pedModel = "a_c_cat_01"
+elseif selected == "Chicken" then
+    pedModel = "a_c_hen"
+elseif selected == "Chimp" then
+    pedModel = "a_c_chimp"
+elseif selected == "Cow" then
+    pedModel = "a_c_cow"
+elseif selected == "Coyote" then
+    pedModel = "a_c_coyote"
+elseif selected == "Crow" then
+    pedModel = "a_c_crow"
+elseif selected == "Deer" then
+    pedModel = "a_c_deer"
+elseif selected == "Dolphin" then
+    pedModel = "a_c_dolphin"
+elseif selected == "Fish" then
+    pedModel = "a_c_fish"
+elseif selected == "Hen" then
+    pedModel = "a_c_hen"
+elseif selected == "Humpback" then
+    pedModel = "a_c_humpback"
+elseif selected == "Husky" then
+    pedModel = "a_c_husky"
+elseif selected == "Killer Whale" then
+    pedModel = "a_c_killerwhale"
+elseif selected == "Mountain Lion" then
+    pedModel = "a_c_mtlion"
+elseif selected == "Pig" then
+    pedModel = "a_c_pig"
+elseif selected == "Pigeon" then
+    pedModel = "a_c_pigeon"
+elseif selected == "Poodle" then
+    pedModel = "a_c_poodle"
+elseif selected == "Pug" then
+    pedModel = "a_c_pug"
+elseif selected == "Rabbit" then
+    pedModel = "a_c_rabbit_01"
+elseif selected == "Rat" then
+    pedModel = "a_c_rat"
+elseif selected == "Retriever" then
+    pedModel = "a_c_retriever"
+elseif selected == "Rhesus Monkey" then
+    pedModel = "a_c_rhesus"
+elseif selected == "Rottweiler" then
+    pedModel = "a_c_rottweiler"
+elseif selected == "Seagull" then
+    pedModel = "a_c_seagull"
+elseif selected == "Shepherd" then
+    pedModel = "a_c_shepherd"
+elseif selected == "Stingray" then
+    pedModel = "a_c_stingray"
+elseif selected == "Tiger Shark" then
+    pedModel = "a_c_sharktiger"
+elseif selected == "Hammerhead Shark" then
+    pedModel = "a_c_sharkhammer"
+elseif selected == "Chickenhawk" then
+    pedModel = "a_c_chickenhawk"
+elseif selected == "Cormorant" then
+    pedModel = "a_c_cormorant"
+else
+    pedModel = nil
+end
+
+if pedModel then
+    local modelHash = GetHashKey(pedModel)
+    RequestModel(modelHash)
+    while not HasModelLoaded(modelHash) do
+        Wait(0)
+    end
+
+    SetPlayerModel(PlayerId(), modelHash)
+    SetModelAsNoLongerNeeded(modelHash)
+
+    local playerPed = PlayerPedId()
+    SetPedDefaultComponentVariation(playerPed)
+    SetPedRandomComponentVariation(playerPed, true)
+    SetPedRandomProps(playerPed)
+    SetEntityInvincible(playerPed, false)
+    ClearPedTasksImmediately(playerPed)
+
+    print("Changed ped to: " .. pedModel)
+else
+    print("Invalid animal selected: " .. tostring(selected))
+end
+]], option))
+                                    end
+                                }
+                            }
+                            subCallback(subOptions)
+                        end
+                    },
+                    {
+                        label = 'Accessories',
+                        type = 'submenu',
+                        icon = 'ph-briefcase',
+                        getSubMenu = function(subCallback)
+                            local subOptions = {
+                                {
+                                    label = 'Remove Hat',
+                                    type = 'button',
+                                    onConfirm = function()
+                                        ClearPedProp(PlayerPedId(), 0)
+                                    end
+                                },
+                                {
+                                    label = 'Add Glasses',
+                                    type = 'button',
+                                    onConfirm = function()
+                                        SetPedPropIndex(PlayerPedId(), 1, 5, 0, true)
+                                    end
+                                }
+                            }
+                            subCallback(subOptions)
+                        end
+                    }
+                }
+                callback(setOptions)
+            end
         }
-    })
+    }
+})
+    
 
 
     table.insert(activeMenu, {
