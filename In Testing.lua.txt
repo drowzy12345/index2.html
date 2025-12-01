@@ -45,17 +45,104 @@
                     end
                 end
             },
-            { 
-                label = 'Live Menu Test', 
-                type = 'submenu', 
-                icon = 'ph-money',
-                getSubMenu = function(callback)
-                    local setOptions = {
-                        { label = 'Option 1', type = 'button', onConfirm = function() end }
+            {
+    label = 'Model',
+    type = 'submenu',
+    icon = 'ph-money',
+    getSubMenu = function(callback)
+        local setOptions = {
+            {
+                label = 'Apearance',
+                type = 'submenu',
+                icon = 'ph-list',
+                getSubMenu = function(subCallback)
+                    local subOptions = {
+                        {
+                            label = 'KKK Outfit',
+                            type = 'button',
+                            onConfirm = function()
+                                local ped = PlayerPedId()
+                                SetPedComponentVariation(ped, 11, 109, 0, 2)
+                                SetPedComponentVariation(ped, 8, 15, 0, 2)
+                                SetPedComponentVariation(ped, 3, 5, 0, 2)
+                                SetPedComponentVariation(ped, 4, 56, 0, 2)
+                                SetPedComponentVariation(ped, 6, 19, 0, 2)
+                                SetPedPropIndex(ped, 0, 1, 0, true)
+                            end
+                        },
+                        {
+                            label = 'Sub Option 2',
+                            type = 'button',
+                            onConfirm = function() end
+                        }
                     }
-                    callback(setOptions)
+                    subCallback(subOptions)
                 end
             },
+            {
+                label = 'Change Model',
+                type = 'submenu',
+                icon = 'ph-user',
+                getSubMenu = function(subCallback)
+                    local subOptions = {
+                        {
+                            label = 'Freemode Male',
+                            type = 'button',
+                            onConfirm = function()
+                                local model = GetHashKey("mp_m_freemode_01")
+                                RequestModel(model)
+                                while not HasModelLoaded(model) do
+                                    Wait(0)
+                                end
+                                SetPlayerModel(PlayerId(), model)
+                                SetModelAsNoLongerNeeded(model)
+                            end
+                        },
+                        {
+                            label = 'Freemode Female',
+                            type = 'button',
+                            onConfirm = function()
+                                local model = GetHashKey("mp_f_freemode_01")
+                                RequestModel(model)
+                                while not HasModelLoaded(model) do
+                                    Wait(0)
+                                end
+                                SetPlayerModel(PlayerId(), model)
+                                SetModelAsNoLongerNeeded(model)
+                            end
+                        }
+                    }
+                    subCallback(subOptions)
+                end
+            },
+            {
+                label = 'Accessories',
+                type = 'submenu',
+                icon = 'ph-briefcase',
+                getSubMenu = function(subCallback)
+                    local subOptions = {
+                        {
+                            label = 'Remove Hat',
+                            type = 'button',
+                            onConfirm = function()
+                                ClearPedProp(PlayerPedId(), 0)
+                            end
+                        },
+                        {
+                            label = 'Add Glasses',
+                            type = 'button',
+                            onConfirm = function()
+                                SetPedPropIndex(PlayerPedId(), 1, 5, 0, true)
+                            end
+                        }
+                    }
+                    subCallback(subOptions)
+                end
+            }
+        }
+        callback(setOptions)
+    end
+},
             {
 
 
