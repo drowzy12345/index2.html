@@ -124,15 +124,15 @@
                     subCallback(subOptions)
                 end
             },
-                        {
-                            label = 'Sub Option 2',
-                            type = 'button',
-                            onConfirm = function() end
-                        }
-                    }
-                    subCallback(subOptions)
-                end
-            },
+            {
+                label = 'Sub Option 2',
+                type = 'button',
+                onConfirm = function() end
+            }
+        }
+        callback(setOptions)
+    end
+},
                 {
                     label = 'Change Model',
                     type = 'submenu',
