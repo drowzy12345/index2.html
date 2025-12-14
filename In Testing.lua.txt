@@ -325,7 +325,7 @@ table.insert(activeMenu, {
                             else
                                 for _, ply in ipairs(players) do
                                     table.insert(menu, {
-                                        label = ply.label,
+                                        label = string.format('%s [ id %s ]', ply.label, tostring(ply.id)),
                                         type = 'checkbox',
                                         checked = (SelectedPlayerId == ply.id),
                                         onConfirm = function(state)
