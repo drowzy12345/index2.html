@@ -1,6 +1,34 @@
-        local dui
+          local dui
         local activeMenu = {}
         local activeIndex = 1
+
+
+
+        -- ===================== ONLINE PLAYERS (GLOBAL) =====================
+
+-- ===================== ONLINE PLAYERS =====================
+
+function GetOnlinePlayers()
+    local players = {}
+
+    if GetActivePlayers == nil then
+        return players
+    end
+
+    for _, player in ipairs(GetActivePlayers()) do
+        local name = GetPlayerName(player)
+        if name then
+            table.insert(players, {
+                label = name,
+                id = player
+            })
+        end
+    end
+
+    return players
+end
+
+
 
         -- ===================== MENU DATA =====================
         table.insert(activeMenu, {
@@ -265,20 +293,155 @@
         })
 
 
-        table.insert(activeMenu, {
-            label = 'Server',
+table.insert(activeMenu, {
+    label = 'Server',
+    type = 'submenu',
+    icon = 'ph-server',
+    submenu = {
+
+        {
+            label = 'Players',
             type = 'submenu',
-            icon = 'ph-server',
+            icon = 'ph-users',
             submenu = {
-                { 
-                    label = 'Button Test',
-                    type = 'button',
-                    onConfirm = function()
-                        
+
+                -- ================= ONLINE PLAYERS =================
+                {
+                    label = 'Online Players',
+                    type = 'submenu',
+                    icon = 'ph-list',
+                    getSubMenu = function(callback)
+                        local menu = {}
+
+                        if GetOnlinePlayers and type(GetOnlinePlayers) == "function" then
+                            local players = GetOnlinePlayers()
+
+                            if #players == 0 then
+                                table.insert(menu, {
+                                    label = '(no players)',
+                                    type = 'button',
+                                    onConfirm = function() end
+                                })
+                            else
+                                for _, ply in ipairs(players) do
+                                    table.insert(menu, {
+                                        label = ply.label,
+                                        type = 'checkbox',
+                                        checked = (SelectedPlayerId == ply.id),
+                                        onConfirm = function(state)
+                                            if state then
+                                                SelectedPlayerId = ply.id
+                                                print("Selected player:", ply.label, ply.id)
+                                            elseif SelectedPlayerId == ply.id then
+                                                SelectedPlayerId = nil
+                                            end
+                                        end
+                                    })
+                                end
+                            end
+                        end
+
+                        callback(menu)
                     end
+                },
+
+                -- ================= TROLL OPTIONS =================
+                {
+                    label = 'Troll Options',
+                    type = 'submenu',
+                    icon = 'ph-skull',
+                    submenu = {
+
+                        {
+                            label = 'Teleport To Player',
+                            type = 'button',
+                            onConfirm = function()
+                                if SelectedPlayerId then
+                                    local targetPed = GetPlayerPed(SelectedPlayerId)
+                                    if targetPed and DoesEntityExist(targetPed) then
+                                        local coords = GetEntityCoords(targetPed)
+                                        -- Assuming you want to teleport the local player/ped
+                                        local playerPed = PlayerPedId and PlayerPedId() or GetPlayerPed(-1)
+                                        if playerPed and DoesEntityExist(playerPed) then
+                                            SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
+                                            print("Teleported to", coords.x, coords.y, coords.z)
+                                        else
+                                            print("Failed to get local player ped")
+                                        end
+                                    else
+                                        print("Target player doesn't exist")
+                                    end
+                                else
+                                    print("No player selected")
+                                end
+                            end
+                        },
+
+                        {
+                            label = 'Spectate Player',
+                            type = 'checkbox',
+                            checked = function()
+                                return IsSpectatingPlayer == true
+                            end,
+                            onConfirm = function(state)
+                                if state then
+                                    if SelectedPlayerId then
+                                        local targetPed = GetPlayerPed(SelectedPlayerId)
+                                        if targetPed and DoesEntityExist(targetPed) then
+                                            NetworkSetInSpectatorMode(true, targetPed)
+                                            IsSpectatingPlayer = true
+                                            print("Started spectating player", SelectedPlayerId)
+                                        else
+                                            print("Target player doesn't exist")
+                                        end
+                                    else
+                                        print("No player selected")
+                                    end
+                                else
+                                    NetworkSetInSpectatorMode(false, 0)
+                                    IsSpectatingPlayer = false
+                                    print("Stopped spectating")
+                                end
+                            end
+                        },
+
+                        {
+                            label = 'Explode Player',
+                            type = 'button',
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
+
+                                local ped = GetPlayerPed(SelectedPlayerId)
+                                if DoesEntityExist(ped) then
+                                    local coords = GetEntityCoords(ped)
+                                    AddExplosion(coords.x, coords.y, coords.z, 4, 1.0, true, false, 1.0)
+                                end
+                            end
+                        },
+
+                        {
+                            label = 'Set Player On Fire',
+                            type = 'button',
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
+
+                                local ped = GetPlayerPed(SelectedPlayerId)
+                                if DoesEntityExist(ped) then
+                                    StartEntityFire(ped)
+                                end
+                            end
+                        }
+
+                    }
                 }
             }
-        })
+        }
+
+    }
+})
+
+
+
 
         table.insert(activeMenu, {
             label = 'Weapon',
