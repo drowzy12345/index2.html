@@ -190,16 +190,9 @@
 (function(){
 let current=0, showing=true, activeTabs=["Main Menu"], currentTab=0;
 let banner=document.getElementById('bannerImg').src;
-// Menu with textbox as an option type like checkbox, button, slider, scroll
-let activeMenu=[
-  {label:'Start Game',type:'button'},
-  {label:'Enable Cheats',type:'checkbox',checked:false},
-  {label:'Difficulty',type:'scroll',options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}],selected:1},
-  {label:'Volume',type:'slider',min:0,max:100,step:1,value:75},
-  {label:'Player Name',type:'textbox',value:''},
-  {label:'Settings',type:'submenu'},
-  {label:'Separator',type:'divider'}
-];
+// Menu structure is typically set via Lua NUI message
+let activeMenu=[];
+
 const wrapper=document.getElementById('wrapper');
 const listWrap=document.getElementById('list-wrap');
 const listEl=document.getElementById('list');
@@ -211,6 +204,7 @@ const thumb=document.getElementById('thumb');
 let itemEls=[], trackTop=0, trackHeight=0, thumbTop=0, thumbHeight=24;
 let hasOverflow=false;
 const MIN_THUMB=18, NO_OVERFLOW_THUMB_MAX=28;
+
 function selectableMenu(){ return activeMenu.filter(o=>o?.type!=='divider'); }
 function selectableIndices(){ return activeMenu.map((o,i)=>o?.type!=='divider'?i:-1).filter(i=>i!==-1); }
 function counterCurrent(){
@@ -255,7 +249,7 @@ function createItem(option,i){
     input.spellcheck = false;
     input.addEventListener('input', e => {
       option.value = input.value;
-      sendToHost({action:'changed', index:i, option});
+      sendToLuaHost({action:'changed', index:i, option});
     });
     input.addEventListener('keydown', e => { e.stopPropagation(); });
     el.addEventListener('click',()=>{ input.focus(); });
@@ -271,17 +265,62 @@ function createItem(option,i){
   } else {
     const left=document.createElement('span'); left.style.flexGrow='1'; left.style.textAlign='left'; left.style.fontSize='1.2vh'; left.textContent=option.label||''; el.appendChild(left);
     if(option.type==='submenu'){ const icon=document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh'; el.appendChild(icon);}
-    else if(option.type==='checkbox'){ const t=document.createElement('div'); t.className='toggle'+(option.checked?' on':''); t.addEventListener('click',(e)=>{e.stopPropagation(); option.checked=!option.checked; t.classList.toggle('on',!!option.checked); sendToHost({action:'changed', index:i, option});}); el.appendChild(t);}
-    else if(option.type==='slider'){ const r=document.createElement('input'); r.type='range'; r.className='range'; r.min=option.min??0; r.max=option.max??100; r.step=option.step??1; r.value=option.value??r.min; r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%'); r.addEventListener('input',()=>{option.value=Number(r.value); r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%');}); r.addEventListener('change',()=>{sendToHost({action:'changed', index:i, option});}); el.appendChild(r);}
-    else if(option.type==='scroll'){ const wrap=document.createElement('div'); wrap.className='scroll-label'; const l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; const c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; const r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; l.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.max(0,(option.selected||0)-1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); r.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);}
-    else { const spacer=document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer); }
+    else if(option.type==='checkbox'){ 
+      const t=document.createElement('div'); 
+      t.className='toggle'+(option.checked?' on':''); 
+      t.addEventListener('click',(e)=>{
+        e.stopPropagation(); 
+        option.checked=!option.checked; 
+        t.classList.toggle('on',!!option.checked); 
+        sendToLuaHost({action:'changed', index:i, option});
+      }); 
+      el.appendChild(t);
+    }
+    else if(option.type==='slider'){ 
+      const r=document.createElement('input'); 
+      r.type='range'; 
+      r.className='range'; 
+      r.min=option.min??0; r.max=option.max??100; r.step=option.step??1; r.value=option.value??r.min; 
+      r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%'); 
+      r.addEventListener('input',()=>{
+        option.value=Number(r.value); 
+        r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%');
+      }); 
+      r.addEventListener('change',()=>{sendToLuaHost({action:'changed', index:i, option});}); 
+      el.appendChild(r);
+    }
+    else if(option.type==='scroll'){ 
+      const wrap=document.createElement('div'); 
+      wrap.className='scroll-label'; 
+      const l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; 
+      const c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; 
+      const r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; 
+      l.addEventListener('click',(e)=>{
+        e.stopPropagation(); 
+        option.selected=Math.max(0,(option.selected||0)-1); 
+        renderMenu(); scheduleMeasure(); 
+        sendToLuaHost({action:'changed', index:i, option});
+      }); 
+      r.addEventListener('click',(e)=>{
+        e.stopPropagation(); 
+        option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); 
+        renderMenu(); scheduleMeasure(); 
+        sendToLuaHost({action:'changed', index:i, option});
+      }); 
+      wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);
+    }
+    else { 
+      const spacer=document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer); 
+    }
   }
   el.addEventListener('click',()=>{ 
     current=i; 
     renderMenu(); 
     centerOnSelected(i); 
     scheduleMeasure(); 
-    if(option.type==='button'||option.type==='submenu'){sendToHost({action:'activate', index:i, option});} 
+    if(option.type==='button'||option.type==='submenu'){
+      sendToLuaHost({action:'activate', index:i, option});
+    } 
   });
   return el;
 }
@@ -317,7 +356,13 @@ function syncThumb(){
     const maxScroll=Math.max(0,listEl.scrollHeight-listWrap.clientHeight);
     const ratio=maxScroll>0?Math.min(1,Math.max(0,listWrap.scrollTop/maxScroll)):0;
     thumbTop=Math.round(trackScrollable*ratio);
-  } else { const count=Math.max(1,activeMenu.length); const lastIdx=Math.max(1,count-1); const idx=Math.min(Math.max(current,0),count-1); const ratio=count>1?(idx/lastIdx):0; thumbTop=Math.round(trackScrollable*ratio);}
+  } else { 
+    const count=Math.max(1,activeMenu.length); 
+    const lastIdx=Math.max(1,count-1); 
+    const idx=Math.min(Math.max(current,0),count-1); 
+    const ratio=count>1?(idx/lastIdx):0; 
+    thumbTop=Math.round(trackScrollable*ratio);
+  }
   thumb.style.top=thumbTop+'px'; thumb.style.height=thumbHeight+'px';
 }
 function centerOnSelected(index){
@@ -337,35 +382,104 @@ function centerOnSelected(index){
 listWrap.addEventListener('scroll',()=>syncThumb());
 window.addEventListener('resize',()=>scheduleMeasure());
 const scheduleMeasure=()=>requestAnimationFrame(()=>requestAnimationFrame(measureScrollbar));
-function sendToHost(payload){try{window.postMessage(payload,'*');}catch(e){}}
-window.addEventListener('message',(ev)=>{ const data=ev.data; if(!data||typeof data!=='object') return; const action=data.action; if(!action) return;
-  if(action==='setCurrent'){ const incoming=data.current; current=(typeof incoming==='number')?Math.max(0,incoming-1):0; if(Array.isArray(data.menu)) activeMenu=data.menu; showing=data.visible!==undefined?!!data.visible:true; renderMenu(); centerOnSelected(current); scheduleMeasure();}
-  else if(action==='setTabs'){ activeTabs=Array.isArray(data.tabs)?data.tabs:[]; currentTab=0; renderTabs();}
-  else if(action==='setTabIndex'){ currentTab=(typeof data.index==='number')?data.index:0; renderTabs();}
-  else if(action==='setVisible'){ showing=!!data.visible; wrapper.style.opacity=showing?'1':'0'; if(showing) centerOnSelected(current); scheduleMeasure();}
-  else if(action==='position'){ const pos=data.position||'left'; if(pos==='left') wrapper.style.left='6.5vh'; else if(pos==='right') wrapper.style.left='calc(100% - 41vh)'; scheduleMeasure();}
-  else if(action==='banner'){ if(typeof data.banner==='string'){ banner=data.banner; bannerEl.src=banner;}}
-  else if(action==='setMenu'){ if(Array.isArray(data.menu)) activeMenu=data.menu; renderMenu(); scheduleMeasure();}
+
+// Rewrite sendToHost for Lua NUI message support.
+function sendToLuaHost(payload){
+  if(window.invokeNative) { // Cfx.re NUI
+    window.invokeNative('sendNuiMessage', JSON.stringify(payload));
+  } else if(window.postMessage && window.GetParentResourceName) {
+    // Cfx.re (legacy)
+    window.postMessage(payload, '*');
+  } else if(window.parent !== window) {
+    // For direct iframe communication fallback
+    window.parent.postMessage(payload, '*');
+  } else {
+    // fallback or debug/test mode
+    window.postMessage(payload, '*');
+  }
+}
+
+
+// Listen to Lua NUI messages
+window.addEventListener('message',(ev)=>{
+  const data=ev.data;
+  if(!data||typeof data!=='object') return;
+  const action=data.action;
+  if(!action) return;
+  if(action==='setCurrent'){
+    const incoming=data.current;
+    current=(typeof incoming==='number')?Math.max(0,incoming-1):0;
+    if(Array.isArray(data.menu)) activeMenu=data.menu;
+    showing=data.visible!==undefined?!!data.visible:true;
+    renderMenu(); centerOnSelected(current); scheduleMeasure();
+  }
+  else if(action==='setTabs'){ 
+    activeTabs=Array.isArray(data.tabs)?data.tabs:[]; 
+    currentTab=0; 
+    renderTabs();
+  }
+  else if(action==='setTabIndex'){ 
+    currentTab=(typeof data.index==='number')?data.index:0; 
+    renderTabs();
+  }
+  else if(action==='setVisible'){ 
+    showing=!!data.visible; 
+    wrapper.style.opacity=showing?'1':'0'; 
+    if(showing) centerOnSelected(current); 
+    scheduleMeasure();
+  }
+  else if(action==='position'){ 
+    const pos=data.position||'left'; 
+    if(pos==='left') wrapper.style.left='6.5vh'; 
+    else if(pos==='right') wrapper.style.left='calc(100% - 41vh)'; 
+    scheduleMeasure();
+  }
+  else if(action==='banner'){ 
+    if(typeof data.banner==='string'){ 
+      banner=data.banner; 
+      bannerEl.src=banner;
+    }
+  }
+  else if(action==='setMenu'){ 
+    if(Array.isArray(data.menu)) activeMenu=data.menu; 
+    renderMenu(); 
+    scheduleMeasure();
+  }
 });
-window.addEventListener('keydown',(e)=>{ 
+
+// Listen for key events for navigation, unless an input/textbox is active
+window.addEventListener('keydown',(e)=>{
   if(!showing) return; 
   const max=activeMenu.length-1;
-  // If textbox is currently focused, do not handle navigation here.
   let isTextboxFocused = false;
   if(document.activeElement && document.activeElement.classList && (document.activeElement.classList.contains('textbox-input') || document.activeElement.classList.contains('dui-textbox'))) {
     isTextboxFocused = true;
   }
   if(!isTextboxFocused) {
-    if(e.key==='ArrowDown'){ let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
-    else if(e.key==='ArrowUp'){ let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
+    // Navigation
+    if(e.key==='ArrowDown'){ 
+      let idx=current; 
+      do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); 
+      current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
+    }
+    else if(e.key==='ArrowUp'){ 
+      let idx=current; 
+      do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); 
+      current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
+    }
     else if(e.key==='Enter'){ 
       const opt=activeMenu[current]; 
       if(opt){ 
-        if(opt.type==='button'||opt.type==='submenu'){sendToHost({action:'activate', index:current, option:opt});} 
-        else if(opt.type==='checkbox'){ opt.checked=!opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt});} 
-        else if(opt.type==='scroll'){ opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToHost({action:'changed', index:current, option:opt});}
+        if(opt.type==='button'||opt.type==='submenu'){
+          sendToLuaHost({action:'activate', index:current, option:opt});
+        } 
+        else if(opt.type==='checkbox'){ 
+          opt.checked=!opt.checked; renderMenu(); sendToLuaHost({action:'changed', index:current, option:opt});
+        } 
+        else if(opt.type==='scroll'){ 
+          opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToLuaHost({action:'changed', index:current, option:opt});
+        }
         else if(opt.type==='textbox') {
-          // Focus the textbox when pressing enter on it
           const el = itemEls[current];
           if(el) {
             const input = el.querySelector('input.textbox-input');
@@ -375,11 +489,14 @@ window.addEventListener('keydown',(e)=>{
       } 
       e.preventDefault();
     }
-    else if(e.key==='Escape'){ sendToHost({action:'escape'});}
+    else if(e.key==='Escape'){ sendToLuaHost({action:'escape'});}
   }
 });
+
+// When loaded, wait for an initial menu push from Lua (or use config for dev-mode menu preview)
 renderMenu();
 const ro=new ResizeObserver(()=>scheduleMeasure()); ro.observe(listEl); ro.observe(listWrap); ro.observe(wrapper);
+// Window-accessible API for test/dev
 window.__DUI_API__={
   setMenu(m){
     if(Array.isArray(m)){ 
@@ -396,6 +513,7 @@ window.__DUI_API__={
   }
 };
 scheduleMeasure();
+
 })();
 </script>
 </body>
