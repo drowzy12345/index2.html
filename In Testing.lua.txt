@@ -430,7 +430,94 @@ table.insert(activeMenu, {
                                     StartEntityFire(ped)
                                 end
                             end
-                        }
+                        },
+
+                        -- =========== RAM PLAYER OPTION ===========
+                        {
+    label = 'Ram Player (Sultan)',
+    type = 'button',
+    onConfirm = function()
+        if not SelectedPlayerId then return end
+
+        local targetPed = GetPlayerPed(SelectedPlayerId)
+        if not DoesEntityExist(targetPed) then return end
+
+        local targetCoords = GetEntityCoords(targetPed)
+        local heading = GetEntityHeading(targetPed)
+
+        -- ================= SPAWN BEHIND =================
+        local dist = 12.0
+        local rad = math.rad(heading)
+        local fx = math.sin(rad)
+        local fy = -math.cos(rad)
+
+        local spawnX = targetCoords.x - fx * dist
+        local spawnY = targetCoords.y - fy * dist
+        local spawnZ = targetCoords.z + 0.5
+
+        local vehHeading = (heading + 180.0) % 360.0
+
+        local model = GetHashKey("sultan")
+        RequestModel(model)
+        while not HasModelLoaded(model) do Wait(0) end
+
+        local veh = CreateVehicle(model, spawnX, spawnY, spawnZ, vehHeading, true, false)
+        if not DoesEntityExist(veh) then return end
+
+        SetEntityAsMissionEntity(veh, true, true)
+        SetVehicleOnGroundProperly(veh)
+        SetVehicleEngineOn(veh, true, true, false)
+        SetVehicleDoorsLocked(veh, 4)
+
+        -- ================= FORCE DRIVER =================
+        local pedModel = GetHashKey("a_m_m_skater_01")
+        RequestModel(pedModel)
+        while not HasModelLoaded(pedModel) do Wait(0) end
+
+        local driver = CreatePedInsideVehicle(veh, 4, pedModel, -1, true, false)
+
+        SetPedKeepTask(driver, true)
+        SetBlockingOfNonTemporaryEvents(driver, true)
+        SetDriverAbility(driver, 1.0)
+        SetDriverAggressiveness(driver, 1.0)
+
+        -- ================= DISABLE BRAKING =================
+        SetVehicleBrakeLights(veh, false)
+        SetVehicleBrake(veh, false)
+        SetVehicleHandbrake(veh, false)
+
+        -- ================= FORCE RAM =================
+        Citizen.CreateThread(function()
+            local force = 65.0
+
+            while DoesEntityExist(veh) and DoesEntityExist(targetPed) do
+                local vCoords = GetEntityCoords(veh)
+                local tCoords = GetEntityCoords(targetPed)
+
+                local dx = tCoords.x - vCoords.x
+                local dy = tCoords.y - vCoords.y
+                local dz = 0.0
+
+                local mag = math.sqrt(dx*dx + dy*dy)
+                if mag < 0.5 then break end
+
+                dx = dx / mag
+                dy = dy / mag
+
+                SetEntityVelocity(
+                    veh,
+                    dx * force,
+                    dy * force,
+                    dz
+                )
+
+                Wait(0)
+            end
+        end)
+    end
+}
+
+
 
                     }
                 }
