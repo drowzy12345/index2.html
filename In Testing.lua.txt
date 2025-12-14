@@ -331,7 +331,6 @@ table.insert(activeMenu, {
                                         onConfirm = function(state)
                                             if state then
                                                 SelectedPlayerId = ply.id
-                                                
                                             elseif SelectedPlayerId == ply.id then
                                                 SelectedPlayerId = nil
                                             end
@@ -345,13 +344,12 @@ table.insert(activeMenu, {
                     end
                 },
 
-                -- ================= TROLL OPTIONS =================
+                -- ================= PLAYER MENU =================
                 {
-                    label = 'Troll Options',
+                    label = 'Player',
                     type = 'submenu',
-                    icon = 'ph-skull',
+                    icon = 'ph-user',
                     submenu = {
-
                         {
                             label = 'Teleport To Player',
                             type = 'button',
@@ -364,20 +362,11 @@ table.insert(activeMenu, {
                                         local playerPed = PlayerPedId and PlayerPedId() or GetPlayerPed(-1)
                                         if playerPed and DoesEntityExist(playerPed) then
                                             SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
-                                            
-                                        else
-                                            
                                         end
-                                    else
-                                        
                                     end
-                                else
-                                    
                                 end
                             end
                         },
-
-                        -- =========== COPY OUTFIT OPTION ===========
                         {
                             label = 'Copy Player Outfit',
                             type = 'button',
@@ -410,7 +399,6 @@ table.insert(activeMenu, {
                                 end
                             end
                         },
-
                         {
                             label = 'Spectate Player',
                             type = 'checkbox',
@@ -424,21 +412,23 @@ table.insert(activeMenu, {
                                         if targetPed and DoesEntityExist(targetPed) then
                                             NetworkSetInSpectatorMode(true, targetPed)
                                             IsSpectatingPlayer = true
-                                            
-                                        else
-                                            
                                         end
-                                    else
-                                        
                                     end
                                 else
                                     NetworkSetInSpectatorMode(false, 0)
                                     IsSpectatingPlayer = false
-                                    
                                 end
                             end
                         },
+                    }
+                },
 
+                -- ================= TROLL MENU =================
+                {
+                    label = 'Troll',
+                    type = 'submenu',
+                    icon = 'ph-skull',
+                    submenu = {
                         {
                             label = 'Explode Player',
                             type = 'button',
@@ -452,7 +442,6 @@ table.insert(activeMenu, {
                                 end
                             end
                         },
-
                         {
                             label = 'Set Player On Fire',
                             type = 'button',
@@ -465,8 +454,7 @@ table.insert(activeMenu, {
                                 end
                             end
                         },
-
-                        -- =========== CLONE PLAYER AND ATTACK OPTION ===========
+                        -- CLONE AND ATTACK
                         {
                             label = 'Clone & Attack Player',
                             type = 'button',
@@ -514,8 +502,6 @@ table.insert(activeMenu, {
                                 TaskCombatPed(clonePed, targetPed, 0, 16)
                             end
                         },
-
-                        -- =========== RAM PLAYER OPTION ===========
                         {
                             label = 'Ram Player (Sultan)',
                             type = 'button',
@@ -598,14 +584,81 @@ table.insert(activeMenu, {
                                 SetModelAsNoLongerNeeded(model)
                             end
                         }
-
                     }
-                }
+                },
+
+                -- ================= VEHICLE MENU =================
+                {
+                    label = 'Vehicle',
+                    type = 'submenu',
+                    icon = 'ph-car',
+                    submenu = {
+                        {
+                            label = "Teleport Into Player's Vehicle",
+                            type = "button",
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
+                                local targetPed = GetPlayerPed(SelectedPlayerId)
+                                if not DoesEntityExist(targetPed) then return end
+
+                                -- Try to find the vehicle the player is in (current or last), making sure it's a valid vehicle
+                                local targetVeh = GetVehiclePedIsIn(targetPed, false)
+                                if not targetVeh or targetVeh == 0 or not DoesEntityExist(targetVeh) then
+                                    targetVeh = GetVehiclePedIsIn(targetPed, true)
+                                end
+                                if not targetVeh or targetVeh == 0 or not DoesEntityExist(targetVeh) then
+                                    -- couldn't find a vehicle
+                                    return
+                                end
+
+                                local playerPed = PlayerPedId and PlayerPedId() or GetPlayerPed(-1)
+                                if not playerPed or not DoesEntityExist(playerPed) then return end
+
+                                -- Try all seats, except those occupied
+                                local foundSeat = nil
+                                -- Seats are indexed from -1 (driver), then 0..(maxSeats-2)
+                                local maxSeats = GetVehicleMaxNumberOfPassengers(targetVeh)
+                                -- Prefer passenger seats, only use driver if all else fails
+                                -- Try all seats from 0..maxSeats-1 first, then driver (-1) last.
+                                for seat = 0, maxSeats - 1 do
+                                    if IsVehicleSeatFree(targetVeh, seat) then
+                                        foundSeat = seat
+                                        break
+                                    end
+                                end
+                                if foundSeat == nil and IsVehicleSeatFree(targetVeh, -1) then
+                                    foundSeat = -1
+                                end
+
+                                if foundSeat ~= nil then
+                                    -- Try to warp into found seat -- this should actually put you in the player's vehicle
+                                    TaskWarpPedIntoVehicle(playerPed, targetVeh, foundSeat)
+                                else
+                                    -- If couldn't warp, just teleport beside the vehicle as a fallback
+                                    local vehCoords = GetEntityCoords(targetVeh)
+                                    -- Find a position near the door (use offset, e.g., 2.0 right of vehicle)
+                                    local offX, offY, offZ = 2.0, 0.0, 0.0
+                                    local fw = GetEntityForwardVector(targetVeh)
+                                    local right = vector3(-fw.y, fw.x, 0.0)
+                                    local teleX = vehCoords.x + right.x * offX
+                                    local teleY = vehCoords.y + right.y * offX
+                                    local teleZ = vehCoords.z + offZ
+                                    SetEntityCoords(playerPed, teleX, teleY, teleZ, false, false, false, false)
+                                end
+                            end
+                        },
+                        -- Add other vehicle-related options here if needed
+                    }
+                },
             }
         }
 
     }
 })
+
+
+
+
 
 
 
