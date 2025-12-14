@@ -532,86 +532,96 @@ table.insert(activeMenu, {
     end
 },
                         {
-                            label = 'Ram Player (Sultan)',
-                            type = 'button',
-                            onConfirm = function()
-                                if not SelectedPlayerId then return end
+    label = 'Ram Player (Sultan)',
+    type = 'button',
+    onConfirm = function()
 
-                                local targetPed = GetPlayerPed(SelectedPlayerId)
-                                if not DoesEntityExist(targetPed) then return end
+        if not SelectedPlayerId then return end
 
-                                local targetCoords = GetEntityCoords(targetPed)
-                                local heading = GetEntityHeading(targetPed)
+        local targetPed = GetPlayerPed(SelectedPlayerId)
+        if not DoesEntityExist(targetPed) then return end
 
-                                -- ================= SPAWN BEHIND PLAYER =================
-                                local distance = 12.0
-                                local rad = math.rad(heading)
+        local targetCoords = GetEntityCoords(targetPed)
+        local heading = GetEntityHeading(targetPed)
 
-                                local forwardX = math.sin(rad)
-                                local forwardY = -math.cos(rad)
+        -- ===== SPAWN BEHIND PLAYER =====
+        local distance = 25.0
+        local rad = math.rad(heading)
 
-                                local spawnX = targetCoords.x - forwardX * distance
-                                local spawnY = targetCoords.y - forwardY * distance
-                                local spawnZ = targetCoords.z + 0.5
+        local forwardX = math.sin(rad)
+        local forwardY = -math.cos(rad)
 
-                                -- Face toward player
-                                local vehicleHeading = (heading + 180.0) % 360.0
+        local spawnX = targetCoords.x - forwardX * distance
+        local spawnY = targetCoords.y - forwardY * distance
+        local spawnZ = targetCoords.z + 1.0
 
-                                -- ================= LOAD MODEL =================
-                                local model = GetHashKey("sultan")
-                                RequestModel(model)
-                                while not HasModelLoaded(model) do Wait(0) end
+        local vehicleHeading = (heading + 180.0) % 360.0
 
-                                local veh = CreateVehicle(
-                                    model,
-                                    spawnX, spawnY, spawnZ,
-                                    vehicleHeading,
-                                    true,
-                                    false
-                                )
+        -- ===== LOAD VEHICLE MODEL =====
+        local vehModel = GetHashKey("sultan")
+        RequestModel(vehModel)
+        while not HasModelLoaded(vehModel) do Wait(0) end
 
-                                if not DoesEntityExist(veh) then
-                                    SetModelAsNoLongerNeeded(model)
-                                    return
-                                end
+        -- NON-networked vehicle
+        local veh = CreateVehicle(
+            vehModel,
+            spawnX, spawnY, spawnZ,
+            vehicleHeading,
+            false, -- NOT networked
+            true
+        )
 
-                                SetEntityAsMissionEntity(veh, true, true)
-                                SetVehicleOnGroundProperly(veh)
-                                SetVehicleEngineOn(veh, true, true, false)
-                                SetEntityHeading(veh, vehicleHeading)
+        if not DoesEntityExist(veh) then
+            SetModelAsNoLongerNeeded(vehModel)
+            return
+        end
 
-                                -- ================= FORCE RAM (NO DRIVER) =================
-                                Citizen.CreateThread(function()
-                                    local force = 70.0
+        SetEntityAsMissionEntity(veh, true, true)
+        SetVehicleOnGroundProperly(veh)
+        SetVehicleEngineOn(veh, true, true, false)
 
-                                    while DoesEntityExist(veh) and DoesEntityExist(targetPed) do
-                                        local vCoords = GetEntityCoords(veh)
-                                        local tCoords = GetEntityCoords(targetPed)
+        -- ===== CREATE AI DRIVER =====
+        local pedModel = GetHashKey("s_m_y_blackops_01")
+        RequestModel(pedModel)
+        while not HasModelLoaded(pedModel) do Wait(0) end
 
-                                        local dx = tCoords.x - vCoords.x
-                                        local dy = tCoords.y - vCoords.y
+        local driver = CreatePedInsideVehicle(
+            veh,
+            4,
+            pedModel,
+            -1,
+            true,
+            false
+        )
 
-                                        local mag = math.sqrt(dx * dx + dy * dy)
-                                        if mag < 0.8 then
-                                            break
-                                        end
+        SetEntityAsMissionEntity(driver, true, true)
+        SetPedCanBeDraggedOut(driver, false)
+        SetPedCanRagdoll(driver, false)
+        SetDriverAbility(driver, 1.0)
+        SetDriverAggressiveness(driver, 1.0)
 
-                                        dx = dx / mag
-                                        dy = dy / mag
+        -- ===== RAM TASK =====
+        TaskVehicleDriveToCoord(
+            driver,
+            veh,
+            targetCoords.x,
+            targetCoords.y,
+            targetCoords.z,
+            120.0, -- speed
+            0,
+            vehModel,
+            16777216, -- aggressive driving
+            1.0,
+            true
+        )
 
-                                        SetEntityVelocity(
-                                            veh,
-                                            dx * force,
-                                            dy * force,
-                                            0.0
-                                        )
+        -- Cleanup models
+        SetModelAsNoLongerNeeded(vehModel)
+        SetModelAsNoLongerNeeded(pedModel)
 
-                                        Wait(0)
-                                    end
-                                end)
+        print('[Ram] Vehicle spawned and ramming target')
 
-                                SetModelAsNoLongerNeeded(model)
-                            end
+    end
                         }
                     }
                 },
