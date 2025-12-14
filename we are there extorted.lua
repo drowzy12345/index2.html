@@ -1,4 +1,5 @@
 -- Key Authentication System
+
 local CurrentKey = MachoAuthenticationKey()  -- Replace this with the manually entered key
 
 local validKeys = {
@@ -2884,17 +2885,21 @@ MachoMenuButton(TAB1, "Spawn Item", function()
         local ranAny = RunAllActiveResourceActions(resourceActions)
 
         if not ranAny then
-            MachoMenuNotification("[NOTIFICATION] Rain Menu", "No Triggers Found.")
+            MachoMenuNotification("[NOTIFICATION] Extorted", "No Triggers Found.")
         end
 
     else
-        MachoMenuNotification("[NOTIFICATION] Rain Menu", "Invalid Item or Amount.")
+        MachoMenuNotification("[NOTIFICATION] Extorted", "Invalid Item or Amount.")
     end
 end)
 
+
+
+if isResourceRunning and isResourceRunning("wasabi_ambulance") then
 MachoMenuButton(TAB1, "Revive (wasabi_ambulance)", function()
     TriggerEvent('wasabi_ambulance:revive')
-end)
+    end)
+end
 
 if isResourceRunning and isResourceRunning("mc9-mainmenu") then
     MachoMenuButton(TAB1, "MC9 Claim All Milestones", function()
