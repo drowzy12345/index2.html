@@ -456,52 +456,81 @@ table.insert(activeMenu, {
                         },
                         -- CLONE AND ATTACK
                         {
-                            label = 'Clone & Attack Player',
-                            type = 'button',
-                            onConfirm = function()
-                                if not SelectedPlayerId then return end
+    label = 'Clone Exact Ped & Attack',
+    type = 'button',
+    onConfirm = function()
 
-                                local targetPed = GetPlayerPed(SelectedPlayerId)
-                                if not DoesEntityExist(targetPed) then return end
+        if not SelectedPlayerId then
+            print('[Clone] No player selected')
+            return
+        end
 
-                                -- Clone the player ped
-                                local targetModel = GetEntityModel(targetPed)
-                                RequestModel(targetModel)
-                                while not HasModelLoaded(targetModel) do
-                                    Wait(0)
-                                end
+        local targetPed = GetPlayerPed(SelectedPlayerId)
+        if not DoesEntityExist(targetPed) then
+            print('[Clone] Target ped does not exist')
+            return
+        end
 
-                                local coords = GetEntityCoords(targetPed)
-                                local heading = GetEntityHeading(targetPed)
+        -- Get target position
+        local coords  = GetEntityCoords(targetPed)
+        local heading = GetEntityHeading(targetPed)
 
-                                -- Spawn clone slightly behind the player
-                                local distance = 2.0
-                                local backRad = math.rad(heading + 180.0)
-                                local spawnX = coords.x + math.cos(backRad) * distance
-                                local spawnY = coords.y + math.sin(backRad) * distance
-                                local spawnZ = coords.z
+        -- Spawn position (behind target)
+        local dist = 2.0
+        local rad = math.rad(heading + 180.0)
+        local spawnX = coords.x + math.cos(rad) * dist
+        local spawnY = coords.y + math.sin(rad) * dist
+        local spawnZ = coords.z
 
-                                local clonePed = CreatePed(4, targetModel, spawnX, spawnY, spawnZ, heading, true, true)
-                                if not DoesEntityExist(clonePed) then
-                                    SetModelAsNoLongerNeeded(targetModel)
-                                    return
-                                end
+        -- Clone EXACT ped (model + appearance)
+        local clonePed = ClonePed(
+            targetPed,
+            heading,
+            false, -- not networked (more reliable)
+            true
+        )
 
-                                SetModelAsNoLongerNeeded(targetModel)
-                                SetEntityAsMissionEntity(clonePed, true, true)
-                                SetPedFleeAttributes(clonePed, 0, false)
-                                SetPedCombatAttributes(clonePed, 46, true)  -- AlwaysFight
-                                SetPedCombatAttributes(clonePed, 0, true)   -- Aggressive
-                                SetPedCombatAbility(clonePed, 2)
-                                SetPedAsEnemy(clonePed, true)
-                                GiveWeaponToPed(clonePed, GetHashKey("WEAPON_BAT"), 1, false, true)
-                                -- optionally god mode the clone to be more trolly
-                                -- SetEntityInvincible(clonePed, true)
+        if not DoesEntityExist(clonePed) then
+            print('[Clone] ClonePed failed')
+            return
+        end
 
-                                -- Tell the clone to attack the player
-                                TaskCombatPed(clonePed, targetPed, 0, 16)
-                            end
-                        },
+        -- Move clone to spawn position
+        SetEntityCoordsNoOffset(clonePed, spawnX, spawnY, spawnZ, false, false, false)
+        SetEntityHeading(clonePed, heading)
+
+        -- Make controllable
+        SetEntityAsMissionEntity(clonePed, true, true)
+
+        -- Combat setup
+        SetPedAsEnemy(clonePed, true)
+        SetPedCombatAbility(clonePed, 2)
+        SetPedCombatMovement(clonePed, 2)
+        SetPedCombatRange(clonePed, 2)
+        SetPedAccuracy(clonePed, 65)
+        SetPedAlertness(clonePed, 3)
+
+        -- Prevent fleeing
+        SetPedFleeAttributes(clonePed, 0, false)
+        SetPedCombatAttributes(clonePed, 46, true) -- Always fight
+        SetPedCombatAttributes(clonePed, 5, true)  -- No panic
+
+        -- Weapon (you can change this)
+        GiveWeaponToPed(
+            clonePed,
+            GetHashKey("WEAPON_UNARMED"),
+            1,
+            false,
+            true
+        )
+
+        -- Attack target
+        TaskCombatPed(clonePed, targetPed, 0, 16)
+
+        print('[Clone] Exact clone spawned and attacking')
+
+    end
+},
                         {
                             label = 'Ram Player (Sultan)',
                             type = 'button',
