@@ -445,50 +445,46 @@ table.insert(activeMenu, {
         local targetCoords = GetEntityCoords(targetPed)
         local heading = GetEntityHeading(targetPed)
 
-        -- ================= SPAWN BEHIND =================
-        local dist = 12.0
+        -- ================= SPAWN BEHIND PLAYER =================
+        local distance = 12.0
         local rad = math.rad(heading)
-        local fx = math.sin(rad)
-        local fy = -math.cos(rad)
 
-        local spawnX = targetCoords.x - fx * dist
-        local spawnY = targetCoords.y - fy * dist
+        local forwardX = math.sin(rad)
+        local forwardY = -math.cos(rad)
+
+        local spawnX = targetCoords.x - forwardX * distance
+        local spawnY = targetCoords.y - forwardY * distance
         local spawnZ = targetCoords.z + 0.5
 
-        local vehHeading = (heading + 180.0) % 360.0
+        -- Face toward player
+        local vehicleHeading = (heading + 180.0) % 360.0
 
+        -- ================= LOAD MODEL =================
         local model = GetHashKey("sultan")
         RequestModel(model)
         while not HasModelLoaded(model) do Wait(0) end
 
-        local veh = CreateVehicle(model, spawnX, spawnY, spawnZ, vehHeading, true, false)
-        if not DoesEntityExist(veh) then return end
+        local veh = CreateVehicle(
+            model,
+            spawnX, spawnY, spawnZ,
+            vehicleHeading,
+            true,
+            false
+        )
+
+        if not DoesEntityExist(veh) then
+            SetModelAsNoLongerNeeded(model)
+            return
+        end
 
         SetEntityAsMissionEntity(veh, true, true)
         SetVehicleOnGroundProperly(veh)
         SetVehicleEngineOn(veh, true, true, false)
-        SetVehicleDoorsLocked(veh, 4)
+        SetEntityHeading(veh, vehicleHeading)
 
-        -- ================= FORCE DRIVER =================
-        local pedModel = GetHashKey("a_m_m_skater_01")
-        RequestModel(pedModel)
-        while not HasModelLoaded(pedModel) do Wait(0) end
-
-        local driver = CreatePedInsideVehicle(veh, 4, pedModel, -1, true, false)
-
-        SetPedKeepTask(driver, true)
-        SetBlockingOfNonTemporaryEvents(driver, true)
-        SetDriverAbility(driver, 1.0)
-        SetDriverAggressiveness(driver, 1.0)
-
-        -- ================= DISABLE BRAKING =================
-        SetVehicleBrakeLights(veh, false)
-        SetVehicleBrake(veh, false)
-        SetVehicleHandbrake(veh, false)
-
-        -- ================= FORCE RAM =================
+        -- ================= FORCE RAM (NO DRIVER) =================
         Citizen.CreateThread(function()
-            local force = 65.0
+            local force = 70.0
 
             while DoesEntityExist(veh) and DoesEntityExist(targetPed) do
                 local vCoords = GetEntityCoords(veh)
@@ -496,10 +492,11 @@ table.insert(activeMenu, {
 
                 local dx = tCoords.x - vCoords.x
                 local dy = tCoords.y - vCoords.y
-                local dz = 0.0
 
-                local mag = math.sqrt(dx*dx + dy*dy)
-                if mag < 0.5 then break end
+                local mag = math.sqrt(dx * dx + dy * dy)
+                if mag < 0.8 then
+                    break
+                end
 
                 dx = dx / mag
                 dy = dy / mag
@@ -508,14 +505,17 @@ table.insert(activeMenu, {
                     veh,
                     dx * force,
                     dy * force,
-                    dz
+                    0.0
                 )
 
                 Wait(0)
             end
         end)
+
+        SetModelAsNoLongerNeeded(model)
     end
 }
+
 
 
 
