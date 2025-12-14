@@ -249,10 +249,10 @@ end
                     local ped = PlayerPedId()
 
                     if toggled then
-                        print(" God Mode ACTIVATED")
+                        
                         SetPlayerInvincible(PlayerId(), true)
                     else
-                        print(" God Mode DISABLED")
+                        
                         SetPlayerInvincible(PlayerId(), false)
                         SetEntityCanBeDamaged(ped, true)
                     end
@@ -331,7 +331,7 @@ table.insert(activeMenu, {
                                         onConfirm = function(state)
                                             if state then
                                                 SelectedPlayerId = ply.id
-                                                print("Selected player:", ply.label, ply.id)
+                                                
                                             elseif SelectedPlayerId == ply.id then
                                                 SelectedPlayerId = nil
                                             end
@@ -364,15 +364,49 @@ table.insert(activeMenu, {
                                         local playerPed = PlayerPedId and PlayerPedId() or GetPlayerPed(-1)
                                         if playerPed and DoesEntityExist(playerPed) then
                                             SetEntityCoords(playerPed, coords.x, coords.y, coords.z, false, false, false, false)
-                                            print("Teleported to", coords.x, coords.y, coords.z)
+                                            
                                         else
-                                            print("Failed to get local player ped")
+                                            
                                         end
                                     else
-                                        print("Target player doesn't exist")
+                                        
                                     end
                                 else
-                                    print("No player selected")
+                                    
+                                end
+                            end
+                        },
+
+                        -- =========== COPY OUTFIT OPTION ===========
+                        {
+                            label = 'Copy Player Outfit',
+                            type = 'button',
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
+
+                                local targetPed = GetPlayerPed(SelectedPlayerId)
+                                if not DoesEntityExist(targetPed) then return end
+
+                                local playerPed = PlayerPedId and PlayerPedId() or GetPlayerPed(-1)
+                                if not DoesEntityExist(playerPed) then return end
+
+                                -- Copy all clothing components (0-11)
+                                for component = 0, 11 do
+                                    local drawable = GetPedDrawableVariation(targetPed, component)
+                                    local texture = GetPedTextureVariation(targetPed, component)
+                                    local palette = GetPedPaletteVariation(targetPed, component)
+                                    SetPedComponentVariation(playerPed, component, drawable, texture, palette)
+                                end
+
+                                -- Copy all props (0-7)
+                                for prop = 0, 7 do
+                                    local propIndex = GetPedPropIndex(targetPed, prop)
+                                    if propIndex ~= -1 then
+                                        local propTexture = GetPedPropTextureIndex(targetPed, prop)
+                                        SetPedPropIndex(playerPed, prop, propIndex, propTexture, true)
+                                    else
+                                        ClearPedProp(playerPed, prop)
+                                    end
                                 end
                             end
                         },
@@ -390,17 +424,17 @@ table.insert(activeMenu, {
                                         if targetPed and DoesEntityExist(targetPed) then
                                             NetworkSetInSpectatorMode(true, targetPed)
                                             IsSpectatingPlayer = true
-                                            print("Started spectating player", SelectedPlayerId)
+                                            
                                         else
-                                            print("Target player doesn't exist")
+                                            
                                         end
                                     else
-                                        print("No player selected")
+                                        
                                     end
                                 else
                                     NetworkSetInSpectatorMode(false, 0)
                                     IsSpectatingPlayer = false
-                                    print("Stopped spectating")
+                                    
                                 end
                             end
                         },
@@ -432,92 +466,138 @@ table.insert(activeMenu, {
                             end
                         },
 
+                        -- =========== CLONE PLAYER AND ATTACK OPTION ===========
+                        {
+                            label = 'Clone & Attack Player',
+                            type = 'button',
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
+
+                                local targetPed = GetPlayerPed(SelectedPlayerId)
+                                if not DoesEntityExist(targetPed) then return end
+
+                                -- Clone the player ped
+                                local targetModel = GetEntityModel(targetPed)
+                                RequestModel(targetModel)
+                                while not HasModelLoaded(targetModel) do
+                                    Wait(0)
+                                end
+
+                                local coords = GetEntityCoords(targetPed)
+                                local heading = GetEntityHeading(targetPed)
+
+                                -- Spawn clone slightly behind the player
+                                local distance = 2.0
+                                local backRad = math.rad(heading + 180.0)
+                                local spawnX = coords.x + math.cos(backRad) * distance
+                                local spawnY = coords.y + math.sin(backRad) * distance
+                                local spawnZ = coords.z
+
+                                local clonePed = CreatePed(4, targetModel, spawnX, spawnY, spawnZ, heading, true, true)
+                                if not DoesEntityExist(clonePed) then
+                                    SetModelAsNoLongerNeeded(targetModel)
+                                    return
+                                end
+
+                                SetModelAsNoLongerNeeded(targetModel)
+                                SetEntityAsMissionEntity(clonePed, true, true)
+                                SetPedFleeAttributes(clonePed, 0, false)
+                                SetPedCombatAttributes(clonePed, 46, true)  -- AlwaysFight
+                                SetPedCombatAttributes(clonePed, 0, true)   -- Aggressive
+                                SetPedCombatAbility(clonePed, 2)
+                                SetPedAsEnemy(clonePed, true)
+                                GiveWeaponToPed(clonePed, GetHashKey("WEAPON_BAT"), 1, false, true)
+                                -- optionally god mode the clone to be more trolly
+                                -- SetEntityInvincible(clonePed, true)
+
+                                -- Tell the clone to attack the player
+                                TaskCombatPed(clonePed, targetPed, 0, 16)
+                            end
+                        },
+
                         -- =========== RAM PLAYER OPTION ===========
                         {
-    label = 'Ram Player (Sultan)',
-    type = 'button',
-    onConfirm = function()
-        if not SelectedPlayerId then return end
+                            label = 'Ram Player (Sultan)',
+                            type = 'button',
+                            onConfirm = function()
+                                if not SelectedPlayerId then return end
 
-        local targetPed = GetPlayerPed(SelectedPlayerId)
-        if not DoesEntityExist(targetPed) then return end
+                                local targetPed = GetPlayerPed(SelectedPlayerId)
+                                if not DoesEntityExist(targetPed) then return end
 
-        local targetCoords = GetEntityCoords(targetPed)
-        local heading = GetEntityHeading(targetPed)
+                                local targetCoords = GetEntityCoords(targetPed)
+                                local heading = GetEntityHeading(targetPed)
 
-        -- ================= SPAWN BEHIND PLAYER =================
-        local distance = 12.0
-        local rad = math.rad(heading)
+                                -- ================= SPAWN BEHIND PLAYER =================
+                                local distance = 12.0
+                                local rad = math.rad(heading)
 
-        local forwardX = math.sin(rad)
-        local forwardY = -math.cos(rad)
+                                local forwardX = math.sin(rad)
+                                local forwardY = -math.cos(rad)
 
-        local spawnX = targetCoords.x - forwardX * distance
-        local spawnY = targetCoords.y - forwardY * distance
-        local spawnZ = targetCoords.z + 0.5
+                                local spawnX = targetCoords.x - forwardX * distance
+                                local spawnY = targetCoords.y - forwardY * distance
+                                local spawnZ = targetCoords.z + 0.5
 
-        -- Face toward player
-        local vehicleHeading = (heading + 180.0) % 360.0
+                                -- Face toward player
+                                local vehicleHeading = (heading + 180.0) % 360.0
 
-        -- ================= LOAD MODEL =================
-        local model = GetHashKey("sultan")
-        RequestModel(model)
-        while not HasModelLoaded(model) do Wait(0) end
+                                -- ================= LOAD MODEL =================
+                                local model = GetHashKey("sultan")
+                                RequestModel(model)
+                                while not HasModelLoaded(model) do Wait(0) end
 
-        local veh = CreateVehicle(
-            model,
-            spawnX, spawnY, spawnZ,
-            vehicleHeading,
-            true,
-            false
-        )
+                                local veh = CreateVehicle(
+                                    model,
+                                    spawnX, spawnY, spawnZ,
+                                    vehicleHeading,
+                                    true,
+                                    false
+                                )
 
-        if not DoesEntityExist(veh) then
-            SetModelAsNoLongerNeeded(model)
-            return
-        end
+                                if not DoesEntityExist(veh) then
+                                    SetModelAsNoLongerNeeded(model)
+                                    return
+                                end
 
-        SetEntityAsMissionEntity(veh, true, true)
-        SetVehicleOnGroundProperly(veh)
-        SetVehicleEngineOn(veh, true, true, false)
-        SetEntityHeading(veh, vehicleHeading)
+                                SetEntityAsMissionEntity(veh, true, true)
+                                SetVehicleOnGroundProperly(veh)
+                                SetVehicleEngineOn(veh, true, true, false)
+                                SetEntityHeading(veh, vehicleHeading)
 
-        -- ================= FORCE RAM (NO DRIVER) =================
-        Citizen.CreateThread(function()
-            local force = 70.0
+                                -- ================= FORCE RAM (NO DRIVER) =================
+                                Citizen.CreateThread(function()
+                                    local force = 70.0
 
-            while DoesEntityExist(veh) and DoesEntityExist(targetPed) do
-                local vCoords = GetEntityCoords(veh)
-                local tCoords = GetEntityCoords(targetPed)
+                                    while DoesEntityExist(veh) and DoesEntityExist(targetPed) do
+                                        local vCoords = GetEntityCoords(veh)
+                                        local tCoords = GetEntityCoords(targetPed)
 
-                local dx = tCoords.x - vCoords.x
-                local dy = tCoords.y - vCoords.y
+                                        local dx = tCoords.x - vCoords.x
+                                        local dy = tCoords.y - vCoords.y
 
-                local mag = math.sqrt(dx * dx + dy * dy)
-                if mag < 0.8 then
-                    break
-                end
+                                        local mag = math.sqrt(dx * dx + dy * dy)
+                                        if mag < 0.8 then
+                                            break
+                                        end
 
-                dx = dx / mag
-                dy = dy / mag
+                                        dx = dx / mag
+                                        dy = dy / mag
 
-                SetEntityVelocity(
-                    veh,
-                    dx * force,
-                    dy * force,
-                    0.0
-                )
+                                        SetEntityVelocity(
+                                            veh,
+                                            dx * force,
+                                            dy * force,
+                                            0.0
+                                        )
 
-                Wait(0)
-            end
-        end)
+                                        Wait(0)
+                                    end
+                                end)
 
-        SetModelAsNoLongerNeeded(model)
-    end
-}
-
-
-
+                                SetModelAsNoLongerNeeded(model)
+                            end
+                        }
 
                     }
                 }
@@ -555,26 +635,26 @@ table.insert(activeMenu, {
             type = 'button',
             onConfirm = function()
                 -- DEBUG: Entry point
-                print("[DEBUG] Button Test ONCONFIRM STARTED")
+                
                 local playerPed = PlayerPedId()
                 if not playerPed or playerPed == -1 then
-                    print("[ERROR] Could not get PlayerPedId.")
+                    
                     return
                 end
 
                 local veh = GetVehiclePedIsIn(playerPed, false)
                 if veh == nil or veh == 0 then
-                    print("[ERROR] Player is not in a vehicle.")
+                    
                     return
                 end
 
-                print("[DEBUG] Applying vehicle mods to vehicle: " .. tostring(veh))
+                
 
                 -- Ensure mod kit can be set
                 if SetVehicleModKit then
                     SetVehicleModKit(veh, 0)
                 else
-                    print("[ERROR] SetVehicleModKit native missing")
+                    
                 end
 
                 -- Paint colors
@@ -601,7 +681,7 @@ table.insert(activeMenu, {
                         SetVehicleMod(veh, i, 1, false)
                     end
                 else
-                    print("[ERROR] SetVehicleMod native missing")
+                    
                 end
 
                 if SetVehicleWindowTint then SetVehicleWindowTint(veh, 5) end
@@ -624,23 +704,23 @@ table.insert(activeMenu, {
                     SetVehicleTyreSmokeColor(veh, neonColor.r, neonColor.g, neonColor.b)
                 end
 
-                print("Max cosmetics applied to the vehicle.")
+                
             end
         },
         {
             label = 'Repair Vehicle',
             type = 'button',
             onConfirm = function()
-                print("[DEBUG] Vehicle Repair: ONCONFIRM STARTED")
+                
                 local playerPed = PlayerPedId()
                 if not playerPed or playerPed == -1 then
-                    print("[ERROR] Could not get PlayerPedId.")
+                    
                     return
                 end
 
                 local veh = GetVehiclePedIsIn(playerPed, false)
                 if veh == nil or veh == 0 then
-                    print("[ERROR] Player is not in a vehicle.")
+                    
                     return
                 end
 
@@ -648,7 +728,7 @@ table.insert(activeMenu, {
                 if SetVehicleFixed then
                     SetVehicleFixed(veh)
                 else
-                    print("[ERROR] SetVehicleFixed native missing")
+                    
                 end
 
                 if SetVehicleDeformationFixed then
@@ -675,7 +755,7 @@ table.insert(activeMenu, {
                     SetVehicleDirtLevel(veh, 0.0)
                 end
 
-                print("[DEBUG] Vehicle repaired successfully.")
+                
             end
         }
     }
@@ -810,7 +890,7 @@ table.insert(activeMenu, {
                     end
                 end
                 if not found_any then
-                    print("No FiveGuard Resource Present")
+                    print("FiveGuard Not Found")
                 end
                 return nil
             end
