@@ -116,26 +116,6 @@
 
     .scroll-label { display:flex; align-items:center; gap:.4vh; min-width:8.5vh; justify-content:center; font-size:1.2vh; }
 
-    /* Textbox styles */
-    .textbox-input {
-      min-width: 12vh;
-      font-size: 1.15vh;
-      padding: .3vh .8vh;
-      background: rgba(15, 15, 15, 0.94);
-      color: #fff;
-      border: .15vh solid var(--red);
-      border-radius: .3vh;
-      outline: none;
-      transition: border .12s;
-      margin-left: .5vh;
-      margin-right: .5vh;
-    }
-    .textbox-input:focus {
-      border-color: var(--accent);
-      background: rgba(25, 25, 25, 1);
-      color: #fff;
-    }
-
     .info-bar {
       margin-top:.6vh;
       margin-left: 1.75vh;
@@ -166,7 +146,6 @@
       .menu-wrapper { left: 2vh; width: 78vw; transform: translateY(-50%); }
       .menu-column { width: 70vw; }
       .info-bar { width: 70vw; }
-      .textbox-input { min-width: 32vw; }
     }
   </style>
 </head>
@@ -199,15 +178,7 @@
 (function(){
 let current=0, showing=true, activeTabs=["Main Menu"], currentTab=0;
 let banner=document.getElementById('bannerImg').src;
-let activeMenu=[
-  {label:'Start Game',type:'button'},
-  {label:'Enable Cheats',type:'checkbox',checked:false},
-  {label:'Difficulty',type:'scroll',options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}],selected:1},
-  {label:'Volume',type:'slider',min:0,max:100,step:1,value:75},
-  {label:'Username',type:'textbox',value:''}, // Example textbox
-  {label:'Settings',type:'submenu'},
-  {label:'Separator',type:'divider'}
-];
+let activeMenu=[{label:'Start Game',type:'button'},{label:'Enable Cheats',type:'checkbox',checked:false},{label:'Difficulty',type:'scroll',options:[{label:'Easy'},{label:'Normal'},{label:'Hard'},{label:'Extreme'}],selected:1},{label:'Volume',type:'slider',min:0,max:100,step:1,value:75},{label:'Settings',type:'submenu'},{label:'Separator',type:'divider'}];
 
 const wrapper=document.getElementById('wrapper');
 const listWrap=document.getElementById('list-wrap');
@@ -255,73 +226,15 @@ function createItem(option,i){
   if(option.type==='submenu'){ const icon=document.createElement('i'); icon.className='ph ph-caret-right'; icon.style.fontSize='1.2vh'; el.appendChild(icon);}
   else if(option.type==='checkbox'){ const t=document.createElement('div'); t.className='toggle'+(option.checked?' on':''); t.addEventListener('click',(e)=>{e.stopPropagation(); option.checked=!option.checked; t.classList.toggle('on',!!option.checked); sendToHost({action:'changed', index:i, option});}); el.appendChild(t);}
   else if(option.type==='slider'){ const r=document.createElement('input'); r.type='range'; r.className='range'; r.min=option.min??0; r.max=option.max??100; r.step=option.step??1; r.value=option.value??r.min; r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%'); r.addEventListener('input',()=>{option.value=Number(r.value); r.style.setProperty('--pct',((r.value/(option.max||1))*100)+'%');}); r.addEventListener('change',()=>{sendToHost({action:'changed', index:i, option});}); el.appendChild(r);}
-  else if(option.type==='scroll'){ 
-    const wrap=document.createElement('div'); wrap.className='scroll-label'; 
-    const l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; 
-    const c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; 
-    const r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; 
-    l.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.max(0,(option.selected||0)-1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); 
-    r.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); 
-    wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);
-  }
-  else if(option.type==='textbox'){
-    // Textbox for editable text input
-    const input=document.createElement('input');
-    input.type='text';
-    input.className='textbox-input';
-    input.value=(typeof option.value === 'string' ? option.value : '');
-    input.placeholder=option.placeholder||'Enter text...';
-    input.maxLength=option.maxLength||64;
-    input.autocomplete='off';
-    input.spellcheck=false;
-    input.addEventListener('click', e => e.stopPropagation());
-    input.addEventListener('input',()=>{ option.value=input.value; });
-    input.addEventListener('change',()=>{ sendToHost({action:'changed', index:i, option}); });
-    input.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter') {
-        sendToHost({action:'textboxSubmit', index:i, option});
-        // Optionally blur on submit:
-        input.blur();
-      }
-      e.stopPropagation();
-    });
-    el.appendChild(input);
-    // Give visual focus when item is selected
-    if(i===current) setTimeout(()=>{ try{input.focus();input.select();}catch(e){} },0);
-    // Prevent using .menu-item's pointer/selection for textbox
-    el.style.cursor = 'default';
-  }
-  else { 
-    const spacer=document.createElement('div'); 
-    spacer.style.width='1.2vh'; 
-    el.appendChild(spacer); 
-  }
+  else if(option.type==='scroll'){ const wrap=document.createElement('div'); wrap.className='scroll-label'; const l=document.createElement('span'); l.textContent='◀'; l.style.cursor='pointer'; const c=document.createElement('span'); c.textContent=(option.options&&option.options[option.selected]?.label)||''; c.style.minWidth='6vh'; const r=document.createElement('span'); r.textContent='▶'; r.style.cursor='pointer'; l.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.max(0,(option.selected||0)-1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); r.addEventListener('click',(e)=>{e.stopPropagation(); option.selected=Math.min((option.options?.length||1)-1,(option.selected||0)+1); renderMenu(); scheduleMeasure(); sendToHost({action:'changed', index:i, option});}); wrap.appendChild(l); wrap.appendChild(c); wrap.appendChild(r); el.appendChild(wrap);}
+  else { const spacer=document.createElement('div'); spacer.style.width='1.2vh'; el.appendChild(spacer); }
 
-  // For textbox do NOT set click to select, focus is done above
-  if(option.type==='textbox'){
-    el.addEventListener('mousedown', e=>{e.stopPropagation();});
-    // Don't steal focus from textbox, but still allow select with keyboard
-  }else{
-    el.addEventListener('click',()=>{ 
-      current=i; renderMenu(); centerOnSelected(i); scheduleMeasure(); 
-      if(option.type==='button'||option.type==='submenu'){sendToHost({action:'activate', index:i, option});} 
-    });
-  }
+  el.addEventListener('click',()=>{ current=i; renderMenu(); centerOnSelected(i); scheduleMeasure(); if(option.type==='button'||option.type==='submenu'){sendToHost({action:'activate', index:i, option});} });
 
   return el;
 }
 
-function renderMenu(){ 
-  listEl.innerHTML=''; itemEls=[]; 
-  activeMenu.forEach((opt,idx)=>{ 
-    const el=createItem(opt,idx); 
-    listEl.appendChild(el); 
-    itemEls[idx]=el; 
-  }); 
-  counterEl.textContent=`(${counterCurrent()}/${selectableMenu().length})`; 
-  renderTabs(); bannerEl.src=banner; 
-  requestAnimationFrame(measureScrollbar); 
-}
+function renderMenu(){ listEl.innerHTML=''; itemEls=[]; activeMenu.forEach((opt,idx)=>{ const el=createItem(opt,idx); listEl.appendChild(el); itemEls[idx]=el; }); counterEl.textContent=`(${counterCurrent()}/${selectableMenu().length})`; renderTabs(); bannerEl.src=banner; requestAnimationFrame(measureScrollbar); }
 
 function measureScrollbar(){
   if(!wrapper||!listWrap) return;
@@ -368,143 +281,27 @@ const scheduleMeasure=()=>requestAnimationFrame(()=>requestAnimationFrame(measur
 
 function sendToHost(payload){try{window.postMessage(payload,'*');}catch(e){}}
 
-window.addEventListener('message',(ev)=>{ 
-  const data=ev.data; 
-  if(!data||typeof data!=='object') return; 
-  const action=data.action; 
-  if(!action) return;
-  if(action==='setCurrent'){ 
-    const incoming=data.current; 
-    current=(typeof incoming==='number')?Math.max(0,incoming-1):0; 
-    if(Array.isArray(data.menu)) activeMenu=data.menu; 
-    showing=data.visible!==undefined?!!data.visible:true; 
-    renderMenu(); centerOnSelected(current); scheduleMeasure();
-  }
-  else if(action==='setTabs'){ 
-    activeTabs=Array.isArray(data.tabs)?data.tabs:[]; currentTab=0; renderTabs();
-  }
-  else if(action==='setTabIndex'){ 
-    currentTab=(typeof data.index==='number')?data.index:0; renderTabs();
-  }
-  else if(action==='setVisible'){ 
-    showing=!!data.visible; wrapper.style.opacity=showing?'1':'0'; 
-    if(showing) centerOnSelected(current); 
-    scheduleMeasure();
-  }
-  else if(action==='position'){ 
-    const pos=data.position||'left'; 
-    if(pos==='left') wrapper.style.left='6.5vh'; 
-    else if(pos==='right') wrapper.style.left='calc(100% - 41vh)'; 
-    scheduleMeasure();
-  }
-  else if(action==='banner'){ 
-    if(typeof data.banner==='string'){ banner=data.banner; bannerEl.src=banner;}
-  }
-  else if(action==='setMenu'){ 
-    if(Array.isArray(data.menu)) activeMenu=data.menu; 
-    renderMenu(); 
-    scheduleMeasure();
-  }
-  // Textbox API support
-  else if(action==='setTextboxValue' && typeof data.index==='number'){
-    // set value of textbox at index
-    if(activeMenu[data.index]?.type==='textbox'){
-      activeMenu[data.index].value = typeof data.value === "string" ? data.value : "";
-      renderMenu(); scheduleMeasure();
-    }
-  }
-  else if(action==='focusTextbox' && typeof data.index==='number'){
-    if(activeMenu[data.index]?.type==='textbox'){
-      current = data.index;
-      renderMenu(); centerOnSelected(current); scheduleMeasure();
-    }
-  }
+window.addEventListener('message',(ev)=>{ const data=ev.data; if(!data||typeof data!=='object') return; const action=data.action; if(!action) return;
+  if(action==='setCurrent'){ const incoming=data.current; current=(typeof incoming==='number')?Math.max(0,incoming-1):0; if(Array.isArray(data.menu)) activeMenu=data.menu; showing=data.visible!==undefined?!!data.visible:true; renderMenu(); centerOnSelected(current); scheduleMeasure();}
+  else if(action==='setTabs'){ activeTabs=Array.isArray(data.tabs)?data.tabs:[]; currentTab=0; renderTabs();}
+  else if(action==='setTabIndex'){ currentTab=(typeof data.index==='number')?data.index:0; renderTabs();}
+  else if(action==='setVisible'){ showing=!!data.visible; wrapper.style.opacity=showing?'1':'0'; if(showing) centerOnSelected(current); scheduleMeasure();}
+  else if(action==='position'){ const pos=data.position||'left'; if(pos==='left') wrapper.style.left='6.5vh'; else if(pos==='right') wrapper.style.left='calc(100% - 41vh)'; scheduleMeasure();}
+  else if(action==='banner'){ if(typeof data.banner==='string'){ banner=data.banner; bannerEl.src=banner;}}
+  else if(action==='setMenu'){ if(Array.isArray(data.menu)) activeMenu=data.menu; renderMenu(); scheduleMeasure();}
 });
 
-window.addEventListener('keydown',(e)=>{
-  if(!showing) return; 
-  const max=activeMenu.length-1;
-  const currentOpt=activeMenu[current];
-  // If textbox is focused, do not handle navigation (except for "Escape")
-  let isTextbox = currentOpt && currentOpt.type === 'textbox';
-  const activeInput = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('textbox-input');
-  if(isTextbox && activeInput) {
-    // Only intercept Escape to blur/leave
-    if(e.key==='Escape'){ 
-      document.activeElement.blur();
-      sendToHost({action:'textboxEscape', index:current, option:currentOpt});
-      e.preventDefault();
-    }
-    // Don't handle ArrowUp/Down/Page controls, let input handle most keys
-    return;
-  }
-  if(e.key==='ArrowDown'){ 
-    let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); 
-    current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
-  }
-  else if(e.key==='ArrowUp'){ 
-    let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); 
-    current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();
-  }
-  else if(e.key==='Enter'){ 
-    const opt=activeMenu[current]; 
-    if(opt){ 
-      if(opt.type==='button'||opt.type==='submenu'){
-        sendToHost({action:'activate', index:current, option:opt});
-      } 
-      else if(opt.type==='checkbox'){ 
-        opt.checked=!opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt});
-      } 
-      else if(opt.type==='scroll'){ 
-        opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); 
-        renderMenu(); 
-        sendToHost({action:'changed', index:current, option:opt});
-      }
-      else if(opt.type==='textbox'){
-        // Focus the textbox input upon Enter
-        const input = itemEls[current] && itemEls[current].querySelector && itemEls[current].querySelector('input.textbox-input');
-        if(input) { input.focus(); input.select(); }
-        e.preventDefault();
-        return;
-      }
-    }
-    e.preventDefault();
-  }
-  else if(e.key==='Escape'){ 
-    sendToHost({action:'escape'});
-  }
+window.addEventListener('keydown',(e)=>{ if(!showing) return; const max=activeMenu.length-1;
+  if(e.key==='ArrowDown'){ let idx=current; do{ idx=Math.min(idx+1,max); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
+  else if(e.key==='ArrowUp'){ let idx=current; do{ idx=Math.max(idx-1,0); if(idx===current) break;}while(activeMenu[idx]?.type==='divider'); current=idx; renderMenu(); centerOnSelected(current); scheduleMeasure(); e.preventDefault();}
+  else if(e.key==='Enter'){ const opt=activeMenu[current]; if(opt){ if(opt.type==='button'||opt.type==='submenu'){sendToHost({action:'activate', index:current, option:opt});} else if(opt.type==='checkbox'){ opt.checked=!opt.checked; renderMenu(); sendToHost({action:'changed', index:current, option:opt});} else if(opt.type==='scroll'){ opt.selected=Math.min((opt.options?.length||1)-1,(opt.selected||0)+1); renderMenu(); sendToHost({action:'changed', index:current, option:opt});}} e.preventDefault();}
+  else if(e.key==='Escape'){ sendToHost({action:'escape'});}
 });
 
 renderMenu();
 const ro=new ResizeObserver(()=>scheduleMeasure()); ro.observe(listEl); ro.observe(listWrap); ro.observe(wrapper);
 
-// Textbox API
-// setTextboxValue(index, value)
-window.__DUI_API__={
-  setMenu(m){if(Array.isArray(m)){ activeMenu=m; renderMenu(); scheduleMeasure();}},
-  setCurrent(i){ current=i; renderMenu(); centerOnSelected(i); scheduleMeasure();},
-  setTextboxValue(idx, value){
-    if(typeof idx === "number" && activeMenu[idx] && activeMenu[idx].type === "textbox"){
-      activeMenu[idx].value = typeof value === "string" ? value : "";
-      renderMenu(); scheduleMeasure();
-    }
-  },
-  getTextboxValue(idx){
-    if(typeof idx === "number" && activeMenu[idx] && activeMenu[idx].type === "textbox"){
-      return activeMenu[idx].value || "";
-    }
-    return "";
-  },
-  focusTextbox(idx){
-    if(typeof idx === "number" && activeMenu[idx] && activeMenu[idx].type === "textbox"){
-      current = idx;
-      renderMenu();
-      centerOnSelected(current);
-      scheduleMeasure();
-      // focus will occur after renderMenu for the input element
-    }
-  }
-};
+window.__DUI_API__={ setMenu(m){if(Array.isArray(m)){ activeMenu=m; renderMenu(); scheduleMeasure();}}, setCurrent(i){ current=i; renderMenu(); centerOnSelected(i); scheduleMeasure();} };
 
 scheduleMeasure();
 })();
