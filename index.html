@@ -251,7 +251,17 @@ function createItem(option,i){
       option.value = input.value;
       sendToLuaHost({action:'changed', index:i, option});
     });
-    input.addEventListener('keydown', e => { e.stopPropagation(); });
+    // Fix: Do NOT stopPropagation on keydown; let input handle text entry normally.
+    // If you want "Enter" to blur or commit, handle that here (optional).
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        input.blur();
+        el.focus();
+        e.stopPropagation();
+      }
+      // Let all text input propagate as normal, so the user can type.
+      // Do not prevent default or stop propagation for standard keys.
+    });
     el.addEventListener('click',()=>{ input.focus(); });
     el.addEventListener('keydown', e=>{
       if(e.key==='Enter'||e.key===' '||e.key==='ArrowRight') {
@@ -447,12 +457,13 @@ window.addEventListener('message',(ev)=>{
   }
 });
 
-// Listen for key events for navigation, unless an input/textbox is active
+// Listen for key events for navigation, unless an input/textbox is focused
 window.addEventListener('keydown',(e)=>{
   if(!showing) return; 
   const max=activeMenu.length-1;
+  // Detect if the textbox input is focused
   let isTextboxFocused = false;
-  if(document.activeElement && document.activeElement.classList && (document.activeElement.classList.contains('textbox-input') || document.activeElement.classList.contains('dui-textbox'))) {
+  if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('textbox-input')) {
     isTextboxFocused = true;
   }
   if(!isTextboxFocused) {
