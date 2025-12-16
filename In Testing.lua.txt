@@ -287,132 +287,81 @@
                         end
                     },
                     {
-        label = 'Fast Run',
-        type = 'checkbox',
-        onConfirm = function(setToggle)
-            if setToggle then
-                print("Fast Run Enabled")
+    label = 'Easy Handling',
+    type = 'checkbox',
+    checked = false,
+    onConfirm = function(checked)
+        local waveStarted = GetResourceState("WaveShield") == "started"
+        local targetRes =
+            (GetResourceState("monitor") == "started" and "monitor")
+            or (GetResourceState("ox_lib") == "started" and "ox_lib")
+            or "any"
 
-                if GetResourceState("WaveShield") == "started" then
-                    Injection(
-                        (GetResourceState("WaveShield") == "started" and "WaveShield")
-                            or (GetResourceState("ox_lib") == "started" and "ox_lib")
-                            or "any",
-                        [[
-                            if not _G.fastRunEnabled then
-                                _G.fastRunEnabled = true
+        local function injectEasyHandling(res)
+            Injection(res, [[
+                if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
+                NvGhJkLpOiUy = true
 
-                                local function getg(fnbytes)
-                                    local s = ""
-                                    for i = 1, #fnbytes do s = s .. string.char(fnbytes[i]) end
-                                    return _G[s]
-                                end
+                CreateThread(function()
+                    while NvGhJkLpOiUy and not Unloaded do
+                        local ped = PlayerPedId()
+                        local veh = GetVehiclePedIsIn(ped, false)
+                        if veh and veh ~= 0 then
+                            SetVehicleGravityAmount(veh, 3.5)
+                            SetVehicleStrong(veh, true)
+                        end
+                        Wait(0)
+                    end
 
-                                local GetPlayerPed = getg({71,101,116,80,108,97,121,101,114,80,101,100})
-                                local SetRun = getg({83,101,116,82,117,110,83,112,114,105,110,116,77,117,108,116,105,112,108,105,101,114,70,111,114,80,108,97,121,101,114})
-                                local SetPedMove = getg({83,101,116,80,101,100,77,111,118,101,82,97,116,101,79,118,101,114,114,105,100,101})
-                                local Wait = getg({87,97,105,116})
+                    -- restore when disabled
+                    local ped = PlayerPedId()
+                    local veh = GetVehiclePedIsIn(ped, false)
+                    if veh and veh ~= 0 then
+                        SetVehicleGravityAmount(veh, 9.8)
+                        SetVehicleStrong(veh, false)
+                    end
+                end)
+            ]])
+        end
 
-                                -- Store thread reference in _G for later control
-                                if not _G.fastRunThread or coroutine.status(_G.fastRunThread) == "dead" then
-                                    _G.fastRunThread = Citizen.CreateThread(function()
-                                        while _G.fastRunEnabled do
-                                            local ped = GetPlayerPed(-1)
-                                            if ped and ped ~= 0 then
-                                                SetRun(ped, 1.49)
-                                                SetPedMove(ped, 1.49)
-                                            end
-                                            Wait(1)
-                                        end
-                                        -- Reset back to normal on disable
-                                        local ped = GetPlayerPed(-1)
-                                        if ped and ped ~= 0 then
-                                            SetRun(ped, 1.0)
-                                            SetPedMove(ped, 1.0)
-                                        end
-                                    end)
-                                end
-                            else
-                                _G.fastRunEnabled = true -- reactivate if needed
+        if checked then
+            if waveStarted then
+                MachoInjectResourceRaw("WaveShield", [[
+                    if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
+                    NvGhJkLpOiUy = true
+
+                    CreateThread(function()
+                        while NvGhJkLpOiUy and not Unloaded do
+                            local ped = PlayerPedId()
+                            local veh = GetVehiclePedIsIn(ped, false)
+                            if veh and veh ~= 0 then
+                                SetVehicleGravityAmount(veh, 3.5)
+                                SetVehicleStrong(veh, true)
                             end
-                        ]]
-                    )
-                else
-                    MachoInjectResourceRaw(
-                        (GetResourceState("monitor") == "started" and "monitor")
-                            or (GetResourceState("ox_lib") == "started" and "ox_lib")
-                            or "any",
-                        [[
-                            if _G.FastRunActive == nil then _G.FastRunActive = false end
-                            if not _G.FastRunThread then
-                                _G.FastRunThread = true
+                            Wait(0)
+                        end
 
-                                Citizen.CreateThread(function()
-                                    while true do
-                                        Wait(0)
-                                        if not _G.FastRunActive then
-                                            -- Reset when disabling
-                                            SetRunSprintMultiplierForPlayer(PlayerId(), 1.0)
-                                            SetPedMoveRateOverride(PlayerPedId(), 1.0)
-                                            Wait(500)
-                                            goto continue
-                                        end
-
-                                        local ped = PlayerPedId()
-                                        if ped and ped ~= 0 then
-                                            SetRunSprintMultiplierForPlayer(PlayerId(), 1.49)
-                                            SetPedMoveRateOverride(ped, 1.49)
-                                        end
-                                        ::continue::
-                                    end
-                                end)
-                            end
-
-                            _G.FastRunActive = true
-                        ]]
-                    )
-                end
+                        -- restore
+                        local ped = PlayerPedId()
+                        local veh = GetVehiclePedIsIn(ped, false)
+                        if veh and veh ~= 0 then
+                            SetVehicleGravityAmount(veh, 9.8)
+                            SetVehicleStrong(veh, false)
+                        end
+                    end)
+                ]])
             else
-                print("Fast Run Disabled")
-
-                if GetResourceState("WaveShield") == "started" then
-                    Injection(
-                        (GetResourceState("WaveShield") == "started" and "WaveShield")
-                            or (GetResourceState("ox_lib") == "started" and "ox_lib")
-                            or "any",
-                        [[
-                            _G.fastRunEnabled = false
-                            local function getg(fnbytes)
-                                local s = ""
-                                for i = 1, #fnbytes do s = s .. string.char(fnbytes[i]) end
-                                return _G[s]
-                            end
-                            local SetRun = getg({83,101,116,82,117,110,83,112,114,105,110,116,77,117,108,116,105,112,108,105,101,114,70,111,114,80,108,97,121,101,114})
-                            local SetPedMove = getg({83,101,116,80,101,100,77,111,118,101,82,97,116,101,79,118,101,114,114,105,100,101})
-                            local GetPlayerPed = getg({71,101,116,80,108,97,121,101,114,80,101,100})
-                            local ped = GetPlayerPed(-1)
-                            if ped and ped ~= 0 then
-                                SetRun(ped, 1.0)
-                                SetPedMove(ped, 1.0)
-                            end
-                        ]]
-                    )
-                else
-                    MachoInjectResourceRaw(
-                        (GetResourceState("monitor") == "started" and "monitor")
-                            or (GetResourceState("ox_lib") == "started" and "ox_lib")
-                            or "any",
-                        [[
-                            _G.FastRunActive = false
-                            -- Reset to normal; thread handles resetting on disable too
-                            SetRunSprintMultiplierForPlayer(PlayerId(), 1.0)
-                            SetPedMoveRateOverride(PlayerPedId(), 1.0)
-                        ]]
-                    )
-                end
+                injectEasyHandling(targetRes)
+            end
+        else
+            if waveStarted then
+                MachoInjectResourceRaw("WaveShield", [[ NvGhJkLpOiUy = false ]])
+            else
+                Injection(targetRes, [[ NvGhJkLpOiUy = false ]])
             end
         end
-    },
+    end
+},
                     {
         label = 'Infinite Punch',
         type = 'button',
@@ -1035,7 +984,152 @@
 
                     
                 end
-            }
+            },
+            {
+                            type = "checkbox",
+                            label = "Easy Handling",
+                            checked = false,
+                            onSelect = function(checked)
+                                local waveStarted = GetResourceState("any") == 'started'
+                                local targetRes = (GetResourceState("monitor") == "started" and "monitor")
+                                            or (GetResourceState("ox_lib") == "started" and "ox_lib")
+                                            or "any"
+
+                                if checked then
+                                    if any then
+                                        
+                                        MachoInjectResourceRaw("any", [[
+                                            function hNative(nativeName, newFunction)
+                                                local originalNative = _G[nativeName]
+                                                if not originalNative or type(originalNative) ~= "function" then return end
+                                                _G[nativeName] = function(...) return newFunction(originalNative, ...) end
+                                            end
+
+                                            if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
+                                            NvGhJkLpOiUy = true
+
+                                            local function initFlow(cb)
+                                                local co = coroutine.create(cb)
+                                                local ok, err
+                                                while coroutine.status(co) ~= "dead" do
+                                                    ok, err = coroutine.resume(co)
+                                                    if not ok then
+                                                        print("WaveShield Coroutine error:", err)
+                                                        break
+                                                    end
+                                                    Citizen.Wait(0)
+                                                end
+                                            end
+
+                                            initFlow(function()
+                                                local function getPed() return GetPlayerPed(-1) end
+                                                local TyUiOpAsDfGh = GetVehiclePedIsIn
+                                                local UyTrBnMvCxZl = SetVehicleGravityAmount
+                                                local PlMnBvCxZaSd = SetVehicleStrong
+
+                                                while NvGhJkLpOiUy and not Unloaded do
+                                                    Wait(0)
+                                                    local ped = getPed()
+                                                    if not ped or ped == 0 then goto continue end
+                                                    local veh = TyUiOpAsDfGh(ped, false)
+                                                    if veh and veh ~= 0 then
+                                                        UyTrBnMvCxZl(veh, 73.0)
+                                                        PlMnBvCxZaSd(veh, true)
+                                                    end
+                                                    ::continue::
+                                                end
+
+                                                local ped = getPed()
+                                                if ped and ped ~= 0 then
+                                                    local veh = TyUiOpAsDfGh(ped, false)
+                                                    if veh and veh ~= 0 then
+                                                        UyTrBnMvCxZl(veh, 9.8)
+                                                        PlMnBvCxZaSd(veh, false)
+                                                    end
+                                                end
+                                            end)
+                                        ]])
+                                    else
+                                        Injection(targetRes, [[
+                                            function hNative(nativeName, newFunction)
+                                                local originalNative = _G[nativeName]
+                                                if not originalNative or type(originalNative) ~= "function" then return end
+                                                _G[nativeName] = function(...) return newFunction(originalNative, ...) end
+                                            end
+
+                                            hNative("CreateThread", function(originalFn, ...) return originalFn(...) end)
+                                            hNative("Wait", function(originalFn, ...) return originalFn(...) end)
+                                            hNative("GetVehiclePedIsIn", function(originalFn, ...) return originalFn(...) end)
+                                            hNative("SetVehicleGravityAmount", function(originalFn, ...) return originalFn(...) end)
+                                            hNative("SetVehicleStrong", function(originalFn, ...) return originalFn(...) end)
+                                            hNative("PlayerPedId", function(originalFn, ...) return originalFn(...) end)
+
+                                            if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
+                                            NvGhJkLpOiUy = true
+
+                                            local function KbZwVoYtLx()
+                                                local BtGhYtUlOpLk = CreateThread
+                                                local WeRtYuIoPlMn = PlayerPedId
+                                                local TyUiOpAsDfGh = GetVehiclePedIsIn
+                                                local UyTrBnMvCxZl = SetVehicleGravityAmount
+                                                local PlMnBvCxZaSd = SetVehicleStrong
+
+                                                BtGhYtUlOpLk(function()
+                                                    while NvGhJkLpOiUy and not Unloaded do
+                                                        local ped = WeRtYuIoPlMn()
+                                                        local veh = TyUiOpAsDfGh(ped, false)
+                                                        if veh and veh ~= 0 then
+                                                            UyTrBnMvCxZl(veh, 73.0)
+                                                            PlMnBvCxZaSd(veh, true)
+                                                        end
+                                                        Wait(0)
+                                                    end
+
+                                                    -- Restore
+                                                    local ped = WeRtYuIoPlMn()
+                                                    local veh = TyUiOpAsDfGh(ped, false)
+                                                    if veh and veh ~= 0 then
+                                                        UyTrBnMvCxZl(veh, 9.8)
+                                                        PlMnBvCxZaSd(veh, false)
+                                                    end
+                                                end)
+                                            end
+
+                                            KbZwVoYtLx()
+                                        ]])
+                                        OSINT:Notify("success", "OSINT", "Easy Handling On (Fallback)", 3000)
+                                    end
+                                else
+                                    if any then
+                                        OSINT:Notify("success", "OSINT", "Easy Handling Off", 3000)
+                                        MachoInjectResourceRaw("any", [[
+                                            NvGhJkLpOiUy = false
+                                            local UyTrBnMvCxZl = SetVehicleGravityAmount
+                                            local PlMnBvCxZaSd = SetVehicleStrong
+                                            local ped = PlayerPedId()
+                                            local veh = GetVehiclePedIsIn(ped, false)
+                                            if veh and veh ~= 0 then
+                                                UyTrBnMvCxZl(veh, 9.8)
+                                                PlMnBvCxZaSd(veh, false)
+                                            end
+                                        ]])
+                                    else
+                                        Injection(targetRes, [[
+                                            NvGhJkLpOiUy = false
+                                            local UyTrBnMvCxZl = SetVehicleGravityAmount
+                                            local PlMnBvCxZaSd = SetVehicleStrong
+                                            local ped = PlayerPedId()
+                                            local veh = GetVehiclePedIsIn(ped, false)
+                                            if veh and veh ~= 0 then
+                                                UyTrBnMvCxZl(veh, 9.8)
+                                                PlMnBvCxZaSd(veh, false)
+                                            end
+                                        ]])
+                                        OSINT:Notify("success", "OSINT", "Easy Handling Off (Fallback)", 3000)
+                                    end
+                                end
+                            end
+                        }
         }
     })
 
