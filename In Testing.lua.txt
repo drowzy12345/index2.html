@@ -2126,46 +2126,33 @@ current_feature = math.max(1, math.min(current_feature, #features))
 -- ===== Improved Freecam Feature UI (VISUAL ONLY) =====
 -- ===== Right-Side Text-Fit Highlight Menu (No Background) =====
 
-local startX = 0.90      -- moved to right side
-local startY = 0.12
-local itemH  = 0.032
-local paddingX = 0.010
+-- ===== Improved Freecam Feature UI (VISUAL ONLY) =====
+-- ===== Right-Side Text-Fit Highlight Menu (No Background) =====
+
+-- ===== Minimal Text-Only Selector (Exact Style) =====
+-- ===== Text-Only Selector (NO Background) =====
+
+local startX = 0.86     -- right side
+local startY = 0.22
+local itemH  = 0.030
 
 for i = 1, #features do
     local y = startY + (i - 1) * itemH
     local active = (i == current_feature)
 
-    -- Measure text width
     SetTextFont(4)
-    SetTextScale(0.0, 0.34)
-    BeginTextCommandWidth("STRING")
-    AddTextComponentString(features[i])
-    local textWidth = EndTextCommandGetWidth(true)
+    SetTextScale(0.0, 0.33)
+    SetTextCentre(true)
 
-    -- Blue highlight (text-sized)
     if active then
-        DrawRect(
-            startX + paddingX + (textWidth / 2),
-            y + 0.016,
-            textWidth + (paddingX * 2),
-            itemH - 0.006,
-            0, 120, 215, 255
-        )
-    end
-
-    -- Text
-    SetTextCentre(false)
-    if active then
-        SetTextColour(255, 255, 255, 255)
+        SetTextColour(240, 240, 240, 255)  -- selected
     else
-        SetTextColour(220, 220, 220, 220)
+        SetTextColour(150, 150, 150, 220)  -- unselected
     end
 
-    SetTextDropShadow(0, 0, 0, 0, 255)
-    SetTextOutline()
     SetTextEntry("STRING")
     AddTextComponentString(features[i])
-    DrawText(startX + paddingX, y + 0.002)
+    DrawText(startX, y)
 end
 
 
