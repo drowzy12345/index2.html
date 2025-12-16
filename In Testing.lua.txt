@@ -37,11 +37,16 @@
                 icon = 'ph-user',
                 submenu = {
                     { 
+                        label = 'Test Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },
+                    { 
                         label = 'Checkbox Test', 
                         type = 'checkbox', 
                         onConfirm = function(setToggle) end 
                     },
-                    { 
+                    {
                         label = 'Scroll Test', 
                         type = 'scroll', 
                         selected = 2, 
@@ -55,6 +60,16 @@
                         max = 100, 
                         value = 50, 
                         onConfirm = function(val) end 
+                    },
+                    { 
+                        label = 'Checkbox Test', 
+                        type = 'Self Options', 
+                        onConfirm = function(setToggle) end 
+                    },
+                    { 
+                        label = 'Self Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
                     },
                     { 
                         label = 'Revive', 
@@ -73,6 +88,15 @@
                             end
                         end
                     },
+                    {
+        label = 'Infinite Punch',
+        type = 'button',
+        onConfirm = function()
+            
+                                ClearPedTasksImmediately(PlayerPedId())
+                                
+        end
+    },
                     {
         label = 'Model',
         type = 'submenu',
@@ -225,27 +249,7 @@
                 callback(setOptions)
             end
         },
-                    {
-        label = 'Toggle Freecam',
-        type = 'checkbox',
-        checked = false,
-        onConfirm = function(toggled)
-            if toggled then
-                -- Enable Freecam
-                if not cam_active then
-                    cam_active = true
-                    toggle_camera()
-                end
-            else
-                -- Disable Freecam
-                if cam_active then
-                    cam_active = false
-                    toggle_camera()
-                end
-            end
-        end
-    },
-                    {
+        {
                     label = 'GodMode',
                     type = 'checkbox',
                     checked = false,
@@ -286,91 +290,31 @@
                             noclip = toggled
                         end
                     },
+                    { 
+                        label = 'Miscellaneous', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },
                     {
-    label = 'Easy Handling',
-    type = 'checkbox',
-    checked = false,
-    onConfirm = function(checked)
-        local waveStarted = GetResourceState("WaveShield") == "started"
-        local targetRes =
-            (GetResourceState("monitor") == "started" and "monitor")
-            or (GetResourceState("ox_lib") == "started" and "ox_lib")
-            or "any"
-
-        local function injectEasyHandling(res)
-            Injection(res, [[
-                if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
-                NvGhJkLpOiUy = true
-
-                CreateThread(function()
-                    while NvGhJkLpOiUy and not Unloaded do
-                        local ped = PlayerPedId()
-                        local veh = GetVehiclePedIsIn(ped, false)
-                        if veh and veh ~= 0 then
-                            SetVehicleGravityAmount(veh, 3.5)
-                            SetVehicleStrong(veh, true)
-                        end
-                        Wait(0)
-                    end
-
-                    -- restore when disabled
-                    local ped = PlayerPedId()
-                    local veh = GetVehiclePedIsIn(ped, false)
-                    if veh and veh ~= 0 then
-                        SetVehicleGravityAmount(veh, 9.8)
-                        SetVehicleStrong(veh, false)
-                    end
-                end)
-            ]])
-        end
-
-        if checked then
-            if waveStarted then
-                MachoInjectResourceRaw("WaveShield", [[
-                    if NvGhJkLpOiUy == nil then NvGhJkLpOiUy = false end
-                    NvGhJkLpOiUy = true
-
-                    CreateThread(function()
-                        while NvGhJkLpOiUy and not Unloaded do
-                            local ped = PlayerPedId()
-                            local veh = GetVehiclePedIsIn(ped, false)
-                            if veh and veh ~= 0 then
-                                SetVehicleGravityAmount(veh, 3.5)
-                                SetVehicleStrong(veh, true)
-                            end
-                            Wait(0)
-                        end
-
-                        -- restore
-                        local ped = PlayerPedId()
-                        local veh = GetVehiclePedIsIn(ped, false)
-                        if veh and veh ~= 0 then
-                            SetVehicleGravityAmount(veh, 9.8)
-                            SetVehicleStrong(veh, false)
-                        end
-                    end)
-                ]])
+        label = 'Toggle Freecam',
+        type = 'checkbox',
+        checked = false,
+        onConfirm = function(toggled)
+            if toggled then
+                -- Enable Freecam
+                if not cam_active then
+                    cam_active = true
+                    toggle_camera()
+                end
             else
-                injectEasyHandling(targetRes)
-            end
-        else
-            if waveStarted then
-                MachoInjectResourceRaw("WaveShield", [[ NvGhJkLpOiUy = false ]])
-            else
-                Injection(targetRes, [[ NvGhJkLpOiUy = false ]])
+                -- Disable Freecam
+                if cam_active then
+                    cam_active = false
+                    toggle_camera()
+                end
             end
         end
-    end
-},
-                    {
-        label = 'Infinite Punch',
-        type = 'button',
-        onConfirm = function()
-            
-                                ClearPedTasksImmediately(PlayerPedId())
-                                
-        end
-    }
+                    }   
                 }
             })
 
