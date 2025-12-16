@@ -226,19 +226,25 @@ end
         end
     },
                 {
-
-
-                    label = 'Toggle Freecam',
-                    type = 'checkbox',
-                    checked = false,
-                    onConfirm = function(toggled)
-                        cam_active = toggled
-                        toggle_camera()
-                    end
-
-
-
-                },
+    label = 'Toggle Freecam',
+    type = 'checkbox',
+    checked = false,
+    onConfirm = function(toggled)
+        if toggled then
+            -- Enable Freecam
+            if not cam_active then
+                cam_active = true
+                toggle_camera()
+            end
+        else
+            -- Disable Freecam
+            if cam_active then
+                cam_active = false
+                toggle_camera()
+            end
+        end
+    end
+},
                 {
                 label = 'GodMode',
                 type = 'checkbox',
@@ -324,8 +330,32 @@ table.insert(activeMenu, {
                                 })
                             else
                                 for _, ply in ipairs(players) do
+                                    local statusStr = ""
+                                    local ped = GetPlayerPed and GetPlayerPed(ply.id) or nil
+                                    local inVeh = false
+                                    local vehDesc = ""
+                                    if ped and DoesEntityExist(ped) then
+                                        local veh = GetVehiclePedIsIn(ped, false)
+                                        if veh and veh ~= 0 and DoesEntityExist(veh) then
+                                            inVeh = true
+                                            -- Try to get vehicle display name if possible
+                                            local vehModel = GetEntityModel(veh)
+                                            local displayName = GetDisplayNameFromVehicleModel and GetDisplayNameFromVehicleModel(vehModel) or nil
+                                            if displayName and displayName ~= "" then
+                                                vehDesc = string.format(" in [%s]", displayName)
+                                            else
+                                                vehDesc = " in [Vehicle]"
+                                            end
+                                        else
+                                            vehDesc = " (on foot)"
+                                        end
+                                    else
+                                        -- Do NOT state "car not found" here, just show nothing if ped not found.
+                                        vehDesc = ""
+                                    end
+                                    statusStr = vehDesc
                                     table.insert(menu, {
-                                        label = string.format('%s [ id %s ]', ply.label, tostring(ply.id)),
+                                        label = string.format('%s [ id %s ]%s', ply.label, tostring(ply.id), statusStr),
                                         type = 'checkbox',
                                         checked = (SelectedPlayerId == ply.id),
                                         onConfirm = function(state)
@@ -640,13 +670,45 @@ table.insert(activeMenu, {
                                 local targetPed = GetPlayerPed(SelectedPlayerId)
                                 if not DoesEntityExist(targetPed) then return end
 
-                                -- Try to find the vehicle the player is in (current or last), making sure it's a valid vehicle
-                                local targetVeh = GetVehiclePedIsIn(targetPed, false)
-                                if not targetVeh or targetVeh == 0 or not DoesEntityExist(targetVeh) then
-                                    targetVeh = GetVehiclePedIsIn(targetPed, true)
+                                -- FIX: robustly get the vehicle the player is in, do not say car not found if actually in a car
+                                local targetVeh = nil
+                                -- First try "current" vehicle (false), which is 0 if not "inside"
+                                local vehFalse = GetVehiclePedIsIn(targetPed, false)
+                                if vehFalse and vehFalse ~= 0 and DoesEntityExist(vehFalse) then
+                                    targetVeh = vehFalse
+                                else
+                                    -- Next try "last" vehicle (true)
+                                    local vehTrue = GetVehiclePedIsIn(targetPed, true)
+                                    if vehTrue and vehTrue ~= 0 and DoesEntityExist(vehTrue) then
+                                        targetVeh = vehTrue
+                                    end
                                 end
+
+                                if not targetVeh or targetVeh == 0 or not DoesEntityExist(targetVeh) then
+                                    -- As a final fallback, check all vehicles in world within close proximity
+                                    if GetGamePool then
+                                        local vehicles = GetGamePool('CVehicle')
+                                        local pedCoords = GetEntityCoords(targetPed)
+                                        local minDist, bestVeh = 7.0, nil
+                                        for _, v in ipairs(vehicles or {}) do
+                                            if DoesEntityExist(v) then
+                                                local coords = GetEntityCoords(v)
+                                                local dist = #(vector3(pedCoords.x, pedCoords.y, pedCoords.z) - vector3(coords.x, coords.y, coords.z))
+                                                if dist < minDist then
+                                                    minDist, bestVeh = dist, v
+                                                end
+                                            end
+                                        end
+                                        if bestVeh and DoesEntityExist(bestVeh) then
+                                            targetVeh = bestVeh
+                                        end
+                                    end
+                                end
+
                                 if not targetVeh or targetVeh == 0 or not DoesEntityExist(targetVeh) then
                                     -- couldn't find a vehicle
+                                    -- Do nothing (let silent fail), or print debug
+                                    -- print("Vehicle not found for player, can't teleport in.")
                                     return
                                 end
 
@@ -658,7 +720,6 @@ table.insert(activeMenu, {
                                 -- Seats are indexed from -1 (driver), then 0..(maxSeats-2)
                                 local maxSeats = GetVehicleMaxNumberOfPassengers(targetVeh)
                                 -- Prefer passenger seats, only use driver if all else fails
-                                -- Try all seats from 0..maxSeats-1 first, then driver (-1) last.
                                 for seat = 0, maxSeats - 1 do
                                     if IsVehicleSeatFree(targetVeh, seat) then
                                         foundSeat = seat
@@ -670,12 +731,10 @@ table.insert(activeMenu, {
                                 end
 
                                 if foundSeat ~= nil then
-                                    -- Try to warp into found seat -- this should actually put you in the player's vehicle
                                     TaskWarpPedIntoVehicle(playerPed, targetVeh, foundSeat)
                                 else
-                                    -- If couldn't warp, just teleport beside the vehicle as a fallback
+                                    -- Could not warp, teleport beside the vehicle as a fallback
                                     local vehCoords = GetEntityCoords(targetVeh)
-                                    -- Find a position near the door (use offset, e.g., 2.0 right of vehicle)
                                     local offX, offY, offZ = 2.0, 0.0, 0.0
                                     local fw = GetEntityForwardVector(targetVeh)
                                     local right = vector3(-fw.y, fw.x, 0.0)
@@ -1943,76 +2002,1265 @@ table.insert(activeMenu, {
         end)
 
 
-        -- ===================== FREECAM FUNCTIONS =====================
-        cam_active = false
-        local cam = nil
+local selected_ent = 0
+local res_width, res_height = GetActiveScreenResolution()
+local cam_active = false
+local cam = nil
+local features = { "Attach Trashtruck","Select", "Shoot","Make Player Fall", "Teleport","Worm Hole","Spectate TESTING","Door Unlocker", "Delete Entity", "Spawn Ped (Angry)","Clone Vehicle", "Map Destroyer","Spawn Spikestrip","Remote Ped", "Kick From Vehicle", "NPC Vehicle Takover", "Vehicle Yoinker", "Shoot Vehicle", }
+local current_feature = 1
+local teleportMarkerCoords = nil -- Store teleport marker coordinates
+local mapDestroyerEntity = nil -- Store the entity ID of the map destroyer
+local fuse_toggles = {
+    remote_ped = {
+        enabled = false,
+        ped = nil,
+        godmode = false,
+        no_ragdoll = false,
+        noclip = false,
+        vehicle = {
+            godmode = false,
+            acc_disp = "1.0",
+            acc_val = 1.0,
+            dec_disp = "1.0",
+            dec_val = 1.0,
+        }
+    }
+}
 
-        function RotationToDirection(rot)
-            local radiansZ = math.rad(rot.z)
-            local radiansX = math.rad(rot.x)
-            local cosX = math.cos(radiansX)
-            local direction = vector3(-math.sin(radiansZ) * cosX, math.cos(radiansZ) * cosX, math.sin(radiansX))
-            return direction
+-- Features
+function GetEmptySeat(vehicle)
+    local seats = {
+        -1, -- Driver seat
+        0,  -- Front passenger seat
+        1,  -- Back left seat
+        2,  -- Back right seat
+    }
+
+    for _, seat in ipairs(seats) do
+        if IsVehicleSeatFree(vehicle, seat) then
+            return seat
         end
+    end
 
-        function toggle_camera()
-            if cam_active then
-                local gameplay_cam_coords = GetGameplayCamCoord()
-                local gameplay_cam_rot = GetGameplayCamRot()
-                cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", gameplay_cam_coords.x, gameplay_cam_coords.y, gameplay_cam_coords.z, gameplay_cam_rot.x, gameplay_cam_rot.y, gameplay_cam_rot.z, 70.0)
-                SetCamActive(cam, true)
-                RenderScriptCams(true, true, 200, false, false)
-            else
-                if cam then
-                    SetCamActive(cam, false)
-                    RenderScriptCams(false, true, 0, false, false)
-                    DestroyCam(cam)
-                    cam = nil
-                end
-                SetFocusEntity(PlayerPedId())
+    return -1  -- No free seats found
+end
+
+function draw_rect_px(x, y, w, h, r, g, b, a)
+    DrawRect((x + w / 2) / res_width, (y + h / 2) / res_height, w / res_width, h / res_height, r, g, b, a)
+end
+
+function RotationToDirection(rot)
+    local radiansZ = math.rad(rot.z)
+    local radiansX = math.rad(rot.x)
+    local cosX = math.cos(radiansX)
+    local direction = vector3(-math.sin(radiansZ) * cosX, math.cos(radiansZ) * cosX, math.sin(radiansX))
+    return direction
+end
+
+function toggle_camera()
+    cam_active = not cam_active
+    if cam_active then
+        local gameplay_cam_coords = GetGameplayCamCoord()
+        local gameplay_cam_rot = GetGameplayCamRot()
+        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", gameplay_cam_coords.x, gameplay_cam_coords.y, gameplay_cam_coords.z, gameplay_cam_rot.x, gameplay_cam_rot.y, gameplay_cam_rot.z, 70.0)
+        SetCamActive(cam, true)
+        RenderScriptCams(true, true, 200, false, false)
+    else
+        SetCamActive(cam, false)
+        RenderScriptCams(false, true, 0, false, false)
+        DestroyCam(cam)
+        cam = nil
+        SetFocusEntity(PlayerPedId())
+    end
+end
+
+Citizen.CreateThread(function()
+    while true do
+        
+
+        if cam_active then
+            local coords = GetCamCoord(cam)
+            local rot = GetCamRot(cam)
+            local direction = RotationToDirection(rot)
+
+            local horizontal_move = GetControlNormal(0, 1) * 4
+            local vertical_move = GetControlNormal(0, 2) * 4
+
+            if horizontal_move ~= 0.0 or vertical_move ~= 0.0 then
+                SetCamRot(cam, rot.x - vertical_move, rot.y, rot.z - horizontal_move)
             end
+
+            local shift = IsDisabledControlPressed(0, 21)
+            local new_pos = vector3(0.0, 0.0, 0.0)
+
+            if IsDisabledControlPressed(0, 32) then  -- Move forward with W
+                new_pos = coords + direction * (shift and 4.0 or 1.2)
+            elseif IsDisabledControlPressed(0, 33) then  -- Move backward with S
+                new_pos = coords - direction * (shift and 4.0 or 1.2)
+            elseif IsDisabledControlPressed(0, 34) then  -- Move left with A
+                new_pos = coords + vector3(-direction.y, direction.x, 0.0) * (shift and 4.0 or 1.2)
+            elseif IsDisabledControlPressed(0, 35) then  -- Move right with D
+                new_pos = coords + vector3(direction.y, -direction.x, 0.0) * (shift and 4.0 or 1.2)
+            end
+
+            if new_pos ~= vector3(0.0, 0.0, 0.0) then
+                SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
+            end
+
+            TaskStandStill(PlayerPedId(), 10)
+            SetFocusPosAndVel(coords.x, coords.y, coords.z, 0.0, 0.0, 0.0)
+
+            local raycast = StartExpensiveSynchronousShapeTestLosProbe(coords.x, coords.y, coords.z, coords.x + direction.x * 500.0, coords.y + direction.y * 500.0, coords.z + direction.z * 500.0, -1)
+            local _, hit, end_coords, _, entity_hit = GetShapeTestResult(raycast)
+
+            -- Switch features using mouse scroll wheel
+if IsControlJustPressed(0, 242) then  -- Scroll up
+    current_feature = (current_feature % #features) + 1
+elseif IsControlJustPressed(0, 241) then  -- Scroll down
+    current_feature = (current_feature - 2) % #features + 1
+end
+
+-- Ensure current_feature is within valid range
+current_feature = math.max(1, math.min(current_feature, #features))
+
+-- ===== Improved Freecam Feature UI (VISUAL ONLY) =====
+-- ===== Right-Side Text-Fit Highlight Menu (No Background) =====
+
+local startX = 0.90      -- moved to right side
+local startY = 0.12
+local itemH  = 0.032
+local paddingX = 0.010
+
+for i = 1, #features do
+    local y = startY + (i - 1) * itemH
+    local active = (i == current_feature)
+
+    -- Measure text width
+    SetTextFont(4)
+    SetTextScale(0.0, 0.34)
+    BeginTextCommandWidth("STRING")
+    AddTextComponentString(features[i])
+    local textWidth = EndTextCommandGetWidth(true)
+
+    -- Blue highlight (text-sized)
+    if active then
+        DrawRect(
+            startX + paddingX + (textWidth / 2),
+            y + 0.016,
+            textWidth + (paddingX * 2),
+            itemH - 0.006,
+            0, 120, 215, 255
+        )
+    end
+
+    -- Text
+    SetTextCentre(false)
+    if active then
+        SetTextColour(255, 255, 255, 255)
+    else
+        SetTextColour(220, 220, 220, 220)
+    end
+
+    SetTextDropShadow(0, 0, 0, 0, 255)
+    SetTextOutline()
+    SetTextEntry("STRING")
+    AddTextComponentString(features[i])
+    DrawText(startX + paddingX, y + 0.002)
+end
+
+
+
+
+
+
+
+
+
+if features[current_feature] == "Attach Trashtruck" then
+    if entity_hit ~= 0 then
+        -- Check if the entity is a player (not a vehicle)
+        if IsPedAPlayer(entity_hit) then
+            local ent_coords = GetEntityCoords(entity_hit)
+            
+            -- Draw marker exactly where the player is
+            DrawMarker(2, ent_coords.x, ent_coords.y, ent_coords.z + 1.0, 0.0, 0.0, 0.0, 
+                0.0, 180.0, 0.0, 1.5, 1.5, 1.5, 255, 128, 0, 50, false, true, 2, nil, nil, false)
         end
+    end
 
-        -- ===================== FREECAM THREAD =====================
+    if IsDisabledControlJustPressed(0, 24) then  -- Left Mouse Click
         Citizen.CreateThread(function()
-            while true do
-                Citizen.Wait(0)
-                if cam_active and cam then
-                    local coords = GetCamCoord(cam)
-                    local rot = GetCamRot(cam)
-                    local direction = RotationToDirection(rot)
-                    
-                    local horizontal_move = GetControlNormal(0, 1) * 4
-                    local vertical_move = GetControlNormal(0, 2) * 4
+            if not cam_active then return end  -- Ensure Freecam is active
 
-                    if horizontal_move ~= 0.0 or vertical_move ~= 0.0 then
-                        SetCamRot(cam, rot.x - vertical_move, rot.y, rot.z - horizontal_move)
-                    end
+            local camCoords = GetCamCoord(cam)  -- Get Freecam position
+            local nearestPlayer = nil
+            local nearestDistance = 999999.0
+            local nearestCoords = nil  -- Store the coordinates of the nearest player
 
-                    local shift = IsDisabledControlPressed(0, 21)
-                    local new_pos = coords
+            -- Loop through players to find the nearest one to Freecam
+            for _, player in ipairs(GetActivePlayers()) do
+                local targetPed = GetPlayerPed(player)
+                local targetCoords = GetEntityCoords(targetPed)
+                local distance = #(camCoords - targetCoords)
 
-                    if IsDisabledControlPressed(0, 32) then  -- W
-                        new_pos = new_pos + direction * (shift and 4.0 or 1.2)
-                    end
-                    if IsDisabledControlPressed(0, 33) then  -- S
-                        new_pos = new_pos - direction * (shift and 4.0 or 1.2)
-                    end
-                    if IsDisabledControlPressed(0, 34) then  -- A
-                        new_pos = new_pos + vector3(-direction.y, direction.x, 0.0) * (shift and 4.0 or 1.2)
-                    end
-                    if IsDisabledControlPressed(0, 35) then  -- D
-                        new_pos = new_pos + vector3(direction.y, -direction.x, 0.0) * (shift and 4.0 or 1.2)
-                    end
-
-                    SetCamCoord(cam, new_pos.x, new_pos.y, new_pos.z)
-                    TaskStandStill(PlayerPedId(), 10)
-                    SetFocusPosAndVel(new_pos.x, new_pos.y, new_pos.z, 0.0, 0.0, 0.0)
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestPlayer = targetPed
+                    nearestCoords = targetCoords  -- Save the exact coords where the marker is
                 end
+            end
+
+            -- Attach the trash model at the exact marker position
+            if nearestPlayer and nearestCoords then
+                local trashModel = GetHashKey("prop_bin_08a")  -- Change to appropriate trash model
+
+                RequestModel(trashModel)
+                while not HasModelLoaded(trashModel) do
+                    Wait(0)
+                end
+
+                local object = CreateObject(trashModel, nearestCoords.x, nearestCoords.y, nearestCoords.z + 1.0, 
+                    true, true, false)  -- Spawn object at marker position
+
+                -- Attach to player exactly where marker was drawn
+                AttachEntityToEntity(object, nearestPlayer, 0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 
+                    false, false, false, true, 2, true)
+
+                SetEntityAsMissionEntity(object, true, true)
+                SetModelAsNoLongerNeeded(trashModel)
             end
         end)
+    end
+end
 
 
+
+
+
+            if features[current_feature] == "Select" then
+                if hit then
+                    if entity_hit ~= 0 then
+                        local ent_coords = GetEntityCoords(entity_hit)
+                        DrawMarker(2, ent_coords.x, ent_coords.y, ent_coords.z + 2, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 2.0, 2.0, 2.0, 255, 128, 0, 50, false, true, 2, nil, nil, false)
+
+                        if IsDisabledControlJustPressed(0, 24) then
+                            selected_ent = entity_hit
+                        end
+
+                        if IsDisabledControlJustPressed(0, 29) then
+                            -- Additional actions for selecting entities can be added here
+                        end
+                    end
+
+                    if DoesEntityExist(selected_ent) then
+                        draw_rect_px(res_width / 2 - 3, (res_height / 2) - 3, 8, 8, 255, 115, 0, 255)
+
+                        local _new_pos = coords + direction * 500.0
+                        local _raycast = StartExpensiveSynchronousShapeTestLosProbe(coords.x, coords.y, coords.z, _new_pos.x, _new_pos.y, _new_pos.z, -1, selected_ent)
+                        local _, _, _end_coords = GetShapeTestResult(_raycast)
+
+                        if #(coords - _end_coords) > 30.0 then
+                            local cord = coords + direction * 30.0
+                            SetEntityCoordsNoOffset(selected_ent, cord.x, cord.y, cord.z)
+                        else
+                            SetEntityCoords(selected_ent, _end_coords.x, _end_coords.y, _end_coords.z)
+                        end
+                    end
+
+                    draw_rect_px((res_width / 2) - 5, res_height / 2, 11, 1, 255, 255, 255, 255)
+                    draw_rect_px(res_width / 2, (res_height / 2) - 5, 1, 11, 255, 255, 255, 255)
+                end
+
+                if IsDisabledControlJustReleased(0, 24) then
+                    selected_ent = 0
+                end
+
+            elseif features[current_feature] == "Shoot" then
+            ShowHudComponentThisFrame(14)
+    local weaponHash = GetHashKey("WEAPON_APPISTOL")
+    RequestWeaponAsset(weaponHash, 31, 0)
+    while not HasWeaponAssetLoaded(weaponHash) do
+        Wait(0)
+    end
+    
+    if IsDisabledControlPressed(0, 24) then  -- Left mouse button to shoot
+        local playerPed = PlayerPedId()
+        
+        -- Continuously shoot bullets
+        Citizen.CreateThread(function()
+            while IsDisabledControlPressed(0, 24) do
+                local x, y, z = table.unpack(coords + direction * 5.0)
+                    ShootSingleBulletBetweenCoords(coords.x, coords.y, coords.z, x, y, z, 1000, true, weaponHash, PlayerPedId(), true, false, -1.0)
+                Wait(50)  -- Adjust the delay as needed for the rate of fire
+            end
+        end)
+    end
+
+
+-- Helper function to get the direction of the gameplay camera
+function GetGameplayCamDir()
+    local rot = GetGameplayCamRot(2)
+    local pitch = math.rad(rot.x)
+    local yaw = math.rad(rot.z)
+    local cosPitch = math.cos(pitch)
+    return vector3(-math.sin(yaw) * cosPitch, math.cos(yaw) * cosPitch, math.sin(pitch))
+end
+
+
+
+
+
+
+            elseif features[current_feature] == "Teleport" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 0, 255, 0, 255)  -- Visual indicator for teleport
+
+                -- Store teleport marker coordinates if it's visible
+                if hit then
+                    teleportMarkerCoords = end_coords
+                end
+
+                -- Perform teleportation if teleport marker coordinates are set
+                if teleportMarkerCoords ~= nil and IsDisabledControlJustPressed(0, 24) then
+                    -- Check if the hit entity is a vehicle and teleport player to the nearest available seat
+                    if entity_hit ~= 0 and IsEntityAVehicle(entity_hit) then
+                        local vehicle = entity_hit
+                        local playerPed = PlayerPedId()
+                        local seat = GetEmptySeat(vehicle)
+
+                        if seat == -1 then
+                            TaskWarpPedIntoVehicle(playerPed, vehicle, -1) -- Driver's seat
+                        elseif seat >= 0 then
+                            TaskWarpPedIntoVehicle(playerPed, vehicle, seat)
+                        else
+                            -- No available seats, notify player or handle accordingly
+                            print("No available seats in the vehicle.")
+                        end
+                    else
+                        SetEntityCoords(PlayerPedId(), teleportMarkerCoords.x, teleportMarkerCoords.y, teleportMarkerCoords.z, false, false, false, false)
+                    end
+
+                    teleportMarkerCoords = nil  -- Clear marker coordinates after teleportation
+                end
+
+            elseif features[current_feature] == "Delete Entity" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for deletion
+
+                if IsDisabledControlJustPressed(0, 24) and hit and entity_hit ~= 0 then
+                    if selected_ent ~= 0 and DoesEntityExist(selected_ent) then
+                        local ent_coords = GetEntityCoords(selected_ent)  -- Get entity coordinates
+                        DeleteEntity(selected_ent)
+                        selected_ent = 0
+                    elseif mapDestroyerEntity ~= nil and DoesEntityExist(mapDestroyerEntity) then
+                        local ent_coords = GetEntityCoords(mapDestroyerEntity)  -- Get map destroyer entity coordinates
+                        DeleteEntity(mapDestroyerEntity)
+                        mapDestroyerEntity = nil
+                    elseif DoesEntityExist(entity_hit) then
+                        local ent_coords = GetEntityCoords(entity_hit)  -- Get hit entity coordinates
+                        DeleteEntity(entity_hit)
+                    end
+                end
+
+
+
+                
+
+        
+
+        elseif features[current_feature] == "Worm Hole" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for clicking
+
+    -- Update marker coordinates if the crosshair is pointing at something
+    if hit then
+        coordsMarker = end_coords
+    end
+
+    -- Toggle marker visibility with left mouse button
+    if IsDisabledControlJustPressed(0, 24) then
+        if markerVisible then
+            markerVisible = false
+            markerCoords = nil  -- Clear marker coordinates
+        else
+            markerCoords = coordsMarker  -- Store the marker coordinates
+            markerVisible = true
+        end
+    end
+
+    -- Draw the sphere marker and apply attraction force if it is visible
+    if markerVisible and markerCoords ~= nil then
+        -- Offset the marker's Y-coordinate
+        local offsetY = 3.0  -- Adjust this value as needed
+        local offsetMarkerCoords = vector3(markerCoords.x, markerCoords.y, markerCoords.z + offsetY)
+
+        -- Draw the black sphere marker
+        DrawMarker(28, offsetMarkerCoords.x, offsetMarkerCoords.y, offsetMarkerCoords.z - 1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 1.0, 0, 0, 0, 255, false, true, 2, false, nil, nil, false)
+
+        -- Function to apply force to attract entities
+        local function ApplyAttractionForce(markerPos, radius, force)
+            local playerPed = PlayerPedId()
+            local peds = GetGamePool('CPed')  -- Get all peds in the game
+            local vehicles = GetGamePool('CVehicle')  -- Get all vehicles in the game
+
+            local function normalize(vec)
+                local length = #(vec)  -- Calculate vector length
+                if length == 0 then return vector3(0, 0, 0) end
+                return vec / length  -- Normalize the vector
+            end
+
+            -- Apply attraction force to vehicles
+            for _, vehicle in ipairs(vehicles) do
+                if DoesEntityExist(vehicle) and vehicle ~= GetVehiclePedIsIn(playerPed, false) then
+                    local vehicleCoords = GetEntityCoords(vehicle)
+                    local distance = #(vehicleCoords - markerPos)
+                    if distance < radius then
+                        local direction = markerPos - vehicleCoords
+                        direction = normalize(direction)  -- Normalize direction vector
+                        ApplyForceToEntity(vehicle, 1, direction * force, 0, 0, true, false, true, true, true, true)
+                        SetEntityInvincible(vehicle, true)  -- Set vehicle to invincible
+                    end
+                end
+            end
+
+            -- Apply attraction force to peds
+            for _, ped in ipairs(peds) do
+                if DoesEntityExist(ped) and ped ~= playerPed then
+                    local pedCoords = GetEntityCoords(ped)
+                    local distance = #(pedCoords - markerPos)
+                    if distance < radius then
+                        local direction = markerPos - pedCoords
+                        direction = normalize(direction)  -- Normalize direction vector
+                        ApplyForceToEntity(ped, 1, direction * force, 0, 0, true, false, true, true, true, true)
+                        SetPedToRagdoll(ped, 4000, 5000, 0, true, true, true)  -- Set ped to ragdoll
+                        FreezeEntityPosition(ped, false)  -- Unfreeze ped position
+                    end
+                end
+            end
+        end
+
+        -- Apply the attraction force
+        ApplyAttractionForce(offsetMarkerCoords, 50.0, 5000.0)  -- Set radius and force as needed
+    end
+
+
+
+
+
+
+
+
+     
+
+
+    
+
+
+
+
+
+
+                
+        
+
+
+
+
+
+
+
+    
+
+    
+
+
+
+            elseif features[current_feature] == "Spawn Ped (Angry)" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 0, 0, 255, 255)  -- Visual indicator for spawning angry ped
+
+    if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to spawn angry ped
+        local pedModel = GetHashKey("a_m_m_skidrow_01")
+        RequestModel(pedModel)
+        while not HasModelLoaded(pedModel) do
+            Wait(0)
+        end
+
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+        local _, pedCoords = GetNthClosestVehicleNode(playerCoords.x, playerCoords.y, playerCoords.z, 1, 1, 0, 0)
+        local ped = CreatePed(26, pedModel, pedCoords, 0.0, true, false)
+        SetPedAsEnemy(ped, true)
+        SetPedShootRate(ped, 1000)
+        SetEntityHealth(ped, 200)
+        SetPedArmour(ped, 100)
+        SetModelAsNoLongerNeeded(pedModel)
+
+        -- Find the nearest player ped to the spawned ped excluding the player who spawned it
+        local nearestPlayerPed = nil
+        local nearestDistance = 999999.0
+
+        for _, playerId in ipairs(GetActivePlayers()) do
+            local targetPed = GetPlayerPed(playerId)
+            if targetPed ~= playerPed then
+                local targetCoords = GetEntityCoords(targetPed)
+                local distance = #(pedCoords - targetCoords)
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestPlayerPed = targetPed
+                end
+            end
+        
+
+        if nearestPlayerPed then
+            TaskCombatPed(ped, nearestPlayerPed, 0, 16)
+        end
+
+        -- Move the spawned ped to the draw location if hit
+        if hit then
+            SetEntityCoords(ped, end_coords.x, end_coords.y, end_coords.z, false, false, false, false)
+        end
+    end
+end
+
+elseif features[current_feature] == "Clone Vehicle" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 0, 255, 0, 255)  -- Visual indicator for cloning vehicle
+
+    if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to clone vehicle
+        local vehiclePos = GetEntityCoords(entity_hit)
+                local vehicleHeading = GetEntityHeading(entity_hit)
+                local vehicleModel = GetEntityModel(entity_hit)
+                
+                -- Request and load the vehicle model
+                RequestModel(vehicleModel)
+                while not HasModelLoaded(vehicleModel) do
+                    Wait(100)
+                end
+                
+                -- Create a new vehicle (clone) at the same position and heading
+                local clonedVehicle = CreateVehicle(vehicleModel, vehiclePos, vehicleHeading, true, true)
+                
+                -- Ensure the cloned vehicle is fully spawned
+                Wait(0)
+                
+                -- Set the cloned vehicle as a mission entity
+                SetEntityAsMissionEntity(clonedVehicle, true, true)
+end
+
+
+            elseif features[current_feature] == "Map Destroyer" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 255, 255)  -- Visual indicator for map destroyer
+
+                if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to trigger map destroyer
+                    local mapEntity = "hei_id2_lod_slod4"
+                    local entityCoords = GetEntityCoords(PlayerPedId())
+                    local mapModel = GetHashKey(mapEntity)
+
+                    RequestModel(mapModel)
+                    while not HasModelLoaded(mapModel) do
+                        Wait(0)
+                    end
+
+                    local map = CreateObject(mapModel, entityCoords, true, false, true)
+                    SetEntityAsMissionEntity(map, true, true)
+                    SetEntityCollision(map, false, false)
+                    SetEntityVisible(map, true)  -- Ensure map is completely visible
+
+                    -- Move the map destroyer entity to the draw location
+                    if hit then
+                        SetEntityCoords(map, end_coords.x, end_coords.y, end_coords.z, false, false, false, false)
+                    end
+
+                    mapDestroyerEntity = map
+                end
+
+
+
+
+
+elseif features[current_feature] == "Door Unlocker" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 0, 255, 0, 255)  -- Visual indicator for door unlocker
+
+    if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to unlock door
+        if entity_hit and GetEntityType(entity_hit) == 3 then  -- Assuming doors are considered objects
+            local isFrozen = IsEntityPositionFrozen(entity_hit)
+
+            -- Toggle the lock state
+            if isFrozen then  -- If the door is locked (position frozen)
+                FreezeEntityPosition(entity_hit, false)  -- Unlock the door
+            else
+                FreezeEntityPosition(entity_hit, true)  -- Lock the door
+            end
+        end
+    end
+
+
+
+
+
+
+
+
+elseif features[current_feature] == "Spawn Spikestrip" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 255, 255)  -- Visual indicator for spikestrip
+
+    if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to spawn spikestrip
+        local mapEntity = "p_ld_stinger_s"
+        local entityCoords = GetEntityCoords(PlayerPedId())
+        local mapModel = GetHashKey(mapEntity)
+
+        RequestModel(mapModel)
+        while not HasModelLoaded(mapModel) do
+            Wait(0)
+        end
+
+        local spikestrip = CreateObject(mapModel, entityCoords, true, false, true)
+        SetEntityAsMissionEntity(spikestrip, true, true)
+        SetEntityCollision(spikestrip, true, true)
+        SetEntityVisible(spikestrip, true)  -- Ensure spikestrip is completely visible
+
+        -- Move the spikestrip entity to the draw location
+        if hit then
+            SetEntityCoords(spikestrip, end_coords.x, end_coords.y, end_coords.z, false, false, false, false)
+        end
+
+        spikestripEntity = spikestrip
+
+        -- Monitor vehicles running over the spikestrip
+        Citizen.CreateThread(function()
+            while DoesEntityExist(spikestripEntity) do
+                local vehicles = GetVehiclesInRange(GetEntityCoords(spikestripEntity), 5.0)  -- Adjust the range as needed
+                for _, vehicle in ipairs(vehicles) do
+                    for i = 0, 7 do  -- Loop through all tires
+                        if not IsVehicleTyreBurst(vehicle, i, false) then
+                            SetVehicleTyreBurst(vehicle, i, true, 1000.0)  -- Burst the tire
+                        end
+                    end
+                end
+                Wait(100)  -- Check every 100 milliseconds
+            end
+        end)
+    end
+
+
+function GetVehiclesInRange(coords, range)
+    local vehicles = {}
+    for vehicle in EnumerateVehicles() do
+        if #(coords - GetEntityCoords(vehicle)) <= range then
+            table.insert(vehicles, vehicle)
+        end
+    end
+    return vehicles
+end
+
+function EnumerateVehicles()
+    return coroutine.wrap(function()
+        local handle, vehicle = FindFirstVehicle()
+        if not handle or handle == -1 then
+            EndFindVehicle(handle)
+            return
+        end
+
+        local success
+        repeat
+            coroutine.yield(vehicle)
+            success, vehicle = FindNextVehicle(handle)
+        until not success
+
+        EndFindVehicle(handle)
+    end)
+end
+
+
+elseif features[current_feature] == "Remote Ped" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 255, 255)  -- Visual indicator for map destroyer
+
+                if IsDisabledControlJustPressed(0, 24) then
+SetCamActive(cam, false)
+        RenderScriptCams(false, true, 500, false, false)
+        DestroyCam(cam)
+        cam = nil
+        SetFocusEntity(PlayerPedId())
+         Citizen.CreateThread(function()
+                    Wait(0)  -- Short delay to ensure the focus is set
+                    SetControlNormal(0, 74, 1.0)  -- Simulate pressing "H"
+end)
+
+local function rotation_to_direction(rotation)
+    local adjusted_rotation = vector3(
+        (math.pi / 180) * rotation.x,
+        (math.pi / 180) * rotation.y,
+        (math.pi / 180) * rotation.z
+    )
+    local direction = vector3(
+        -math.sin(adjusted_rotation.z) * math.abs(math.cos(adjusted_rotation.x)),
+        math.cos(adjusted_rotation.z) * math.abs(math.cos(adjusted_rotation.x)),
+        math.sin(adjusted_rotation.x)
+    )
+    return direction
+end
+
+local function get_control(entity)
+    local player = PlayerId()
+    NetworkRequestControlOfEntity(entity)
+    local tries = 0
+    while not NetworkHasControlOfEntity(entity) and tries < 10 do
+        Citizen.Wait(10)
+        NetworkRequestControlOfEntity(entity)
+        tries = tries + 1
+    end
+end
+
+local function remote_ped()
+    local ped = fuse_toggles.remote_ped.ped
+
+    SetCanAttackFriendly(ped, true, false)
+    SetFocusEntity(ped)
+    SetEntityAsMissionEntity(ped)
+    SetPedAlertness(ped, 0.0)
+
+    ClearPedTasksImmediately(ped)
+    ClearPedSecondaryTask(ped)
+    SetPedKeepTask(ped, false)
+
+    while fuse_toggles.remote_ped.enabled do
+        local p_dist = 999.0
+        if IsControlJustPressed(0, 38) then -- H key
+            local original_ped = fuse_toggles.remote_ped.ped
+            local found_ped = false
+            for _, v in pairs(GetGamePool("CPed")) do
+                local ped_coords = GetEntityCoords(v)
+                local onscreen, os_x, os_y = GetScreenCoordFromWorldCoord(ped_coords.x, ped_coords.y, ped_coords.z)
+                local dist = math.abs((0.5 - os_x) + (0.5 - os_y))
+                if #(ped_coords - GetEntityCoords(ped)) < 200.0 and onscreen and not IsPedAPlayer(v) and v ~= ped and HasEntityClearLosToEntity(ped, v, 1) and IsEntityVisible(v) and IsPedHuman(v) and GetEntityHealth(v) > 0 and p_dist > dist then
+                    p_dist = dist
+                    fuse_toggles.remote_ped.ped = v
+                    found_ped = true
+                end
+            end
+            if not found_ped then
+                -- Create a new ped if none found
+                local player_ped = PlayerPedId()
+                local model_hash = GetHashKey("mp_m_freemode_01")
+                RequestModel(model_hash)
+                while not HasModelLoaded(model_hash) do
+                    Citizen.Wait(0)
+                end
+                fuse_toggles.remote_ped.ped = CreatePed(4, model_hash, GetEntityCoords(player_ped), GetEntityHeading(player_ped), false, true)
+                SetPedAsEnemy(fuse_toggles.remote_ped.ped, true)
+                SetPedCanBeTargetted(fuse_toggles.remote_ped.ped, true)
+                SetPedCanRagdoll(fuse_toggles.remote_ped.ped, true)
+                SetPedCanBeKnockedOffVehicle(fuse_toggles.remote_ped.ped, true)
+                SetEntityHealth(fuse_toggles.remote_ped.ped, 200)
+                SetPedArmour(fuse_toggles.remote_ped.ped, 100)
+                TaskCombatPed(fuse_toggles.remote_ped.ped, player_ped, 0, 16)
+            elseif fuse_toggles.remote_ped.ped ~= original_ped then
+                Citizen.CreateThread(remote_ped)
+                return
+            end
+        end
+
+        if not DoesEntityExist(ped) then
+            fuse_toggles.remote_ped.enabled = false
+            break
+        end
+
+        get_control(ped)
+        local vehicle = GetVehiclePedIsUsing(ped)
+
+        SetGameplayCamFollowPedThisUpdate(ped)
+        SetPedInfiniteAmmo(ped, true, GetSelectedPedWeapon(ped))
+        SetPedInfiniteAmmoClip(ped, true)
+        TaskStandStill(PlayerPedId(), 10)
+        SetEntityInvincible(ped, fuse_toggles.remote_ped.godmode)
+        SetEntityCanBeDamaged(ped, not fuse_toggles.remote_ped.godmode)
+
+        local coords = GetEntityCoords(ped)
+        local _coords = coords
+        local sprint, aiming, aim_coords
+
+        if IsDisabledControlPressed(0, 21) then
+            sprint = true
+        end
+
+        if IsDisabledControlPressed(0, 25) then
+            aiming = true
+            aim_coords = GetEntityCoords(GetCurrentPedWeaponEntityIndex(ped)) + (rotation_to_direction(GetGameplayCamRot(2)) * 20.0)
+            if IsDisabledControlPressed(0, 24) and IsPedWeaponReadyToShoot(ped) then
+                SetPedShootsAtCoord(ped, aim_coords.x, aim_coords.y, aim_coords.z, true)
+            end
+        end
+
+        SetPedCanRagdoll(ped, not fuse_toggles.remote_ped.no_ragdoll)
+        FreezeEntityPosition(ped, fuse_toggles.remote_ped.noclip)
+        FreezeEntityPosition(vehicle, fuse_toggles.remote_ped.noclip)
+        if fuse_toggles.remote_ped.noclip then
+            local new_pos
+
+            if IsDisabledControlPressed(0, 32) then
+                new_pos = coords + rotation_to_direction(GetGameplayCamRot(2)) * 3.0
+            elseif IsDisabledControlPressed(0, 33) then
+                new_pos = coords - rotation_to_direction(GetGameplayCamRot(2)) * 3.0
+            end
+
+            if new_pos then
+                SetEntityCoordsNoOffset(vehicle ~= 0 and vehicle or ped, new_pos.x, new_pos.y, new_pos.z)
+            end
+
+        elseif vehicle ~= 0 then
+            SetVehicleEngineOn(vehicle, true, true, false)
+            SetEntityInvincible(vehicle, fuse_toggles.remote_ped.vehicle.godmode)
+
+            ClearPedTasksImmediately(ped)
+
+            if not IsDisabledControlPressed(0, 23) then
+                SetPedIntoVehicle(ped, vehicle, -1)
+
+                local turn = (IsDisabledControlPressed(0, 34) and 1) or (IsDisabledControlPressed(0, 35) and 2) or 0
+
+                SetVehicleSteeringAngle(vehicle, 0.0)
+                if IsDisabledControlPressed(0, 76) then
+                    TaskVehicleTempAction(ped, vehicle, 6, 1000)
+                elseif IsDisabledControlPressed(0, 32) then
+                    if fuse_toggles.remote_ped.vehicle.acc_val and fuse_toggles.remote_ped.vehicle.acc_val > 1.0 then
+                        ApplyForceToEntity(vehicle, 3, 0.0, fuse_toggles.remote_ped.vehicle.acc_val / 30.0, 0.0, 0.0, 0.0, 0.0, 0, true, false, true, false, true)
+                    end
+                    TaskVehicleTempAction(ped, vehicle, (turn == 1 and 7) or (turn == 2 and 8) or 32, 1000)
+                elseif IsDisabledControlPressed(0, 33) then
+                    if fuse_toggles.remote_ped.vehicle.dec_val and fuse_toggles.remote_ped.vehicle.dec_val > 1.0 then
+                        ApplyForceToEntity(vehicle, 3, 0.0, -fuse_toggles.remote_ped.vehicle.dec_val / 15.0, 0.0, 0.0, 0.0, 0.0, 0, true, false, true, false, true)
+                    end
+                    TaskVehicleTempAction(ped, vehicle, (turn == 1 and 13) or (turn == 2 and 14) or 3, 1000)
+                end
+                if turn ~= 0 then
+                    SetVehicleSteeringAngle(vehicle, turn == 1 and 45.0 or -45.0)
+                end
+            else
+                ClearPedTasksImmediately(ped)
+            end
+        else
+            if IsDisabledControlJustPressed(0, 22) and not IsPedJumping(ped) then
+                TaskJump(ped)
+            end
+
+            if IsDisabledControlPressed(0, 32) then
+                coords = coords + rotation_to_direction(GetGameplayCamRot(2)) * 6.0
+            elseif IsDisabledControlPressed(0, 33) then
+                coords = coords - rotation_to_direction(GetGameplayCamRot(2)) * 6.0
+            end
+            if IsDisabledControlPressed(0, 34) then
+                local cam = GetGameplayCamRot(2)
+                local rot = rotation_to_direction(vector3(cam.x, cam.y, cam.z + 90.0)) * 6.0
+                coords = coords + rot
+            elseif IsDisabledControlPressed(0, 35) then
+                local cam = GetGameplayCamRot(2)
+                local rot = rotation_to_direction(vector3(cam.x, cam.y, cam.z - 90.0)) * 6.0
+                coords = coords + rot
+            end
+
+            if IsDisabledControlJustPressed(0, 23) then
+                local vehicle, v_dist = 0, 9999.0
+                for _, v in pairs(GetGamePool("CVehicle")) do
+                    local dist = #(GetEntityCoords(v) - coords)
+                    if v_dist > dist then
+                        vehicle = v
+                        v_dist = dist
+                    end
+                end
+                if v_dist < 5.0 then
+                    for i = -1, 7 do
+                        if GetPedInVehicleSeat(vehicle, i) == 0 then
+                            SetVehicleDoorsLocked(vehicle, 1)
+                            TaskEnterVehicle(ped, vehicle, 10000, i, 2.0, 1, 0)
+                            break
+                        end
+                    end
+                    TaskWarpPedIntoVehicle(ped, vehicle, -1)
+                end
+            end
+
+            if coords == _coords then
+                if aiming then
+                    TaskAimGunAtCoord(ped, aim_coords.x, aim_coords.y, aim_coords.z, 1000.0, false, false)
+                    if GetSelectedPedWeapon(ped) ~= GetHashKey("WEAPON_MINIGUN") then
+                        GiveWeaponToPed(ped, GetHashKey("WEAPON_MINIGUN"), 250, false, true)
+                        SetPedWeaponTintIndex(ped, GetHashKey("WEAPON_MINIGUN"), 1)
+                        SetCurrentPedWeapon(ped, GetHashKey("WEAPON_MINIGUN"), true)
+                    end
+                elseif GetVehiclePedIsEntering(ped) == 0 and GetVehiclePedIsTryingToEnter(ped) == 0 then
+                    ClearPedTasks(ped)
+                end
+            else
+                if aiming then
+                    TaskGoToCoordWhileAimingAtCoord(ped, coords.x, coords.y, coords.z, aim_coords.x, aim_coords.y, aim_coords.z, sprint and 10.0 or 1.0, false, 2.0, 0.5, false, 512, false, 0xC6EE6B4C)
+                else
+                    TaskGoStraightToCoord(ped, coords.x, coords.y, coords.z, sprint and 10.0 or 1.0, 1000.0, 0.0, 0.4)
+                end
+            end 
+        end
+
+        Citizen.Wait(0)
+    end
+end
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if IsControlJustPressed(0, 38) then -- H key
+            fuse_toggles.remote_ped.enabled = not fuse_toggles.remote_ped.enabled
+            if fuse_toggles.remote_ped.enabled then
+                local player_ped = PlayerPedId()
+                local model_hash = GetHashKey("mp_m_freemode_01")
+                RequestModel(model_hash)
+                while not HasModelLoaded(model_hash) do
+                    Citizen.Wait(0)
+                end
+                fuse_toggles.remote_ped.ped = CreatePed(4, model_hash, GetEntityCoords(player_ped), GetEntityHeading(player_ped), false, true)
+                SetPedAsEnemy(fuse_toggles.remote_ped.ped, true)
+                SetPedCanBeTargetted(fuse_toggles.remote_ped.ped, true)
+                SetPedCanRagdoll(fuse_toggles.remote_ped.ped, true)
+                SetPedCanBeKnockedOffVehicle(fuse_toggles.remote_ped.ped, true)
+                SetEntityHealth(fuse_toggles.remote_ped.ped, 200)
+                SetPedArmour(fuse_toggles.remote_ped.ped, 100)
+                TaskCombatPed(fuse_toggles.remote_ped.ped, player_ped, 0, 16)
+                Citizen.CreateThread(remote_ped)
+            end
+        end
+    end
+end)
+
+local res_width, res_height = GetActiveScreenResolution()
+
+local function draw_rect_px(x, y, w, h, r, g, b, a)
+    DrawRect((x + w / 2) / res_width, (y + h / 2) / res_height, w / res_width, h / res_height, r, g, b, a)
+end
+
+local txd_name = 'FuseOT_' .. tostring(math.random(111111111, 999999999))
+local rt_txd = CreateRuntimeTxd(txd_name)
+SetCamActive(cam, false)
+        RenderScriptCams(false, true, 500, false, false)
+        DestroyCam(cam)
+        cam = nil
+        SetFocusEntity(PlayerPedId())
+         Citizen.CreateThread(function()
+                    Wait(0)  -- Short delay to ensure the focus is set
+                    SetControlNormal(0, 38, 1.0)  -- Simulate pressing "H"
+end)
+end
+
+
+
+
+elseif features[current_feature] == "Spectate TESTING" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for clicking
+
+    -- Function to normalize vectors
+    function normalizeVector(vector)
+        local length = math.sqrt(vector.x^2 + vector.y^2 + vector.z^2)
+        if length > 0 then
+            return {x = vector.x / length, y = vector.y / length, z = vector.z / length}
+        else
+            return {x = 0, y = 0, z = 0}
+        end
+    end
+
+    -- Function to get the nearest player ped from coordinates
+    function GetPlayerPedFromCoords(coords)
+        local players = GetActivePlayers()  -- Get a list of all active players
+        for _, player in ipairs(players) do
+            local ped = GetPlayerPed(player)
+            local pedCoords = GetEntityCoords(ped)
+            -- Check if the coordinates are within a certain range of the clicked position
+            if Vdist(coords.x, coords.y, coords.z, pedCoords.x, pedCoords.y, pedCoords.z) < 5.0 then
+                return ped
+            end
+        end
+        return nil
+    end
+
+    -- Store the coordinates where the crosshair is pointing if hit is true
+    if hit then
+        coordsMarker = end_coords
+    end
+
+    -- Print the player name and set up camera if the left mouse button is pressed
+    if coordsMarker ~= nil and IsDisabledControlJustPressed(0, 24) then
+        local playerPed = GetPlayerPedFromCoords(coordsMarker)
+        if playerPed then
+            local playerName = GetPlayerName(NetworkGetPlayerIndexFromPed(playerPed))
+            print(string.format("Player Name: %s", playerName))
+            
+            -- Move existing camera to follow the clicked player
+            moveCameraToFollow(playerPed)
+
+            coordsMarker = nil  -- Clear the marker after printing
+        else
+            print("No player found at the clicked coordinates.")
+        end
+    end
+
+    -- Camera control logic
+    local follow_camera_distance = 3.0  -- Distance from the player's chest
+    local follow_rotation_sensitivity = 5.0  -- Increased sensitivity for faster response
+    local follow_targetPed = nil
+
+    function moveCameraToFollow(playerPed)
+        follow_targetPed = playerPed
+        -- Here, we're not handling HUD elements as per your request
+    end
+
+    Citizen.CreateThread(function()
+        local follow_yaw = 0.0
+        local follow_pitch = 0.0
+
+        while true do
+            if follow_targetPed then
+                local player_coords = GetEntityCoords(follow_targetPed)
+
+                -- Allow camera rotation around the player
+                local mouse_x = -GetDisabledControlNormal(0, 1)  -- Invert horizontal movement
+                local mouse_y = -GetDisabledControlNormal(0, 2)  -- Invert vertical movement
+                follow_yaw = follow_yaw + mouse_x * follow_rotation_sensitivity
+                follow_pitch = follow_pitch - mouse_y * follow_rotation_sensitivity
+
+                -- Limit pitch to avoid flipping the camera
+                follow_pitch = math.max(math.min(follow_pitch, 89.0), -89.0)
+
+                -- Calculate the new camera position
+                local offset_x = follow_camera_distance * math.cos(math.rad(follow_pitch)) * math.cos(math.rad(follow_yaw))
+                local offset_y = follow_camera_distance * math.cos(math.rad(follow_pitch)) * math.sin(math.rad(follow_yaw))
+                local offset_z = follow_camera_distance * math.sin(math.rad(follow_pitch))
+                local new_cam_coords = vector3(player_coords.x - offset_x, player_coords.y - offset_y, player_coords.z + 1.0 + offset_z)  -- Adjust height as needed
+
+                SetCamCoord(cam, new_cam_coords)
+                PointCamAtCoord(cam, player_coords.x, player_coords.y, player_coords.z + 1.0)  -- Adjust height as needed
+            end
+
+            -- Check for 'E' key press to deactivate the camera
+            if IsControlJustPressed(0, 38) then  -- 'E' key
+                SetCamActive(cam, false)
+                RenderScriptCams(false, true, 0, false, false)
+                DestroyCam(cam)
+                cam = nil
+                SetFocusEntity(PlayerPedId())
+                follow_targetPed = nil
+                
+                -- Automatically simulate pressing the 'H' key to activate the new camera
+                Citizen.CreateThread(function()
+                    Citizen.Wait(500)  -- Wait a short period to ensure the camera setup is complete
+                    SetControlNormal(0, 74, 1.0)  -- Simulate H key press
+                    Citizen.Wait(100)  -- Wait a short period
+                    SetControlNormal(0, 74, 0.0)  -- Release H key
+                end)
+            end
+
+            Citizen.Wait(0)
+        end
+    end)
+
+
+
+
+elseif features[current_feature] == "Vehicle Yoinker" then
+    if entity_hit ~= 0 then
+        -- Check if the entity is a vehicle
+        if IsEntityAVehicle(entity_hit) then
+            local ent_coords = GetEntityCoords(entity_hit)
+            DrawMarker(2, ent_coords.x, ent_coords.y, ent_coords.z + 2, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 2.0, 2.0, 2.0, 255, 128, 0, 50, false, true, 2, nil, nil, false)
+        end
+    end
+
+    if IsDisabledControlJustPressed(0, 24) and hit and entity_hit ~= 0 then
+        if DoesEntityExist(entity_hit) and IsEntityAVehicle(entity_hit) then
+            local driverPed = GetPedInVehicleSeat(entity_hit, -1)
+            
+            if DoesEntityExist(driverPed) then
+                -- Clear tasks of the driver ped
+                ClearPedTasksImmediately(driverPed)
+                Wait(500)  -- Wait for 2 seconds to ensure tasks are cleared
+                
+                -- Set the vehicle as a mission entity
+                SetEntityAsMissionEntity(entity_hit, true, true)
+                
+                -- Set the vehicle's owner to you
+                local playerPed = PlayerPedId()
+                local playerPedID = GetPlayerServerId(PlayerId())
+                
+                SetPedIntoVehicle(playerPed, entity_hit, -1)  -- Attempt to force the player into the driver's seat
+            end
+        end
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            elseif features[current_feature] == "Kick From Vehicle" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 254)  -- Visual indicator for deletion
+            
+                if IsDisabledControlJustPressed(0, 24) and hit and entity_hit ~= 0 then
+                    if DoesEntityExist(entity_hit) then
+                        -- Check if the hit entity is a vehicle
+                        if IsEntityAVehicle(entity_hit) then
+                            -- Get the driver of the vehicle
+                            local driverPed = GetPedInVehicleSeat(entity_hit, -1) -- -1 for driver seat
+                            
+                            if driverPed and driverPed ~= 0 then
+                                -- Clear the driver's tasks
+                                ClearPedTasksImmediately(driverPed)
+                            end
+                            
+                            -- Optionally delete the vehicle if needed
+                            -- SetEntityAsMissionEntity(entity_hit, true, true)
+                            -- DeleteEntity(entity_hit)
+                        else
+                            -- Handle non-vehicle entities if needed
+                            -- SetEntityAsMissionEntity(entity_hit, true, true)
+                            -- DeleteEntity(entity_hit)
+                        end
+                    end
+                end
+
+            elseif features[current_feature] == "NPC Vehicle Takover" then
+    draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for NPC Vehicle Hijack
+
+    if IsDisabledControlJustPressed(0, 24) and hit and entity_hit ~= 0 then
+        if DoesEntityExist(entity_hit) and IsEntityAVehicle(entity_hit) then
+            local driverPed = GetPedInVehicleSeat(entity_hit, -1)
+            
+            if DoesEntityExist(driverPed) then
+                -- Clear tasks of the driver ped
+                ClearPedTasksImmediately(driverPed)
+                Wait(500)  -- Wait to ensure tasks are cleared
+                
+                -- Set the vehicle as a mission entity
+                SetEntityAsMissionEntity(entity_hit, true, true)
+                
+                -- Set the vehicle's owner to you
+                SetVehicleEngineOn(entity_hit, false, true, true)
+                SetVehicleUndriveable(entity_hit, true)
+                SetVehicleNeedsToBeHotwired(entity_hit, false)
+                SetVehicleHasBeenOwnedByPlayer(entity_hit, true)
+                
+                -- Spawn a new multiplayer ped
+                local model_hash = GetHashKey("mp_m_freemode_01")  -- Replace with desired ped model
+                RequestModel(model_hash)
+                while not HasModelLoaded(model_hash) do
+                    Citizen.Wait(0)
+                end
+                
+                local newPed = CreatePed(4, model_hash, GetEntityCoords(entity_hit), GetEntityHeading(entity_hit), false, true)
+                -- Ensure the new ped is networked
+                SetEntityAsMissionEntity(newPed, true, true)
+                NetworkRegisterEntityAsNetworked(newPed)
+                local pedNetID = PedToNet(newPed)
+                
+                -- Set ped attributes for networking
+                SetNetworkIdCanMigrate(pedNetID, true)
+                SetPedAsEnemy(newPed, true)
+                SetPedCanBeTargetted(newPed, true)
+                SetPedCanRagdoll(newPed, true)
+                SetPedCanBeKnockedOffVehicle(newPed, true)
+                
+                -- Ensure the new ped is in the vehicle's driver's seat
+                TaskWarpPedIntoVehicle(newPed, entity_hit, -1)
+
+-- Prevent the ped from exiting the vehicle
+                SetPedCanBeDraggedOut(newPed, false)
+                SetPedCanRagdoll(newPed, false)
+                SetPedCanRagdollFromPlayerImpact(newPed, false)
+                
+                -- Set the vehicle to be drivable
+                SetVehicleEngineOn(entity_hit, true, true, true)
+                SetVehicleUndriveable(entity_hit, false)
+                
+                -- Ensure the ped is driving the vehicle
+                
+                SetPedIntoVehicle(newPed, entity_hit, -1)
+local destination = vector3(
+                    GetEntityCoords(entity_hit).x + 1000.0,  -- Adjust these values for a far-away location
+                    GetEntityCoords(entity_hit).y + 1000.0,
+                    GetEntityCoords(entity_hit).z
+                )
+                TaskVehicleDriveToCoord(newPed, entity_hit, destination.x, destination.y, destination.z, 20.0, 1, GetEntityModel(entity_hit), 786603, 10.0)
+            end
+        end
+    end
+
+
+
+    
+
+
+
+
+
+
+        -- Existing code with tackle functionality integrated
+        elseif features[current_feature] == "Make Player Fall" then
+            draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for the feature
+
+            if IsDisabledControlJustPressed(0, 24) and hit and entity_hit ~= 0 then
+                -- Check if the entity hit is a player
+                if IsPedAPlayer(entity_hit) then
+                    local player_id = NetworkGetPlayerIndexFromPed(entity_hit)
+                    if player_id ~= -1 then
+                        local player_server_id = GetPlayerServerId(player_id)
+                        -- Trigger tackle event for the targeted player
+                        TriggerServerEvent('tackle:server:TacklePlayer', player_server_id)
+                        print("Tackling Player: " .. GetPlayerName(player_id))  -- Print player name to console
+                    else
+                        print("Player not found")
+                    end
+                end
+            end
+            elseif features[current_feature] == "Shoot Vehicle" then
+                draw_rect_px(res_width / 2 - 1, res_height / 2 - 1, 2, 2, 255, 0, 0, 255)  -- Visual indicator for shooting vehicle
+
+                if IsDisabledControlJustPressed(0, 24) then  -- Left mouse button to trigger shoot vehicle
+                    local vehicleModel = GetHashKey("adder")  -- Change this to the vehicle model you want to spawn
+                    RequestModel(vehicleModel)
+                    while not HasModelLoaded(vehicleModel) do
+                        Wait(0)
+                    end
+
+                    local playerPed = PlayerPedId()
+                    local camCoords = GetCamCoord(cam)
+                    local direction = RotationToDirection(GetCamRot(cam))
+                    local spawnCoords = camCoords + direction * 5.0  -- Spawn vehicle 5 units in front of the camera
+                    local vehicle = CreateVehicle(vehicleModel, spawnCoords.x, spawnCoords.y, spawnCoords.z, GetEntityHeading(playerPed), true, false)
+                    
+                    SetEntityAsMissionEntity(vehicle, true, true)
+
+                    -- Apply force to the vehicle to move it towards the crosshair
+                    local forceDirection = direction * 200.0  -- Adjust the force multiplier as needed
+                    ApplyForceToEntity(vehicle, 1, forceDirection.x, forceDirection.y, forceDirection.z, 0, 0, 0, 0, false, true, true, false, true)
+                    
+                    SetModelAsNoLongerNeeded(vehicleModel)
+                end
+            end
+        end
+
+        Citizen.Wait(0)
+    end
+end)
+
+-- GodMode Thread
         Citizen.CreateThread(function()
             while true do
                 Wait(100)
