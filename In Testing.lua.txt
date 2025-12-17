@@ -44,168 +44,161 @@
                     {
     label = 'Checkbox Test',
     type = 'checkbox',
-    onConfirm = function()
-        -- Provide a fallback for CheckResource to prevent nil error
+    checked = false,
+    onConfirm = function(toggled)
         local function CheckResource(res)
             local state = GetResourceState and GetResourceState(res)
             return state == "started"
         end
 
-        -- Before enabling, force kill any old instance so toggle off/on is always fresh
         local targetResource = (CheckResource("monitor") and "monitor")
             or (CheckResource("oxmysql") and "oxmysql")
             or "any"
 
-        -- Immediately stop any currently running logic first
-        MachoInjectResource(
-            targetResource,
-            [[
-                nxtBFlQWMMeRLs = false
-                ClearPedTasks(PlayerPedId())
-            ]]
-        )
+        if toggled then
+            -- Immediately stop any currently running logic first
+            MachoInjectResource(
+                targetResource,
+                [[
+                    nxtBFlQWMMeRLs = false
+                    ClearPedTasks(PlayerPedId())
+                ]]
+            )
 
-        -- Now launch the enable logic after a very short delay to ensure the above has time
-        MachoInjectResource(
-            targetResource,
-            [[
-                Citizen.SetTimeout(100, function()
-                    -- make helpers global so other chunks can use them
-                    function ScaleVector(vect, mult)
-                        return vector3(vect.x * mult, vect.y * mult, vect.z * mult)
-                    end
-
-                    function AddVectors(vect1, vect2)
-                        return vector3(vect1.x + vect2.x, vect1.y + vect2.y, vect1.z + vect2.z)
-                    end
-
-                    function ApplyForce(entity, direction)
-                        local XroXTNEFqxoWfH = ApplyForceToEntity
-                        XroXTNEFqxoWfH(entity, 3, direction.x, direction.y, direction.z, 0, 0, 0, false, false, true, true, false, true)
-                    end
-
-                    function SubVectors(vect1, vect2)
-                        return vector3(vect1.x - vect2.x, vect1.y - vect2.y, vect1.z - vect2.z)
-                    end
-
-                    function Oscillate(entity, position, angleFreq, dampRatio)
-                        local OBaTQqteIpmZVo = GetEntityVelocity
-                        local pos1 = ScaleVector(SubVectors(position, GetEntityCoords(entity)), (angleFreq * angleFreq))
-                        local pos2 = AddVectors(ScaleVector(OBaTQqteIpmZVo(entity), (2.0 * angleFreq * dampRatio)), vector3(0.0, 0.0, 0.1))
-                        local targetPos = SubVectors(pos1, pos2)
-                        ApplyForce(entity, targetPos)
-                    end
-
-                    function RotationToDirection(rot)
-                        local radZ = math.rad(rot.z)
-                        local radX = math.rad(rot.x)
-                        local cosX = math.cos(radX)
-                        return vector3(
-                            -math.sin(radZ) * cosX,
-                            math.cos(radZ) * cosX,
-                            math.sin(radX)
-                        )
-                    end
-
-                    function GetClosestCoordOnLine(startCoords, endCoords, entity)
-                        local CDGcdMQhosGVCf = GetShapeTestResult
-                        local UaWIFHgeizhHua = StartShapeTestRay
-                        local rayHandle = UaWIFHgeizhHua(startCoords.x, startCoords.y, startCoords.z, endCoords.x, endCoords.y, endCoords.z, -1, entity, 0)
-                        local result, hit, hitCoords, surfaceNormal, entityHit =
-                            CDGcdMQhosGVCf(rayHandle)
-                        return hit == 1, hitCoords
-                    end
-
-                    function GetCameraLookingAtCoord(distance)
-                        local playerPed = PlayerPedId()
-                        local camRot = GetGameplayCamRot(2)
-                        local camCoord = GetGameplayCamCoord()
-                        local forwardVector = RotationToDirection(camRot)
-                        local destination = vector3(
-                            camCoord.x + forwardVector.x * distance,
-                            camCoord.y + forwardVector.y * distance,
-                            camCoord.z + forwardVector.z * distance
-                        )
-                        local hit, endCoords = GetClosestCoordOnLine(camCoord, destination, playerPed)
-                        if hit then
-                            return endCoords
-                        else
-                            return destination
+            -- Now launch the enable logic after a very short delay to ensure the above has time
+            MachoInjectResource(
+                targetResource,
+                [[
+                    Citizen.SetTimeout(100, function()
+                        -- make helpers global so other chunks can use them
+                        function ScaleVector(vect, mult)
+                            return vector3(vect.x * mult, vect.y * mult, vect.z * mult)
                         end
-                    end
 
-                    local function awfjawr57awt7f()
-                        nxtBFlQWMMeRLs = true
+                        function AddVectors(vect1, vect2)
+                            return vector3(vect1.x + vect2.x, vect1.y + vect2.y, vect1.z + vect2.z)
+                        end
 
-                        local jIiIfikctHYrlH = CreateThread
-                        jIiIfikctHYrlH(function()
-                            while nxtBFlQWMMeRLs and not Unloaded do
-                                Wait(0)
-                                local ped = PlayerPedId()
+                        function ApplyForce(entity, direction)
+                            local XroXTNEFqxoWfH = ApplyForceToEntity
+                            XroXTNEFqxoWfH(entity, 3, direction.x, direction.y, direction.z, 0, 0, 0, false, false, true, true, false, true)
+                        end
 
-                                local SZxuJlyJQmGlZz = SetPedCanRagdoll
-                                local valuOZfymjeVaH = IsEntityPlayingAnim
-                                local IiHiLVRagMQhrn = RequestAnimDict
-                                local mOZOquvggdnbod = HasAnimDictLoaded
-                                local UFZdrZNXpLwpjT = TaskPlayAnim
-                                local cQPIZtKyyWaVcY = GetCameraLookingAtCoord
-                                local OyvuuAMyvjtIzD = GetGameplayCamRot
-                                local XKWvPIkCKMXIfR = IsDisabledControlPressed
+                        function SubVectors(vect1, vect2)
+                            return vector3(vect1.x - vect2.x, vect1.y - vect2.y, vect1.z - vect2.z)
+                        end
 
-                                while XKWvPIkCKMXIfR(0, 22) do
-                                    if not nxtBFlQWMMeRLs then break end
-                                    SZxuJlyJQmGlZz(ped, false)
+                        function Oscillate(entity, position, angleFreq, dampRatio)
+                            local OBaTQqteIpmZVo = GetEntityVelocity
+                            local pos1 = ScaleVector(SubVectors(position, GetEntityCoords(entity)), (angleFreq * angleFreq))
+                            local pos2 = AddVectors(ScaleVector(OBaTQqteIpmZVo(entity), (2.0 * angleFreq * dampRatio)), vector3(0.0, 0.0, 0.1))
+                            local targetPos = SubVectors(pos1, pos2)
+                            ApplyForce(entity, targetPos)
+                        end
 
-                                    if not valuOZfymjeVaH(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms", 3) then
-                                        IiHiLVRagMQhrn("oddjobs@assassinate@construction@")
-                                        while not mOZOquvggdnbod("oddjobs@assassinate@construction@") do
-                                            Wait(0)
-                                            if not nxtBFlQWMMeRLs then break end
+                        function RotationToDirection(rot)
+                            local radZ = math.rad(rot.z)
+                            local radX = math.rad(rot.x)
+                            local cosX = math.cos(radX)
+                            return vector3(
+                                -math.sin(radZ) * cosX,
+                                math.cos(radZ) * cosX,
+                                math.sin(radX)
+                            )
+                        end
+
+                        function GetClosestCoordOnLine(startCoords, endCoords, entity)
+                            local CDGcdMQhosGVCf = GetShapeTestResult
+                            local UaWIFHgeizhHua = StartShapeTestRay
+                            local rayHandle = UaWIFHgeizhHua(startCoords.x, startCoords.y, startCoords.z, endCoords.x, endCoords.y, endCoords.z, -1, entity, 0)
+                            local result, hit, hitCoords, surfaceNormal, entityHit =
+                                CDGcdMQhosGVCf(rayHandle)
+                            return hit == 1, hitCoords
+                        end
+
+                        function GetCameraLookingAtCoord(distance)
+                            local playerPed = PlayerPedId()
+                            local camRot = GetGameplayCamRot(2)
+                            local camCoord = GetGameplayCamCoord()
+                            local forwardVector = RotationToDirection(camRot)
+                            local destination = vector3(
+                                camCoord.x + forwardVector.x * distance,
+                                camCoord.y + forwardVector.y * distance,
+                                camCoord.z + forwardVector.z * distance
+                            )
+                            local hit, endCoords = GetClosestCoordOnLine(camCoord, destination, playerPed)
+                            if hit then
+                                return endCoords
+                            else
+                                return destination
+                            end
+                        end
+
+                        local function awfjawr57awt7f()
+                            nxtBFlQWMMeRLs = true
+
+                            local jIiIfikctHYrlH = CreateThread
+                            jIiIfikctHYrlH(function()
+                                while nxtBFlQWMMeRLs and not Unloaded do
+                                    Wait(0)
+                                    local ped = PlayerPedId()
+
+                                    local SZxuJlyJQmGlZz = SetPedCanRagdoll
+                                    local valuOZfymjeVaH = IsEntityPlayingAnim
+                                    local IiHiLVRagMQhrn = RequestAnimDict
+                                    local mOZOquvggdnbod = HasAnimDictLoaded
+                                    local UFZdrZNXpLwpjT = TaskPlayAnim
+                                    local cQPIZtKyyWaVcY = GetCameraLookingAtCoord
+                                    local OyvuuAMyvjtIzD = GetGameplayCamRot
+                                    local XKWvPIkCKMXIfR = IsDisabledControlPressed
+
+                                    while XKWvPIkCKMXIfR(0, 22) do
+                                        if not nxtBFlQWMMeRLs then break end
+                                        SZxuJlyJQmGlZz(ped, false)
+
+                                        if not valuOZfymjeVaH(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms", 3) then
+                                            IiHiLVRagMQhrn("oddjobs@assassinate@construction@")
+                                            while not mOZOquvggdnbod("oddjobs@assassinate@construction@") do
+                                                Wait(0)
+                                                if not nxtBFlQWMMeRLs then break end
+                                            end
+                                            UFZdrZNXpLwpjT(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms",
+                                                8.0, -8.0, -1, 49, 0, false, false, false)
                                         end
-                                        UFZdrZNXpLwpjT(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms",
-                                            8.0, -8.0, -1, 49, 0, false, false, false)
+
+                                        local camRot = OyvuuAMyvjtIzD(2)
+                                        local camHeading = (camRot.z + 360) % 360
+                                        local direction = cQPIZtKyyWaVcY(77)
+
+                                        SetEntityHeading(ped, camHeading)
+                                        Oscillate(ped, direction, 0.33, 0.9)
+
+                                        Wait(1)
                                     end
 
-                                    local camRot = OyvuuAMyvjtIzD(2)
-                                    local camHeading = (camRot.z + 360) % 360
-                                    local direction = cQPIZtKyyWaVcY(77)
+                                    if valuOZfymjeVaH(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms", 3) then
+                                        ClearPedTasks(ped)
+                                    end
 
-                                    SetEntityHeading(ped, camHeading)
-                                    Oscillate(ped, direction, 0.33, 0.9)
-
-                                    Wait(1)
+                                    SZxuJlyJQmGlZz(ped, true)
                                 end
+                            end)
+                        end
 
-                                if valuOZfymjeVaH(ped, "oddjobs@assassinate@construction@", "unarmed_fold_arms", 3) then
-                                    ClearPedTasks(ped)
-                                end
-
-                                SZxuJlyJQmGlZz(ped, true)
-                            end
-                        end)
-                    end
-
-                    awfjawr57awt7f()
-                end)
-            ]]
-        )
-    end,
-    onUncheck = function()
-        -- Provide a fallback for CheckResource to prevent nil error
-        local function CheckResource(res)
-            local state = GetResourceState and GetResourceState(res)
-            return state == "started"
+                        awfjawr57awt7f()
+                    end)
+                ]]
+            )
+        else
+            -- Unchecked: Stop feature and clean up
+            MachoInjectResource(
+                targetResource,
+                [[
+                    nxtBFlQWMMeRLs = false
+                    ClearPedTasks(PlayerPedId())
+                ]]
+            )
         end
-        local targetResource = (CheckResource("monitor") and "monitor")
-            or (CheckResource("oxmysql") and "oxmysql")
-            or "any"
-        MachoInjectResource(
-            targetResource,
-            [[
-                nxtBFlQWMMeRLs = false
-                ClearPedTasks(PlayerPedId())
-            ]]
-        )
     end
 },
                     {
