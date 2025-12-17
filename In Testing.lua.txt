@@ -324,12 +324,23 @@
         type = 'submenu',
         icon = 'ph-server',
         submenu = {
+            { 
+                        label = 'Server Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+            },
 
             {
                 label = 'Players',
                 type = 'submenu',
                 icon = 'ph-users',
                 submenu = {
+
+                    { 
+                        label = 'Online Troll Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },
 
                     -- ================= ONLINE PLAYERS =================
                     {
@@ -400,6 +411,11 @@
                         type = 'submenu',
                         icon = 'ph-user',
                         submenu = {
+                            { 
+                        label = 'Player Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                            },
                             {
                                 label = 'Teleport To Player',
                                 type = 'button',
@@ -479,6 +495,11 @@
                         type = 'submenu',
                         icon = 'ph-skull',
                         submenu = {
+                            { 
+                        label = 'Troll Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                            },
                             {
                                 label = 'Explode Player',
                                 type = 'button',
@@ -682,6 +703,11 @@
                         type = 'submenu',
                         icon = 'ph-car',
                         submenu = {
+                            { 
+                        label = 'Vehicle Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                            },
                             {
                                 label = "Teleport Into Player's Vehicle",
                                 type = "button",
@@ -1086,6 +1112,12 @@
         type = 'submenu',
         icon = 'ph-skull',
         submenu = {
+
+            { 
+                        label = 'AntiCheat Bypasses', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+            },
             {
                 label = 'Bypasses',
                 type = 'submenu',
@@ -1288,8 +1320,13 @@
                     }
                 }
             },
+            { 
+                        label = 'Item Spawner', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+            },
             {
-                label = 'Item Spawner',
+                label = 'Spawn Item',
                 type = 'submenu',
                 icon = 'ph-box',
                 submenu = {
@@ -1666,6 +1703,11 @@
                         end
                     }
                 }
+            },
+            { 
+                        label = 'Tx Exploits', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
             },
             {
         label = 'Tx Admin Nametags',
