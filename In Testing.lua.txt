@@ -813,6 +813,11 @@
                 icon = 'ph-Weapon',
                 submenu = {
                     { 
+                        label = 'Weapon Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },        
+                    { 
                         label = 'Button Test',
                         type = 'button',
                         onConfirm = function()
@@ -827,6 +832,11 @@
         type = 'submenu',
         icon = 'ph-Vehicle',
         submenu = {
+            { 
+                        label = 'Vehicle Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+            },
             {
                 label = 'Repair Vehicle',
                 type = 'button',
@@ -1032,6 +1042,11 @@
                 icon = 'ph-Emotes',
                 submenu = {
                     { 
+                        label = 'Emote Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },
+                    { 
                         label = 'Button Test',
                         type = 'button',
                         onConfirm = function()
@@ -1056,6 +1071,11 @@
                 type = 'submenu',
                 icon = 'ph-Teleports',
                 submenu = {
+                    { 
+                        label = 'Teleport Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+                    },
                     { 
                         label = 'Button Test',
                         type = 'button',
@@ -1112,7 +1132,11 @@
         type = 'submenu',
         icon = 'ph-skull',
         submenu = {
-
+            { 
+                        label = 'Exploit Options', 
+                        type = 'divider', 
+                        onConfirm = function(setToggle) end 
+            },
             { 
                         label = 'AntiCheat Bypasses', 
                         type = 'divider', 
@@ -1781,74 +1805,16 @@
         }
     })
 
-    table.insert(activeMenu, {
-        label = 'Test',
-        type = 'button',
-        onConfirm = function()
-            print("Second button clicked!") -- replace with whatever code you want
-        end
-    })
+    
 
 
 
-            table.insert(activeMenu, {
-                label = 'Test',
-                type = 'submenu',
-                icon = 'ph-Settings',
-                submenu = {
-                    
-                    { 
-                        label = 'Test',
-                        type = 'checkbox',
-                        checked = false,
-                        onConfirm = function()
-                            
-                        end
-                    },
-                    {
-                        label = 'Test Button',
-                        type = 'button',
-                        onConfirm = function()
-
-                        end
-                    },
-                {
-            label = 'Test checkbox2',
-            type = 'button',
-            onConfirm = function()
-                ClearPedTasksImmediately(PlayerPedId())
-            end
-        }
-
-                    }
-                }
-            )
+            
 
 
 
 
-            table.insert(activeMenu, {
-                label = 'Test',
-                type = 'submenu',
-                icon = 'ph-Settings',
-                submenu = {
-                    {
-                        label = 'Test',
-                        type = 'button',
-                        onConfirm = function()
-                            -- Only use the first available/started resource in the order you specified above
-                            if hasSpawnItemResource then
-                                print("Executing handler for active resource: " .. hasSpawnItemResource)
-                                resourceHandlers[hasSpawnItemResource]()
-                            else
-                                print("No compatible resource found or started.")
-                            end
-                        end
-                    },
-
-                    }
-                }
-            )
+           
 
 
             -- ===================== SAFE COPY FOR DUI ===================== 
