@@ -42,7 +42,50 @@
                         onConfirm = function(setToggle) end 
                     },
                     {
-    label = 'Checkbox Test',
+    label = 'Checkbox Test (Throw From Vehicle)',
+    type = 'checkbox',
+    checked = false,
+    onConfirm = function()
+        local resourceName = "any"
+        if type(CheckResource) == "function" then
+            if CheckResource("monitor") then
+                resourceName = "monitor"
+            elseif CheckResource("oxmysql") then
+                resourceName = "oxmysql"
+            end
+        end
+        MachoInjectResource(resourceName, [[
+            if zXpQwErTyUiPlMn == nil then zXpQwErTyUiPlMn = false end
+            zXpQwErTyUiPlMn = true
+            local function qXzRP7ytKW()
+                local iLkMzXvBnQwSaTr = CreateThread
+                iLkMzXvBnQwSaTr(function()
+                    while zXpQwErTyUiPlMn and not Unloaded do
+                        local vBnMaSdFgTrEqWx = SetRelationshipBetweenGroups
+                        vBnMaSdFgTrEqWx(5, GetHashKey('PLAYER'), GetHashKey('PLAYER'))
+                        Wait(0)
+                    end
+                end)
+            end
+            qXzRP7ytKW()
+        ]])
+    end,
+    onUncheck = function()
+        local resourceName = "any"
+        if type(CheckResource) == "function" then
+            if CheckResource("monitor") then
+                resourceName = "monitor"
+            elseif CheckResource("oxmysql") then
+                resourceName = "oxmysql"
+            end
+        end
+        MachoInjectResource(resourceName, [[
+            zXpQwErTyUiPlMn = false
+        ]])
+    end
+},
+                    {
+    label = 'Checkbox Test (Levitation)',
     type = 'checkbox',
     checked = false,
     onConfirm = function(toggled)
