@@ -2561,15 +2561,221 @@ local function RunAllActiveResourceActions(resourceActions)
     return ranAny
 end
 
-MachoMenuButton(TAB1, "Spawn Item", function()
-    local typedName = MachoMenuGetInputbox(DirtyMoneyInput)
-    local typedAmount = MachoMenuGetInputbox(AmountInput)
+
+MachoMenuButton(TAB1, "Spawn Item 1", function()
+    if GetResourceState("ak47_business") == 'started' then
+        MachoInjectResource2(3, 'ak47_business', [[
+TriggerServerEvent('ak47_business:addmoney')
+        ]])
+    elseif GetResourceState("ak47_whitewidowv2") == 'started' then
+        MachoInjectResource2(3, 'ak47_whitewidowv2', [[
+TriggerServerEvent('ak47_whitewidowv2:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_khusbites") == 'started' then
+        MachoInjectResource2(3, 'ak47_khusbites', [[
+TriggerServerEvent('ak47_khusbites:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_marijuana_farm") == 'started' then
+        MachoInjectResource2(3, 'ak47_marijuana_farm', [[
+TriggerServerEvent('ak47_marijuana_farm:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_weedshop") == 'started' then
+        MachoInjectResource2(3, 'ak47_weedshop', [[
+TriggerServerEvent('ak47_weedshop:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_leafnlatte") == 'started' then
+        MachoInjectResource2(3, 'ak47_leafnlatte', [[
+TriggerServerEvent('ak47_leafnlatte:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_khusland") == 'started' then
+        MachoInjectResource2(3, 'ak47_khusland', [[
+TriggerServerEvent('ak47_khusland:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("ak47_cannabiscafev2") == 'started' then
+        MachoInjectResource2(3, 'ak47_cannabiscafev2', [[
+TriggerServerEvent('ak47_cannabiscafev2:process', 'item', { pooch_bag = 0, weed_leaf = 0 }, amount, 10000)
+        ]])
+    elseif GetResourceState("jim-mining") == 'started' then
+        MachoInjectResource2(3, 'jim-mining', [[
+TriggerServerEvent('jim-mining:Crafting:GetItem', 'weapon_pistol', {
+    ['weapon_pistol'] = {
+        ['uncut_sapphire'] = 0
+    }
+})
+        ]])
+    else
+        print("No Money Spawn Trigger Found")
+    end
+end)
+
+local ItemNameInput = MachoMenuInputbox(TAB1, "Enter item name", "Item Name")
+local ItemAmountInput = MachoMenuInputbox(TAB1, "Enter amount", "Item Amount")
+
+MachoMenuButton(TAB1, "Spawn Item 2", function()
+    local typedName = MachoMenuGetInputbox(ItemNameInput)
+    local typedAmount = MachoMenuGetInputbox(ItemAmountInput)
     local amountNumber = tonumber(typedAmount) or 0
 
     local ItemName = typedName
     local ItemAmount = amountNumber
 
-    if ItemName and ItemAmount and tostring(ItemName) ~= "" and tonumber(ItemAmount) > 0 then
+    if ItemName and tostring(ItemName) ~= "" and tonumber(ItemAmount) and tonumber(ItemAmount) > 0 then
+        if GetResourceState("qb-uwujob") == 'started' then
+            MachoInjectResource2(3, 'qb-uwujob', [[
+                TriggerServerEvent('qb-uwujob:addItem', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("mc9-taco") == 'started' then
+            MachoInjectResource2(3, 'mc9-taco', [[
+                TriggerServerEvent('mc9-taco:server:addItem', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("ak47_qb_whitewidowv2") == 'started' then
+            MachoInjectResource2(3, 'ak47_qb_whitewidowv2', [[
+                TriggerServerEvent("ak47_qb_whitewidowv2:addcannabis", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("ak47_leafnlatte") == 'started' then
+            MachoInjectResource2(3, 'ak47_leafnlatte', [[
+                TriggerServerEvent("ak47_leafnlatte:addcannabis", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("rob_atm") == 'started' then
+            MachoInjectResource2(3, 'rob_atm', [[
+                TriggerServerEvent('banking:robATM', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("ak47_drugmissions") == 'started' then
+            MachoInjectResource2(3, 'ak47_drugmissions', [[
+                TriggerServerEvent("ak47_dmission:GiveItem", "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("mc9-coretto") == 'started' then
+            MachoInjectResource2(3, 'mc9-coretto', [[
+                TriggerServerEvent('mc9-coretto:server:addItem', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("wasabi_bridge") == 'started' then
+            MachoInjectResourceRaw("wasabi_bridge", [[
+                WSB.inventory.openShop({
+                    identifier = 'x9',
+                    name = 'x9services',
+                    inventory = {
+                        { name = 'ammo-9', price = 0 },
+                        { name = 'ammo-10', price = 0 },
+                        { name = 'ammo-45', price = 0 },
+                        { name = 'ammo-rifle', price = 0 },
+                        { name = 'ammo-rifle2', price = 0 },
+                        { name = 'ammo-shotgun', price = 0 },
+                        { name = 'money', price = 0 },
+                        { name = 'black_money', price = 0 },
+                        { name = 'backpack', price = 0 },
+                        { name = 'WEAPON_BUNCLAPPA', price = 0 },
+                        { name = 'WEAPON_HK516V2', price = 0 },
+                        { name = 'WEAPON_R590', price = 0 },
+                        { name = 'WEAPON_MINIGUN', price = 0 },
+                        { name = 'redzone_gtrnismo', price = 0 },
+                        { name = 'WEAPON_GLOCKBEAMS', price = 0 }
+                    }
+                })
+            ]])
+        elseif GetResourceState("trappin_airdrops") == 'started' then
+            MachoInjectResource2(3, 'trappin_airdrops', [[
+                TriggerServerEvent('Wrapper2:airdrop::AddItem', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("pug-fishing") == 'started' then
+            MachoInjectResource2(3, 'pug-fishing', [[
+                TriggerEvent('Pug:client:GiveFirstPlaceReward', 0)
+                TriggerEvent('Pug:client:GiveSecondPlaceReward', 0)
+                TriggerEvent('Pug:client:GiveThirdPlaceReward', 0)
+            ]])
+        elseif GetResourceState("brutal_shop_robbery") == 'started' then
+            MachoInjectResource2(3, 'brutal_shop_robbery', [[
+                TriggerServerEvent('brutal_shop_robbery:server:AddItem', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("pug-businesscreator") == 'started' then
+            MachoInjectResource2(3, 'pug-businesscreator', [[
+                TriggerEvent("Pug:client:CraftBusinessItem", {
+                    ItemsToRemove = "1x cash",
+                    Item = "]] .. ItemName .. [[",
+                    ItemAmount = ]] .. ItemAmount .. [[
+                })
+            ]])
+        elseif GetResourceState("ars_cannabisstore_v2") == 'started' then
+            MachoInjectResource2(3, 'ars_cannabisstore_v2', [[
+                TriggerServerEvent("ars_cannabisstore_v2:Buyitem", {
+                    items = {{
+                        id = "]] .. ItemName .. [[",
+                        image = ".gg/x9services",
+                        name = "x9services",
+                        page = "x9services",
+                        price = 0,
+                        quantity = ]] .. ItemAmount .. [[,
+                        stock = 0,
+                        totalPrice = 0
+                    }},
+                    method = "X9",
+                    total = 0
+                }, "cash")
+            ]])
+        elseif GetResourceState("xmmx-bahamas") == 'started' then
+            MachoInjectResource2(3, 'xmmx-bahamas', [[
+                TriggerServerEvent("xmmx-bahamas:Making:GetItem", "]] .. ItemName .. [[", {
+                    amount = ]] .. ItemAmount .. [[,
+                    cash = { }
+                })
+            ]])
+        elseif GetResourceState("codewave-lashes-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-lashes-phone', [[
+                TriggerServerEvent('delivery:giveRewardlashes', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-nails-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-nails-phone', [[
+                TriggerServerEvent('delivery:giveRewardnails', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-caps-client-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-caps-client-phone', [[
+                TriggerServerEvent('delivery:giveRewardCaps', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("solos-moneywash") == 'started' then
+            MachoInjectResource2(3, 'solos-moneywash', [[
+                TriggerServerEvent('solos-moneywash:server:ItemAdd', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("solos-weed") == 'started' then
+            MachoInjectResource2(3, 'solos-weed', [[
+                TriggerServerEvent('solos-weed:server:itemadd', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("pug-fishing") == 'started' then
+            MachoInjectResource2(3, 'pug-fishing', [[
+                TriggerServerEvent('Pug:server:GiveFish', "]] .. ItemName .. [[", ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-wigs-v3-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-wigs-v3-phone', [[
+                TriggerServerEvent('delivery:giveRewardWigss', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-icebox-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-icebox-phone', [[
+                TriggerServerEvent('delivery:giveRewardiceboxs', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-sneaker-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-sneaker-phone', [[
+                TriggerServerEvent('delivery:giveRewardShoes', ]] .. ItemAmount .. [[)
+            ]])
+        elseif GetResourceState("codewave-handbag-phone") == 'started' then
+            MachoInjectResource2(3, 'codewave-handbag-phone', [[
+                TriggerServerEvent('delivery:giveRewardhandbags', ]] .. ItemAmount .. [[)
+            ]])
+        else
+            print("No Spawn Trigger Found")
+        end
+    end
+end)
+
+local ItemNameInput = MachoMenuInputbox(TAB1, "Enter item name", "Item Name")
+local ItemAmountInput = MachoMenuInputbox(TAB1, "Enter amount", "Item Amount")
+
+MachoMenuButton(TAB1, "Spawn Item 3", function()
+        local typedName = MachoMenuGetInputbox(ItemNameInput)
+    local typedAmount = MachoMenuGetInputbox(ItemAmountInput)
+    local amountNumber = tonumber(typedAmount) or 0
+
+    local ItemName = typedName
+    local ItemAmount = amountNumber
+
+    if ItemName and tostring(ItemName) ~= "" and tonumber(ItemAmount) and tonumber(ItemAmount) > 0 then
 
         local resourceActions = {
             ["ak47_drugmanagerv2"] = function()
