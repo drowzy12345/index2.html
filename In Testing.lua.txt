@@ -42,6 +42,229 @@
                         onConfirm = function(setToggle) end 
                     },
                     {
+    label = 'Testing Super Punch', 
+    type = 'checkbox', 
+    onConfirm = function()
+            -- Define a no-op fallback for Injection if not present
+            local Injection = Injection
+            if type(Injection) ~= "function" then
+                Injection = function(...) 
+                    print("[Warning] Injection function is not defined. Args:", ...)
+                end
+            end
+
+            local waveStarted = GetResourceState("WaveShield") == 'started'
+            local targetRes = (GetResourceState("monitor") == "started" and "monitor")
+                or (GetResourceState("ox_lib") == "started" and "ox_lib")
+                or "any"
+
+            if checked then
+                if waveStarted then
+                    Injection(GetResourceState("lb-phone") == "started" and "lb-phone" or "WaveShield", [[
+                        function hNative(nativeName, newFunction)
+                            local originalNative = _G[nativeName]
+                            if not originalNative or type(originalNative) ~= "function" then return end
+                            _G[nativeName] = function(...) return newFunction(originalNative, ...) end
+                        end
+
+                        if superPunchEnabled == nil then superPunchEnabled = false end
+                        superPunchEnabled = true
+
+                        local function initFlow(cb)
+                            local co = coroutine.create(cb)
+                            local ok, err
+                            while coroutine.status(co) ~= "dead" do
+                                ok, err = coroutine.resume(co)
+                                if not ok then
+                                    print("WaveShield Coroutine error:", err)
+                                    break
+                                end
+                                Citizen.Wait(0)
+                            end
+                        end
+
+                        initFlow(function()
+                            local setMeleeMod = SetPlayerMeleeWeaponDamageModifier
+                            local setVehicleMod = SetPlayerVehicleDamageModifier
+                            local setWeaponMod = SetWeaponDamageModifier
+                            local playerId = PlayerId
+                            local unarmedHash = GetHashKey("WEAPON_UNARMED")
+                            local damageValue = 150.0
+
+                            while superPunchEnabled and not Unloaded do
+                                Wait(0)
+                                local pid = playerId()
+                                setMeleeMod(pid, damageValue)
+                                setVehicleMod(pid, damageValue)
+                                setWeaponMod(unarmedHash, damageValue)
+                            end
+
+                            -- Restore on disable
+                            local pid = playerId()
+                            setMeleeMod(pid, 1.0)
+                            setVehicleMod(pid, 1.0)
+                            setWeaponMod(unarmedHash, 1.0)
+                        end)
+                    ]])
+                else
+                    Injection(targetRes, [[
+                        function hNative(nativeName, newFunction)
+                            local originalNative = _G[nativeName]
+                            if not originalNative or type(originalNative) ~= "function" then return end
+                            _G[nativeName] = function(...) return newFunction(originalNative, ...) end
+                        end
+
+                        hNative("CreateThread", function(originalFn, ...) return originalFn(...) end)
+                        hNative("Wait", function(originalFn, ...) return originalFn(...) end)
+                        hNative("SetPlayerMeleeWeaponDamageModifier", function(originalFn, ...) return originalFn(...) end)
+                        hNative("SetPlayerVehicleDamageModifier", function(originalFn, ...) return originalFn(...) end)
+                        hNative("SetWeaponDamageModifier", function(originalFn, ...) return originalFn(...) end)
+                        hNative("PlayerId", function(originalFn, ...) return originalFn(...) end)
+                        hNative("GetHashKey", function(originalFn, ...) return originalFn(...) end)
+
+                        if superPunchEnabled == nil then superPunchEnabled = false end
+                        superPunchEnabled = true
+
+                        local function startSuperPunch()
+                            local create = CreateThread
+                            local wait = Wait
+                            local setMelee = SetPlayerMeleeWeaponDamageModifier
+                            local setVehicle = SetPlayerVehicleDamageModifier
+                            local setWeapon = SetWeaponDamageModifier
+                            local getPlayer = PlayerId
+                            local hashKey = GetHashKey
+
+                            create(function()
+                                local unarmedHash = hashKey("WEAPON_UNARMED")
+                                local damageValue = 150.0
+
+                                while superPunchEnabled and not Unloaded do
+                                    local pid = getPlayer()
+                                    setMelee(pid, damageValue)
+                                    setVehicle(pid, damageValue)
+                                    setWeapon(unarmedHash, damageValue)
+                                    wait(0)
+                                end
+
+                                -- Restore
+                                local pid = getPlayer()
+                                setMelee(pid, 1.0)
+                                setVehicle(pid, 1.0)
+                                setWeapon(unarmedHash, 1.0)
+                            end)
+                        end
+
+                        startSuperPunch()
+                    ]])
+                    
+                end
+            else
+                if waveStarted then
+                    Injection(GetResourceState("lb-phone") == "started" and "lb-phone" or "WaveShield", [[
+                        superPunchEnabled = false
+                    ]])
+                else
+                    Injection(targetRes, [[
+                        superPunchEnabled = false
+                    ]])
+                    
+                end
+            end
+        end
+},
+                    {
+    label = 'Testing Server Console Spam',
+    type = 'checkbox',
+    onConfirm = function(checked)
+        -- Fixes: Add check for Injection and checked argument scope
+        local function safeInjection(resource, code)
+            if type(Injection) == "function" then
+                Injection(resource, code)
+            else
+                
+            end
+        end
+
+        local function chooseResource()
+            if GetResourceState("monitor") == "started" then
+                return "monitor"
+            elseif GetResourceState("WaveShield") == "started" then
+                return "WaveShield"
+            else
+                return "any"
+            end
+        end
+
+        if checked then
+            print('[Console Spam Started]')
+            safeInjection(
+                chooseResource(),
+                [[
+                    if not _G.OSINTServerConsoleSpamInitialized then
+                        _G.OSINTServerConsoleSpamEnabled = true
+                        _G.OSINTServerConsoleSpamInitialized = true
+
+                        local function HookNative(nativeName, newFunction)
+                            local originalNative = _G[nativeName]
+                            if not originalNative or type(originalNative) ~= "function" then return end
+                            _G[nativeName] = function(...)
+                                return newFunction(originalNative, ...)
+                            end
+                        end
+
+                        HookNative("CreateThread", function(fn, cb) return fn(cb) end)
+                        HookNative("Wait", function(fn, ms) return fn(ms) end)
+                        HookNative("TriggerEvent", function(fn, ...) return fn(...) end)
+                        HookNative("TriggerServerEvent", function(fn, ...) return fn(...) end)
+
+                        if not _G.OSINT then
+                            _G.OSINT = {
+                                TEvent = function(e, ...) return TriggerEvent(e, ...) end,
+                                TSEvent = function(e, ...) return TriggerServerEvent(e, ...) end
+                            }
+                        end
+
+                        local function initFlow(cb)
+                            local co = coroutine.create(cb)
+                            local ok, err
+                            while coroutine.status(co) ~= "dead" do
+                                ok, err = coroutine.resume(co)
+                                if not ok then
+                                    print("WaveShield Spam Coroutine error:", err)
+                                    break
+                                end
+                                Citizen.Wait(0)
+                            end
+                        end
+
+                        initFlow(function()
+                            Citizen.Wait(500)
+                            while _G.OSINTServerConsoleSpamInitialized do
+                                if not _G.OSINTServerConsoleSpamEnabled then
+                                    Citizen.Wait(500)
+                                else
+                                    _G.OSINT.TSEvent("playerLoaded")
+                                    Citizen.Wait(75)
+                                end
+                            end
+                        end)
+                    else
+                        _G.OSINTServerConsoleSpamEnabled = true
+                    end
+                ]]
+            )
+        else
+            print('[Console Spam Stopped]')
+            safeInjection(
+                chooseResource(),
+                [[
+                    _G.OSINTServerConsoleSpamEnabled = false
+                ]]
+            )
+        end
+    end
+},
+                    {
     label = 'Checkbox Test (Throw From Vehicle)',
     type = 'checkbox',
     checked = false,
