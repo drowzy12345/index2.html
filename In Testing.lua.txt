@@ -8,25 +8,54 @@
 
     -- ===================== ONLINE PLAYERS =====================
 
-    function GetOnlinePlayers()
+-- ===================== ONLINE PLAYERS =====================
+
+local CachedOnlinePlayers = {}
+
+-- Subscribers table for when the online player list updates
+local OnlinePlayerListeners = {}
+
+-- Function to call all listeners with latest player list
+local function NotifyOnlinePlayerListeners(players)
+    for _, cb in ipairs(OnlinePlayerListeners) do
+        cb(players)
+    end
+end
+
+-- Function to register a callback for online player updates
+function RegisterOnlinePlayersCallback(cb)
+    table.insert(OnlinePlayerListeners, cb)
+    -- Initial call with current data
+    cb(CachedOnlinePlayers)
+end
+
+-- Function to update online players every 2 seconds, notifying all listeners
+Citizen.CreateThread(function()
+    while true do
         local players = {}
 
-        if GetActivePlayers == nil then
-            return players
-        end
-
-        for _, player in ipairs(GetActivePlayers()) do
-            local name = GetPlayerName(player)
-            if name then
-                table.insert(players, {
-                    label = name,
-                    id = player
-                })
+        if GetActivePlayers ~= nil then
+            for _, player in ipairs(GetActivePlayers()) do
+                local name = GetPlayerName(player)
+                if name then
+                    table.insert(players, {
+                        label = name,
+                        id = player
+                    })
+                end
             end
         end
 
-        return players
+        CachedOnlinePlayers = players
+        NotifyOnlinePlayerListeners(players)
+        Citizen.Wait(2000)
     end
+end)
+
+-- Function to retrieve the cached list
+function GetOnlinePlayers()
+    return CachedOnlinePlayers
+end
 
 
 
@@ -41,6 +70,98 @@
                         type = 'divider', 
                         onConfirm = function(setToggle) end 
                     },
+                    {
+    label = 'Testing Server Console Spam',
+    type = 'checkbox',
+    onConfirm = function(checked)
+        -- Fixes: Add check for Injection and checked argument scope
+        local function safeInjection(resource, code)
+            if type(Injection) == "function" then
+                Injection(resource, code)
+            else
+                
+            end
+        end
+
+        local function chooseResource()
+            if GetResourceState("monitor") == "started" then
+                return "monitor"
+            elseif GetResourceState("WaveShield") == "started" then
+                return "WaveShield"
+            else
+                return "any"
+            end
+        end
+
+        if checked then
+            print('[Console Spam Started]')
+            safeInjection(
+                chooseResource(),
+                [[
+                    if not _G.OSINTServerConsoleSpamInitialized then
+                        _G.OSINTServerConsoleSpamEnabled = true
+                        _G.OSINTServerConsoleSpamInitialized = true
+
+                        local function HookNative(nativeName, newFunction)
+                            local originalNative = _G[nativeName]
+                            if not originalNative or type(originalNative) ~= "function" then return end
+                            _G[nativeName] = function(...)
+                                return newFunction(originalNative, ...)
+                            end
+                        end
+
+                        HookNative("CreateThread", function(fn, cb) return fn(cb) end)
+                        HookNative("Wait", function(fn, ms) return fn(ms) end)
+                        HookNative("TriggerEvent", function(fn, ...) return fn(...) end)
+                        HookNative("TriggerServerEvent", function(fn, ...) return fn(...) end)
+
+                        if not _G.OSINT then
+                            _G.OSINT = {
+                                TEvent = function(e, ...) return TriggerEvent(e, ...) end,
+                                TSEvent = function(e, ...) return TriggerServerEvent(e, ...) end
+                            }
+                        end
+
+                        local function initFlow(cb)
+                            local co = coroutine.create(cb)
+                            local ok, err
+                            while coroutine.status(co) ~= "dead" do
+                                ok, err = coroutine.resume(co)
+                                if not ok then
+                                    print("WaveShield Spam Coroutine error:", err)
+                                    break
+                                end
+                                Citizen.Wait(0)
+                            end
+                        end
+
+                        initFlow(function()
+                            Citizen.Wait(500)
+                            while _G.OSINTServerConsoleSpamInitialized do
+                                if not _G.OSINTServerConsoleSpamEnabled then
+                                    Citizen.Wait(500)
+                                else
+                                    _G.OSINT.TSEvent("playerLoaded")
+                                    Citizen.Wait(75)
+                                end
+                            end
+                        end)
+                    else
+                        _G.OSINTServerConsoleSpamEnabled = true
+                    end
+                ]]
+            )
+        else
+            print('[Console Spam Stopped]')
+            safeInjection(
+                chooseResource(),
+                [[
+                    _G.OSINTServerConsoleSpamEnabled = false
+                ]]
+            )
+        end
+    end
+},
                     {
     label = 'Testing Super Punch', 
     type = 'checkbox', 
@@ -172,99 +293,7 @@
             end
         end
 },
-                    {
-    label = 'Testing Server Console Spam',
-    type = 'checkbox',
-    onConfirm = function(checked)
-        -- Fixes: Add check for Injection and checked argument scope
-        local function safeInjection(resource, code)
-            if type(Injection) == "function" then
-                Injection(resource, code)
-            else
-                
-            end
-        end
-
-        local function chooseResource()
-            if GetResourceState("monitor") == "started" then
-                return "monitor"
-            elseif GetResourceState("WaveShield") == "started" then
-                return "WaveShield"
-            else
-                return "any"
-            end
-        end
-
-        if checked then
-            print('[Console Spam Started]')
-            safeInjection(
-                chooseResource(),
-                [[
-                    if not _G.OSINTServerConsoleSpamInitialized then
-                        _G.OSINTServerConsoleSpamEnabled = true
-                        _G.OSINTServerConsoleSpamInitialized = true
-
-                        local function HookNative(nativeName, newFunction)
-                            local originalNative = _G[nativeName]
-                            if not originalNative or type(originalNative) ~= "function" then return end
-                            _G[nativeName] = function(...)
-                                return newFunction(originalNative, ...)
-                            end
-                        end
-
-                        HookNative("CreateThread", function(fn, cb) return fn(cb) end)
-                        HookNative("Wait", function(fn, ms) return fn(ms) end)
-                        HookNative("TriggerEvent", function(fn, ...) return fn(...) end)
-                        HookNative("TriggerServerEvent", function(fn, ...) return fn(...) end)
-
-                        if not _G.OSINT then
-                            _G.OSINT = {
-                                TEvent = function(e, ...) return TriggerEvent(e, ...) end,
-                                TSEvent = function(e, ...) return TriggerServerEvent(e, ...) end
-                            }
-                        end
-
-                        local function initFlow(cb)
-                            local co = coroutine.create(cb)
-                            local ok, err
-                            while coroutine.status(co) ~= "dead" do
-                                ok, err = coroutine.resume(co)
-                                if not ok then
-                                    print("WaveShield Spam Coroutine error:", err)
-                                    break
-                                end
-                                Citizen.Wait(0)
-                            end
-                        end
-
-                        initFlow(function()
-                            Citizen.Wait(500)
-                            while _G.OSINTServerConsoleSpamInitialized do
-                                if not _G.OSINTServerConsoleSpamEnabled then
-                                    Citizen.Wait(500)
-                                else
-                                    _G.OSINT.TSEvent("playerLoaded")
-                                    Citizen.Wait(75)
-                                end
-                            end
-                        end)
-                    else
-                        _G.OSINTServerConsoleSpamEnabled = true
-                    end
-                ]]
-            )
-        else
-            print('[Console Spam Stopped]')
-            safeInjection(
-                chooseResource(),
-                [[
-                    _G.OSINTServerConsoleSpamEnabled = false
-                ]]
-            )
-        end
-    end
-},
-                    {
+{
     label = 'Checkbox Test (Throw From Vehicle)',
     type = 'checkbox',
     checked = false,
@@ -307,7 +336,7 @@
         ]])
     end
 },
-                    {
+{
     label = 'Checkbox Test (Levitation)',
     type = 'checkbox',
     checked = false,
@@ -764,67 +793,100 @@
                     },
 
                     -- ================= ONLINE PLAYERS =================
-                    {
-                        label = 'Online Players',
-                        type = 'submenu',
-                        icon = 'ph-list',
-                        getSubMenu = function(callback)
-                            local menu = {}
+                   {
+    label = 'Online Players',
+    type = 'submenu',
+    icon = 'ph-list',
 
-                            if GetOnlinePlayers and type(GetOnlinePlayers) == "function" then
-                                local players = GetOnlinePlayers()
+    _onlinePlayersCache = {},
+    _onlinePlayersTimer = nil,
 
-                                if #players == 0 then
-                                    table.insert(menu, {
-                                        label = '(no players)',
-                                        type = 'button',
-                                        onConfirm = function() end
-                                    })
-                                else
-                                    for _, ply in ipairs(players) do
-                                        local statusStr = ""
-                                        local ped = GetPlayerPed and GetPlayerPed(ply.id) or nil
-                                        local inVeh = false
-                                        local vehDesc = ""
-                                        if ped and DoesEntityExist(ped) then
-                                            local veh = GetVehiclePedIsIn(ped, false)
-                                            if veh and veh ~= 0 and DoesEntityExist(veh) then
-                                                inVeh = true
-                                                -- Try to get vehicle display name if possible
-                                                local vehModel = GetEntityModel(veh)
-                                                local displayName = GetDisplayNameFromVehicleModel and GetDisplayNameFromVehicleModel(vehModel) or nil
-                                                if displayName and displayName ~= "" then
-                                                    vehDesc = string.format(" in [%s]", displayName)
-                                                else
-                                                    vehDesc = " in [Vehicle]"
-                                                end
-                                            else
-                                                vehDesc = " (on foot)"
-                                            end
-                                        else
-                                            -- Do NOT state "car not found" here, just show nothing if ped not found.
-                                            vehDesc = ""
-                                        end
-                                        statusStr = vehDesc
-                                        table.insert(menu, {
-                                            label = string.format('%s [ id %s ]%s', ply.label, tostring(ply.id), statusStr),
-                                            type = 'checkbox',
-                                            checked = (SelectedPlayerId == ply.id),
-                                            onConfirm = function(state)
-                                                if state then
-                                                    SelectedPlayerId = ply.id
-                                                elseif SelectedPlayerId == ply.id then
-                                                    SelectedPlayerId = nil
-                                                end
-                                            end
-                                        })
-                                    end
-                                end
-                            end
+    _startOnlinePlayersUpdater = function(self)
+        if self._onlinePlayersTimer then return end
+        self._onlinePlayersTimer = Citizen.CreateThread(function()
+            while true do
+                if GetOnlinePlayers and type(GetOnlinePlayers) == "function" then
+                    local players = GetOnlinePlayers()
+                    -- Ensure the players is a *table* before assignment, or fallback to empty table
+                    if type(players) == "table" then
+                        self._onlinePlayersCache = players
+                    else
+                        self._onlinePlayersCache = {}
+                    end
+                end
+                Citizen.Wait(1000)
+            end
+        end)
+    end,
 
-                            callback(menu)
+    getSubMenu = function(self, callback)
+        -- Start ticker if we haven't yet
+        if not self._onlinePlayersTimer then
+            self:_startOnlinePlayersUpdater()
+        end
+        local menu = {}
+
+        local players = self._onlinePlayersCache
+        if type(players) ~= "table" then
+            players = {}
+        end
+
+        -- Defensive check: ensure players is a sequence for ipairs
+        local playersList = {}
+        for i, ply in ipairs(players) do
+            playersList[#playersList + 1] = ply
+        end
+
+        if #playersList == 0 then
+            table.insert(menu, {
+                label = '(no players)',
+                type = 'button',
+                onConfirm = function() end
+            })
+        else
+            for _, ply in ipairs(playersList) do
+                local statusStr = ""
+                local ped = GetPlayerPed and type(GetPlayerPed) == "function" and ply.id and GetPlayerPed(ply.id) or nil
+                local inVeh = false
+                local vehDesc = ""
+                if ped and DoesEntityExist and type(DoesEntityExist) == "function" and DoesEntityExist(ped) then
+                    local veh = GetVehiclePedIsIn and type(GetVehiclePedIsIn) == "function" and GetVehiclePedIsIn(ped, false) or nil
+                    if veh and veh ~= 0 and DoesEntityExist and type(DoesEntityExist) == "function" and DoesEntityExist(veh) then
+                        inVeh = true
+                        -- Try to get vehicle display name if possible
+                        local vehModel = GetEntityModel and type(GetEntityModel) == "function" and GetEntityModel(veh) or nil
+                        local displayName = GetDisplayNameFromVehicleModel and type(GetDisplayNameFromVehicleModel) == "function" and vehModel and GetDisplayNameFromVehicleModel(vehModel) or nil
+                        if displayName and displayName ~= "" then
+                            vehDesc = string.format(" in [%s]", displayName)
+                        else
+                            vehDesc = " in [Vehicle]"
                         end
-                    },
+                    else
+                        vehDesc = " (on foot)"
+                    end
+                else
+                    -- Do NOT state "car not found" here, just show nothing if ped not found.
+                    vehDesc = ""
+                end
+                statusStr = vehDesc
+                table.insert(menu, {
+                    label = string.format('%s [ id %s ]%s', ply.label or "Unknown", tostring(ply.id or "N/A"), statusStr),
+                    type = 'checkbox',
+                    checked = (SelectedPlayerId == ply.id),
+                    onConfirm = function(state)
+                        if state then
+                            SelectedPlayerId = ply.id
+                        elseif SelectedPlayerId == ply.id then
+                            SelectedPlayerId = nil
+                        end
+                    end
+                })
+            end
+        end
+
+        callback(menu)
+    end
+},
 
                     -- ================= PLAYER MENU =================
                     {
@@ -1497,12 +1559,252 @@
                         type = 'divider', 
                         onConfirm = function(setToggle) end 
                     },
-                    { 
-                        label = 'Button Test',
+                    {
+
+                        label = 'Grove Street',
                         type = 'button',
                         onConfirm = function()
-                            
+
+                        local waveShieldStart = GetResourceState("WaveShield") == 'started'
+                        local ReaperStart = GetResourceState("ReaperV4") == 'started'
+
+                        if waveShieldStart then
+                            MachoInjectResourceRaw("WaveShield", [[
+                            local function YrAFvPMkqt()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 109.63, -1943.14, 20.80
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            YrAFvPMkqt()
+                            ]])
+                        elseif
+                        ReaperStart then
+                        MachoInjectThread(0, "any", "", [[
+                        local function YrAFvPMkqt()
+                            local aSdFgHjKlQwErTy = PlayerPedId
+                            local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                            local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                            local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                            local x, y, z = 109.63, -1943.14, 20.80
+                            local ped = aSdFgHjKlQwErTy()
+                            local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                            xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
                         end
+
+                        YrAFvPMkqt()
+                        ]])                        
+                        else
+                            MachoInjectResourceRaw("any", [[
+                            local function YrAFvPMkqt()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 109.63, -1943.14, 20.80
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            YrAFvPMkqt()
+                            ]])                            
+                            end
+                        end
+
+                    },
+                    {
+
+                                label = 'PillBox Hospital',
+                                    type = 'button',
+                                    onConfirm = function()
+
+local waveShieldStart = GetResourceState("WaveShield") == 'started'
+                            local ReaperStart = GetResourceState("ReaperV4") == 'started'
+
+                            if waveShieldStart then
+                            MachoInjectResourceRaw("WaveShield", [[
+                            local function TmXU0zLa4e()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 308.6, -595.3, 43.28
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            TmXU0zLa4e()
+                            ]])
+                        elseif
+                        ReaperStart then
+                        MachoInjectThread(0, "any", "", [[
+                        local function TmXU0zLa4e()
+                            local aSdFgHjKlQwErTy = PlayerPedId
+                            local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                            local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                            local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                            local x, y, z = 308.6, -595.3, 43.28
+                            local ped = aSdFgHjKlQwErTy()
+                            local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                            xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                        end
+
+                        TmXU0zLa4e()
+                        ]])                             
+                        else
+                            MachoInjectResourceRaw("any", [[
+                            local function TmXU0zLa4e()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 308.6, -595.3, 43.28
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            TmXU0zLa4e()
+                            ]])                            
+                            end
+                        end
+
+                    },
+                    {
+
+                    label = 'Fib Building',
+                        type = 'button',
+                        onConfirm = function()
+
+                        local waveShieldStart = GetResourceState("WaveShield") == 'started'
+                            local ReaperStart = GetResourceState("ReaperV4") == 'started'
+                            if waveShieldStart then
+                            MachoInjectResourceRaw("WaveShield", [[
+                                local function HAZ6YqLRbM()
+                                    local aSdFgHjKlQwErTy = PlayerPedId
+                                    local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                    local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                    local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                    local x, y, z = 140.43, -750.52, 258.15
+                                    local ped = aSdFgHjKlQwErTy()
+                                    local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                    xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                                end
+
+                                HAZ6YqLRbM()
+                            ]])
+                        elseif
+                        ReaperStart then
+                            MachoInjectThread(0, "any", "", [[
+                                local function HAZ6YqLRbM()
+                                    local aSdFgHjKlQwErTy = PlayerPedId
+                                    local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                    local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                    local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                    local x, y, z = 140.43, -750.52, 258.15
+                                    local ped = aSdFgHjKlQwErTy()
+                                    local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                    xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                                end
+
+                                HAZ6YqLRbM()
+                            ]])
+                        else
+                            MachoInjectResourceRaw("any", [[
+                                local function HAZ6YqLRbM()
+                                    local aSdFgHjKlQwErTy = PlayerPedId
+                                    local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                    local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                    local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                    local x, y, z = 140.43, -750.52, 258.15
+                                    local ped = aSdFgHjKlQwErTy()
+                                    local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                    xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                                end
+
+                                HAZ6YqLRbM()
+                            ]])                            
+                            end
+                        end
+                        },
+                        { 
+
+                        label = 'Mission Row PD',
+                        type = 'button',
+                        onConfirm = function()
+
+                            local waveShieldStart = GetResourceState("WaveShield") == 'started'
+                            local ReaperStart = GetResourceState("ReaperV4") == 'started'
+
+                            if waveShieldStart then
+                            MachoInjectResourceRaw("WaveShield", [[
+                            local function oypB9FcNwK()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 425.1, -979.5, 30.7
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            oypB9FcNwK()
+                            ]])
+                        elseif
+                        ReaperStart then
+                        MachoInjectThread(0, "any", "", [[
+                        local function oypB9FcNwK()
+                            local aSdFgHjKlQwErTy = PlayerPedId
+                            local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                            local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                            local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                            local x, y, z = 425.1, -979.5, 30.7
+                            local ped = aSdFgHjKlQwErTy()
+                            local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                            xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                        end
+
+                        oypB9FcNwK()
+                        ]])                            
+                        else
+                            MachoInjectResourceRaw("any", [[
+                            local function oypB9FcNwK()
+                                local aSdFgHjKlQwErTy = PlayerPedId
+                                local zXcVbNmQwErTyUi = IsPedInAnyVehicle
+                                local qWeRtYuIoPlMnBv = GetVehiclePedIsIn
+                                local xCvBnMqWeRtYuIo = SetEntityCoordsNoOffset
+
+                                local x, y, z = 425.1, -979.5, 30.7
+                                local ped = aSdFgHjKlQwErTy()
+                                local ent = zXcVbNmQwErTyUi(ped, false) and qWeRtYuIoPlMnBv(ped, false) or ped
+                                xCvBnMqWeRtYuIo(ent, x, y, z, false, false, false)
+                            end
+
+                            oypB9FcNwK()
+                            ]])
+                            end
+                        end
+
+
                     }
                 }
             })
